@@ -165,7 +165,7 @@ public class BoardModel {
                 } else {
                     switch (c) {
                         case TILE_EMPTY:
-                            TILES[i][j] = null;
+                            TILES[i][j] = new EmptyTile(i, j);
                             break;
                         case TILE_START:
                             TILES[i][j] = new StartTile(i, j, SUSPECTS[startTileSuspectIterator++]);

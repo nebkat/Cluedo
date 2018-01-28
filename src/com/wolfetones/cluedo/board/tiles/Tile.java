@@ -1,5 +1,6 @@
 package com.wolfetones.cluedo.board.tiles;
 
+import javax.swing.JButton;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,8 @@ public abstract class Tile {
     private Tile mUp;
     private Tile mRight;
     private Tile mDown;
+
+    private JButton mButton;
 
     private List<Tile> mNeighbours = new ArrayList<>();
 
@@ -57,5 +60,13 @@ public abstract class Tile {
 
     public List<Tile> getNeighbours() {
         return mNeighbours;
+    }
+
+    public JButton getButton() {
+        return mButton;
+    }
+
+    public void setButton(JButton button) {
+        mButton = button;
     }
 }
