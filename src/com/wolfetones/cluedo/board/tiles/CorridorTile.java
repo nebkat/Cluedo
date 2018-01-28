@@ -2,7 +2,7 @@ package com.wolfetones.cluedo.board.tiles;
 
 import com.wolfetones.cluedo.card.Room;
 
-public class CorridorTile extends OccupyableTile {
+public class CorridorTile extends OccupiableTile {
     private Room mAdjacentRoom = null;
 
     public CorridorTile(int x, int y) {

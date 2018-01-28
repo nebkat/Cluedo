@@ -238,7 +238,7 @@ public class BoardModel {
                     System.out.print(":");
                 } else if (TILES[i][j] instanceof RoomTile) {
                     System.out.print("R");
-                } else if (TILES[i][j] instanceof OccupyableTile) {
+                } else if (TILES[i][j] instanceof OccupiableTile) {
                     System.out.print("=");
                 }
             }

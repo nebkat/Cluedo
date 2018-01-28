@@ -2,10 +2,10 @@ package com.wolfetones.cluedo.board.tiles;
 
 import com.wolfetones.cluedo.game.Player;
 
-public abstract class OccupyableTile extends Tile {
+public abstract class OccupiableTile extends Tile {
     protected Player mPlayer = null;
 
-    public OccupyableTile(int x, int y) {
+    public OccupiableTile(int x, int y) {
         super(x, y);
     }
 
