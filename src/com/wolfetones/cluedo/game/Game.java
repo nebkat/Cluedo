@@ -4,11 +4,13 @@ import com.wolfetones.cluedo.board.BoardModel;
 import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
+import com.wolfetones.cluedo.ui.TileBorder;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +48,7 @@ public class Game {
 					JButton button = tile.getButton();
 
 					if (tile instanceof CorridorTile) {
-						button.setBackground(path.contains(tile) ? Color.GREEN : Color.YELLOW);
+						button.setBackground(path.contains(tile) ? Color.GREEN : Color.decode(((i + j) % 2 == 0) ? "#e4c17f" : "#e0c070"));
 					}
 				}
 			}
@@ -57,8 +59,15 @@ public class Game {
 	    for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
 	    	for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
 	    		Tile tile = BoardModel.TILES[i][j];
-	    		JButton button = new JButton(i + ", " + j);
+	    		JButton button = new JButton();
+	    		button.setPreferredSize(new Dimension(75, 75));
 	    		tile.setButton(button);
+
+	    		char[] bc = BoardModel.getTileBordersAndCorners(j, i);
+
+	    		System.out.println("row: " + i + ", col: " + j + " " + Arrays.toString(bc));
+
+	    		button.setBorder(new TileBorder(bc));
 
 	    		button.addMouseListener(new MouseAdapter() {
 					@Override
@@ -75,16 +84,14 @@ public class Game {
 				});
 
 				if (tile instanceof RoomTile) {
-					button.setBackground(Color.GRAY);
-					button.setBorderPainted(false);
+					button.setBackground(Color.decode("#ab9e85"));
 				} else if (tile instanceof StartTile) {
 					button.setBackground(Color.RED);
 				} else if (tile instanceof CorridorTile) {
-					button.setBackground(Color.YELLOW);
+					button.setBackground(Color.decode(((i + j) % 2 == 0) ? "#e4c17f" : "#e0c070"));
 				} else if (tile instanceof EmptyTile) {
 	    			button.setEnabled(false);
-					button.setBackground(Color.WHITE);
-					button.setBorderPainted(false);
+					button.setBackground(Color.decode("#4f8967"));
 				}
 
 				panel.add(button);
