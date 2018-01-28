@@ -5,8 +5,6 @@ import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
 
-import java.util.List;
-
 public class BoardModel {
 
     /*
@@ -154,59 +152,59 @@ public class BoardModel {
 
         // Initialize tiles
         int startTileSuspectIterator = 0;
-        for (int i = 0; i < BOARD_HEIGHT; i++) {
-            for (int j = 0; j < BOARD_WIDTH; j++) {
-                char c = BOARD_STRING.charAt((1 + (i * 2)) * BOARD_STRING_WIDTH + (1 + (j * 2)));
+        for (int x = 0; x < BOARD_WIDTH; x++) {
+            for (int y = 0; y < BOARD_HEIGHT; y++) {
+                char c = BOARD_STRING.charAt(tileCoordinatesToBoardStringOffset(x, y));
 
                 if (Character.isDigit(c)) {
                     int r = Integer.parseInt(Character.toString(c));
 
-                    TILES[i][j] = new RoomTile(i, j, ROOMS[r]);
+                    TILES[y][x] = new RoomTile(x, y, ROOMS[r]);
                 } else {
                     switch (c) {
                         case TILE_EMPTY:
-                            TILES[i][j] = new EmptyTile(i, j);
+                            TILES[y][x] = new EmptyTile(x, y);
                             break;
                         case TILE_START:
-                            TILES[i][j] = new StartTile(i, j, SUSPECTS[startTileSuspectIterator++]);
+                            TILES[y][x] = new StartTile(x, y, SUSPECTS[startTileSuspectIterator++]);
                             break;
                         case TILE_CORRIDOR:
-                            TILES[i][j] = new CorridorTile(i, j);
+                            TILES[y][x] = new CorridorTile(x, y);
                             break;
                         default:
-                            throw new IllegalArgumentException("Unknown board tile found at [" + i + ", " + j + "][" + (1 + (i * 2)) + ", " + (1 + (j * 2)) + " = " + ((1 + (i * 2)) * BOARD_STRING_WIDTH + (1 + (j * 2))) + "] '" + c + "' (" + ((int) c) + ")");
+                            throw new IllegalArgumentException("Unknown board tile found at [" + x + ", " + y + "]{" + (1 + (x * 2)) + ", " + (1 + (y * 2)) + "} = '" + c + "'");
                     }
                 }
             }
         }
 
-        for (int i = 0; i < BOARD_HEIGHT; i++) {
-            for (int j = 0; j < BOARD_WIDTH; j++) {
-                if (TILES[i][j] == null) continue;
+        for (int x = 0; x < BOARD_WIDTH; x++) {
+            for (int y = 0; y < BOARD_HEIGHT; y++) {
+                if (TILES[y][x] == null) continue;
 
                 // Set neighbouring tiles
-                Tile left = j > 0 ? TILES[i][j - 1] : null;
-                Tile up = i > 0 ? TILES[i - 1][j] : null;
-                Tile right = j < (BOARD_WIDTH - 1) ? TILES[i][j + 1] : null;
-                Tile down = i < (BOARD_HEIGHT - 1) ? TILES[i + 1][j] : null;
+                Tile left = x > 0 ? TILES[y][x - 1] : null;
+                Tile up = y > 0 ? TILES[y - 1][x] : null;
+                Tile right = x < (BOARD_WIDTH - 1) ? TILES[y][x + 1] : null;
+                Tile down = y < (BOARD_HEIGHT - 1) ? TILES[y + 1][x] : null;
 
-                TILES[i][j].setNeighbours(left, up, right, down);
+                TILES[y][x].setNeighbours(left, up, right, down);
             }
         }
 
         // Update doors
-        for (int i = 0; i < BOARD_STRING_HEIGHT; i++) {
-            boolean horizontal = i % 2 == 1;
-            for (int j = horizontal ? 1 : 0; j < BOARD_STRING_WIDTH; j += 2) {
-                if (BOARD_STRING.charAt(i * BOARD_STRING_WIDTH + j) == TILE_DOOR) {
+        for (int y = 0; y < BOARD_STRING_HEIGHT; y++) {
+            boolean horizontal = y % 2 == 1;
+            for (int x = horizontal ? 0 : 1; x < BOARD_STRING_WIDTH; x += 2) {
+                if (BOARD_STRING.charAt(BoardModel.boardStringCoordinatesToOffset(x, y)) == TILE_DOOR) {
                     Tile a;
                     Tile b;
                     if (horizontal) {
-                        a = TILES[i / 2][(j - 1) / 2];
-                        b = TILES[i / 2][(j + 1) / 2];
+                        a = TILES[y / 2][(x - 1) / 2];
+                        b = TILES[y / 2][(x + 1) / 2];
                     } else {
-                        a = TILES[(i - 1) / 2][j / 2];
-                        b = TILES[(i + 1) / 2][j / 2];
+                        a = TILES[(y - 1) / 2][x / 2];
+                        b = TILES[(y + 1) / 2][x / 2];
                     }
 
                     RoomTile roomTile;
@@ -222,8 +220,8 @@ public class BoardModel {
                         throw new IllegalArgumentException("Door does not connect corridor and room piece [" + a.getX() + ", " + a.getY() + "] and [" + b.getX() + ", " + b.getY() + "]");
                     }
 
-                    corridorTile.setAdjacentRoom(roomTile.getRoom());
-                    roomTile.getRoom().addAdjacentCorridor(corridorTile);
+                    corridorTile.setDoorRoom(roomTile.getRoom());
+                    roomTile.getRoom().addEntranceCorridor(corridorTile);
                 }
             }
         }
@@ -236,14 +234,16 @@ public class BoardModel {
         return new int[] {x, y};
     }
 
+    private static int tileCoordinatesToBoardStringOffset(int x, int y) {
+        return boardStringCoordinatesToOffset(1 + 2 * x, 1 + 2 * y);
+    }
+
     private static int boardStringCoordinatesToOffset(int x, int y) {
         return x + y * BOARD_STRING_WIDTH;
     }
 
     public static char[] getTileBordersAndCorners(int x, int y) {
         int[] boardStringCoordinates = tileCoordinatesToBoardStringCoordinates(x, y);
-
-        System.out.println("[" + x + ", " + y + "] = [" + boardStringCoordinates[0] + ", " + boardStringCoordinates[1]+ "]");
 
         char[] bordersAndCorners = new char[8];
         x = boardStringCoordinates[0];

@@ -2,7 +2,7 @@ package com.wolfetones.cluedo.board.tiles;
 
 import com.wolfetones.cluedo.card.Suspect;
 
-public class StartTile extends OccupiableTile {
+public class StartTile extends CorridorTile {
     private Suspect mStartingSuspect;
 
     public StartTile(int x, int y, Suspect startingSuspect) {

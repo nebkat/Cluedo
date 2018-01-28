@@ -1,6 +1,6 @@
 package com.wolfetones.cluedo.board;
 
-import com.wolfetones.cluedo.board.tiles.OccupiableTile;
+import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
 
 import java.util.*;
@@ -40,6 +40,11 @@ public class PathFinder {
         // Map of tiles to nodes holding their shortest paths
         Map<Tile, Node> nodes = new HashMap<>();
 
+        // If start tile is the target tile return immediately
+        if (start == target) {
+            return Collections.singletonList(start);
+        }
+
         // Add the first
         queue.add(new Node(start, Collections.singletonList(start), false, 0));
 
@@ -55,16 +60,16 @@ public class PathFinder {
 
             // Loop through neighbours
             for (Tile neighbouringTile : currentNode.tile.getNeighbours()) {
-                // Only empty occupiable tiles can be traversed
-                if (!(neighbouringTile instanceof OccupiableTile) ||
-                        ((OccupiableTile) neighbouringTile).isOccupied()) continue;
+                // Only empty corridor tiles can be traversed
+                if (!(neighbouringTile instanceof CorridorTile) ||
+                        ((CorridorTile) neighbouringTile).isOccupied()) continue;
 
                 // Don't loop through existing tiles
                 if (currentNode.path.contains(neighbouringTile)) continue;
 
                 // Check if moving to this node has caused a change of direction
                 boolean vertical = currentNode.tile.getX() == neighbouringTile.getX();
-                boolean turned = currentNode.vertical != vertical;
+                boolean turned = currentNode.vertical != vertical && currentNode.path.size() > 1;
 
                 Node neighbouringNode;
                 if (nodes.containsKey(neighbouringTile)) {

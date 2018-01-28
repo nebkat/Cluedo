@@ -5,12 +5,12 @@ import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.ui.TileBorder;
+import com.wolfetones.cluedo.ui.TileComponent;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -21,8 +21,8 @@ public class Game {
 
 	private List<Player> mPlayers;
 
-	private static Tile mStartTile;
-	private static Tile mEndTile;
+	private static Tile mStartTile = null;
+	private static Tile mEndTile = null;
 
     public static void main(String[] args) {
 	    System.out.println("Welcome to Cluedo");
@@ -35,37 +35,56 @@ public class Game {
 	    frame.setTitle("Cluedo");
 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));
 
-		mStartTile = BoardModel.TILES[0][9];
-		mEndTile = BoardModel.TILES[24][16];
+		JPanel panel = new JPanel();
+		panel.setLayout(new GridLayout(BoardModel.BOARD_HEIGHT, BoardModel.BOARD_WIDTH));
 
 		Runnable update = () -> {
-			List<Tile> path = PathFinder.findShortestPath(mStartTile, mEndTile, 12);
+			if (mStartTile == null || mEndTile == null) {
+				return;
+			}
+
+			List<Tile> path = null;
+			if (mEndTile instanceof RoomTile) {
+				for (Tile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
+					List<Tile> p = PathFinder.findShortestPath(mStartTile, t, 12);
+					if (p == null) continue;
+					if (path == null || p.size() < path.size()) {
+						path = p;
+					}
+				}
+			} else {
+				path = PathFinder.findShortestPath(mStartTile, mEndTile, 12);
+			}
+
 			if (path == null) return;
 
 			for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
 				for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
 					Tile tile = BoardModel.TILES[i][j];
-					JButton button = tile.getButton();
+					TileComponent button = (TileComponent) panel.getComponent(i * BoardModel.BOARD_WIDTH + j);
 
 					if (tile instanceof CorridorTile) {
-						button.setBackground(path.contains(tile) ? Color.GREEN : Color.decode(((i + j) % 2 == 0) ? "#e4c17f" : "#e0c070"));
+						if (path.contains(tile)) {
+							button.setBackgroundColors(Color.GREEN, Color.GREEN.darker());
+						} else {
+							if ((i + j) % 2 == 0) {
+								button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
+							} else {
+								button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
+							}
+						}
 					}
 				}
 			}
 		};
 
-	    JPanel panel = new JPanel();
-	    panel.setLayout(new GridLayout(BoardModel.BOARD_HEIGHT, BoardModel.BOARD_WIDTH));
 	    for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
 	    	for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
 	    		Tile tile = BoardModel.TILES[i][j];
-	    		JButton button = new JButton();
+	    		TileComponent button = new TileComponent(tile);
 	    		button.setPreferredSize(new Dimension(75, 75));
-	    		tile.setButton(button);
 
 	    		char[] bc = BoardModel.getTileBordersAndCorners(j, i);
-
-	    		System.out.println("row: " + i + ", col: " + j + " " + Arrays.toString(bc));
 
 	    		button.setBorder(new TileBorder(bc));
 
@@ -84,14 +103,16 @@ public class Game {
 				});
 
 				if (tile instanceof RoomTile) {
-					button.setBackground(Color.decode("#ab9e85"));
-				} else if (tile instanceof StartTile) {
-					button.setBackground(Color.RED);
+					button.setBackground(TileComponent.COLOR_ROOM);
 				} else if (tile instanceof CorridorTile) {
-					button.setBackground(Color.decode(((i + j) % 2 == 0) ? "#e4c17f" : "#e0c070"));
+					if ((i + j) % 2 == 0) {
+						button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
+					} else {
+						button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
+					}
 				} else if (tile instanceof EmptyTile) {
 	    			button.setEnabled(false);
-					button.setBackground(Color.decode("#4f8967"));
+					button.setBackground(TileComponent.COLOR_EMPTY);
 				}
 
 				panel.add(button);

@@ -12,10 +12,10 @@ public class Room extends Card {
 
     private List<Player> mPlayers = new ArrayList<>();
 
-    private List<CorridorTile> mAdjacentCorridors = new ArrayList<>();
+    private List<CorridorTile> mEntranceCorridors = new ArrayList<>();
 
-    private float mCenterX;
-    private float mCenterY;
+    private float mCenterX = 0;
+    private float mCenterY = 0;
 
     private int mTileCount;
 
@@ -59,7 +59,11 @@ public class Room extends Card {
         return mPassageRoom;
     }
 
-    public void addAdjacentCorridor(CorridorTile tile) {
-        mAdjacentCorridors.add(tile);
+    public void addEntranceCorridor(CorridorTile tile) {
+        mEntranceCorridors.add(tile);
+    }
+
+    public List<CorridorTile> getEntranceCorridors() {
+        return mEntranceCorridors;
     }
 }

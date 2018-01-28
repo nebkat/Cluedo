@@ -10,7 +10,7 @@ public class TileBorder implements Border {
 
     private static final Color COLOR_WALL = Color.decode("#832f32");
     private static final Color COLOR_WINDOW = Color.WHITE;
-    private static final Color COLOR_CORRIDOR = Color.DARK_GRAY;
+    private static final Color COLOR_CORRIDOR = Color.decode("#666666");
 
     private static final int SIZE_WALL = 10;
     private static final int SIZE_WINDOW = 5;
@@ -41,7 +41,7 @@ public class TileBorder implements Border {
                 case BoardModel.TILE_WINDOW:
                     g.setColor(COLOR_WINDOW);
                     paintEdge(g, true, x, y, width, height, SIZE_WINDOW, border);
-                    g.setColor(Color.BLACK);
+                    g.setColor(COLOR_CORRIDOR);
                     paintEdge(g, false, x, y, width, height, SIZE_WINDOW, border);
                     break;
                 case BoardModel.TILE_CORRIDOR:
