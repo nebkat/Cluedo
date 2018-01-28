@@ -1,0 +1,144 @@
+[1mdiff --git a/src/com/wolfetones/cluedo/board/BoardModel.java b/src/com/wolfetones/cluedo/board/BoardModel.java[m
+[1mindex e617a22..996c2ea 100644[m
+[1m--- a/src/com/wolfetones/cluedo/board/BoardModel.java[m
+[1m+++ b/src/com/wolfetones/cluedo/board/BoardModel.java[m
+[36m@@ -227,23 +227,5 @@[m [mpublic class BoardModel {[m
+                 }[m
+             }[m
+         }[m
+[31m-[m
+[31m-        List<Tile> path = PathFinder.findQuickestPath(TILES[0][9], TILES[19][23], 100);[m
+[31m-        if (path == null) return;[m
+[31m-        for (int i = 0; i < BOARD_HEIGHT; i++) {[m
+[31m-            for (int j = 0; j < BOARD_WIDTH; j++) {[m
+[31m-                if (TILES[i][j] == null) {[m
+[31m-                    System.out.print(" ");[m
+[31m-                } else if (path.contains(TILES[i][j])) {[m
+[31m-                    System.out.print(":");[m
+[31m-                } else if (TILES[i][j] instanceof RoomTile) {[m
+[31m-                    System.out.print("R");[m
+[31m-                } else if (TILES[i][j] instanceof OccupiableTile) {[m
+[31m-                    System.out.print("=");[m
+[31m-                }[m
+[31m-            }[m
+[31m-            System.out.print("\n");[m
+[31m-        }[m
+[31m-[m
+     }[m
+ }[m
+[1mdiff --git a/src/com/wolfetones/cluedo/board/PathFinder.java b/src/com/wolfetones/cluedo/board/PathFinder.java[m
+[1mindex 947a331..6e62021 100644[m
+[1m--- a/src/com/wolfetones/cluedo/board/PathFinder.java[m
+[1m+++ b/src/com/wolfetones/cluedo/board/PathFinder.java[m
+[36m@@ -34,8 +34,6 @@[m [mpublic class PathFinder {[m
+         // Add the first[m
+         queue.add(new Node(start, Collections.singletonList(start), false, 0));[m
+ [m
+[31m-        int minTurns = -1;[m
+[31m-[m
+         while (queue.size() > 0) {[m
+             Node currentNode = queue.poll();[m
+ [m
+[36m@@ -48,8 +46,9 @@[m [mpublic class PathFinder {[m
+ [m
+             // Loop through neighbours[m
+             for (Tile neighbouringTile : currentNode.tile.getNeighbours()) {[m
+[31m-                // Only occupiable tiles can be traversed[m
+[31m-                if (!(neighbouringTile instanceof OccupiableTile)) continue;[m
+[32m+[m[32m                // Only empty occupiable tiles can be traversed[m
+[32m+[m[32m                if (!(neighbouringTile instanceof OccupiableTile) ||[m
+[32m+[m[32m                        ((OccupiableTile) neighbouringTile).isOccupied()) continue;[m
+ [m
+                 // Don't loop through existing tiles[m
+                 if (currentNode.path.contains(neighbouringTile)) continue;[m
+[36m@@ -82,10 +81,9 @@[m [mpublic class PathFinder {[m
+                 // Attempting to find target[m
+                 if (neighbouringTile != target) {[m
+                     queue.add(neighbouringNode);[m
+[31m-                } else if (minTurns < 0 || neighbouringNode.turns < minTurns){[m
+[32m+[m[32m                } else {[m
+                     // Max moves is now the shortest path length[m
+                     maxMoves = path.size();[m
+[31m-                    minTurns = neighbouringNode.turns;[m
+ [m
+                     // If target has been found no need to check neighbours further[m
+                     break;[m
+[1mdiff --git a/src/com/wolfetones/cluedo/board/PlayerOccupiable.java b/src/com/wolfetones/cluedo/board/PlayerOccupiable.java[m
+[1mdeleted file mode 100644[m
+[1mindex 5a4172c..0000000[m
+[1m--- a/src/com/wolfetones/cluedo/board/PlayerOccupiable.java[m
+[1m+++ /dev/null[m
+[36m@@ -1,9 +0,0 @@[m
+[31m-package com.wolfetones.cluedo.board;[m
+[31m-[m
+[31m-import com.wolfetones.cluedo.game.Player;[m
+[31m-[m
+[31m-public interface PlayerOccupiable {[m
+[31m-    void occupy(Player p);[m
+[31m-    void leave(Player p);[m
+[31m-    boolean isFullyOccupied();[m
+[31m-}[m
+[1mdiff --git a/src/com/wolfetones/cluedo/board/tiles/OccupiableTile.java b/src/com/wolfetones/cluedo/board/tiles/OccupiableTile.java[m
+[1mindex 069b61b..e423990 100644[m
+[1m--- a/src/com/wolfetones/cluedo/board/tiles/OccupiableTile.java[m
+[1m+++ b/src/com/wolfetones/cluedo/board/tiles/OccupiableTile.java[m
+[36m@@ -1,30 +1,19 @@[m
+ package com.wolfetones.cluedo.board.tiles;[m
+ [m
+[31m-import com.wolfetones.cluedo.board.PlayerOccupiable;[m
+ import com.wolfetones.cluedo.game.Player;[m
+ [m
+[31m-public abstract class OccupiableTile extends Tile implements PlayerOccupiable {[m
+[32m+[m[32mpublic abstract class OccupiableTile extends Tile {[m
+     protected Player mPlayer = null;[m
+ [m
+     public OccupiableTile(int x, int y) {[m
+         super(x, y);[m
+     }[m
+ [m
+[31m-    public void occupy(Player player) {[m
+[31m-        mPlayer = player;[m
+[31m-    }[m
+[31m-[m
+[31m-    public void leave(Player player) {[m
+[31m-        if (mPlayer == player) {[m
+[31m-            mPlayer = null;[m
+[31m-        }[m
+[31m-    }[m
+[31m-[m
+     public void setPlayer(Player player) {[m
+         mPlayer = player;[m
+     }[m
+ [m
+[31m-    public boolean isFullyOccupied() {[m
+[32m+[m[32m    public boolean isOccupied() {[m
+         return mPlayer != null;[m
+     }[m
+ }[m
+[1mdiff --git a/src/com/wolfetones/cluedo/board/tiles/Tile.java b/src/com/wolfetones/cluedo/board/tiles/Tile.java[m
+[1mindex 834844b..21659c3 100644[m
+[1m--- a/src/com/wolfetones/cluedo/board/tiles/Tile.java[m
+[1m+++ b/src/com/wolfetones/cluedo/board/tiles/Tile.java[m
+[36m@@ -1,9 +1,7 @@[m
+ package com.wolfetones.cluedo.board.tiles;[m
+ [m
+ import java.util.ArrayList;[m
+[31m-import java.util.HashSet;[m
+ import java.util.List;[m
+[31m-import java.util.Set;[m
+ [m
+ public abstract class Tile {[m
+     protected int mX;[m
+[1mdiff --git a/src/com/wolfetones/cluedo/game/Game.java b/src/com/wolfetones/cluedo/game/Game.java[m
+[1mindex dab5380..3fa435e 100644[m
+[1m--- a/src/com/wolfetones/cluedo/game/Game.java[m
+[1m+++ b/src/com/wolfetones/cluedo/game/Game.java[m
+[36m@@ -31,7 +31,7 @@[m [mpublic class Game {[m
+ 	    frame.setTitle("Cluedo");[m
+ 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));[m
+ [m
+[31m-		List<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[19][23], 100);[m
+[32m+[m		[32mList<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[17][0], 100);[m
+ 		if (path == null) return;[m
+ [m
+ 	    JPanel panel = new JPanel();[m

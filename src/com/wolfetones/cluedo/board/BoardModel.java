@@ -227,23 +227,5 @@ public class BoardModel {
                 }
             }
         }
-
-        List<Tile> path = PathFinder.findQuickestPath(TILES[0][9], TILES[19][23], 100);
-        if (path == null) return;
-        for (int i = 0; i < BOARD_HEIGHT; i++) {
-            for (int j = 0; j < BOARD_WIDTH; j++) {
-                if (TILES[i][j] == null) {
-                    System.out.print(" ");
-                } else if (path.contains(TILES[i][j])) {
-                    System.out.print(":");
-                } else if (TILES[i][j] instanceof RoomTile) {
-                    System.out.print("R");
-                } else if (TILES[i][j] instanceof OccupiableTile) {
-                    System.out.print("=");
-                }
-            }
-            System.out.print("\n");
-        }
-
     }
 }
