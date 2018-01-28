@@ -5,16 +5,30 @@ import com.wolfetones.cluedo.board.tiles.Tile;
 
 import java.util.*;
 
+/**
+ * Useful path-finding functions
+ */
 public class PathFinder {
+    /**
+     * Returns the distance between two tiles along axes at right angles.
+     *
+     * @param a Tile A
+     * @param b Tile B
+     * @return The Manhattan distance between the two tiles
+     */
     public static int tileManhattanDistance(Tile a, Tile b) {
         return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
     }
 
-    private static int expectedMovesForNode(Node node, Tile target) {
-        return node.path.size() + tileManhattanDistance(node.tile, target);
-    }
-
-    public static List<Tile> findQuickestPath(Tile start, Tile target, int maxMoves) {
+    /**
+     * Finds the shortest path available between two tiles.
+     *
+     * @param start The starting tile
+     * @param target The target tile
+     * @param maxMoves The maximum number of moves allowed to reach the target
+     * @return A list of tiles containing the shortest path from {@code start} to {@code target}
+     */
+    public static List<Tile> findShortestPath(Tile start, Tile target, int maxMoves) {
         // If tiles are too distant by manhattan route a path is not possible
         if (tileManhattanDistance(start, target) > maxMoves) {
             return null;
@@ -96,12 +110,38 @@ public class PathFinder {
         return null;
     }
 
+    /**
+     * Calculates the expected total moves required to reach the target tile from a node.
+     *
+     * Returns the sum of the current path to the tile along and
+     * the Manhattan distance to the target tile, assuming the
+     * optimal route with Manhattan distance is available.
+     *
+     * @param node The node from which to calculate
+     * @param target The target tile
+     * @return The expected total moves required to reach the {@code target} from the {@code node}
+     */
+    private static int expectedMovesForNode(Node node, Tile target) {
+        return node.path.size() + tileManhattanDistance(node.tile, target);
+    }
+
+    /**
+     * A node in the search for a path between two tiles
+     */
     private static class Node {
         private Tile tile;
         private List<Tile> path;
         private boolean vertical;
         private int turns;
 
+        /**
+         * Constructs a new node
+         *
+         * @param t The tile
+         * @param p The path taken to the tile from the starting tile
+         * @param v Whether the last movement was vertical
+         * @param d The total number of changes of direction
+         */
         private Node(Tile t, List<Tile> p, boolean v, int d) {
             tile = t;
             path = p;

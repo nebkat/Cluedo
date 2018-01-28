@@ -31,7 +31,7 @@ public class Game {
 	    frame.setTitle("Cluedo");
 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));
 
-		List<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[24][16], 100);
+		List<Tile> path = PathFinder.findShortestPath(BoardModel.TILES[0][9], BoardModel.TILES[24][16], 100);
 		if (path == null) return;
 
 	    JPanel panel = new JPanel();
