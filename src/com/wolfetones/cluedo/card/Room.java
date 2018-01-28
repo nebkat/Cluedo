@@ -1,6 +1,7 @@
 package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
+import com.wolfetones.cluedo.game.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.List;
 public class Room extends Card {
     private boolean mIsGuessRoom;
     private Room mPassageRoom;
+
+    private List<Player> mPlayers = new ArrayList<>();
 
     private List<CorridorTile> mAdjacentCorridors = new ArrayList<>();
 

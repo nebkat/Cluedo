@@ -5,7 +5,9 @@ import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
 
-public class Board {
+import java.util.List;
+
+public class BoardModel {
 
     /*
      * Rooms
@@ -66,12 +68,6 @@ public class Board {
     /*
      * Board
      */
-    public static final int BOARD_WIDTH = 49;
-    public static final int BOARD_HEIGHT = 51;
-
-    public static final int BOARD_TILE_WIDTH = 24;
-    public static final int BOARD_TILE_HEIGHT = 25;
-
     public static final char TILE_EMPTY = ' ';
     public static final char TILE_WALL = '█';
     public static final char TILE_WINDOW = '░';
@@ -80,7 +76,12 @@ public class Board {
     public static final char TILE_CORRIDOR = '=';
     public static final char TILE_PASSAGE = 'P';
 
-    public static final String BOARD =
+    public static final int BOARD_WIDTH = 24;
+    public static final int BOARD_HEIGHT = 25;
+
+    public static final int BOARD_STRING_WIDTH = 49;
+    public static final int BOARD_STRING_HEIGHT = 51;
+    public static final String BOARD_STRING =
             "                  ███       ███                  " +
             "                  █@█       █@█                  " +
             "███░░░█░░░███ █████ █░░░█░░░█ █████ █░░░░░█░░░░░█" +
@@ -136,25 +137,26 @@ public class Board {
     /*
      * Tiles
      */
-    public static final Tile[][] TILES = new Tile[BOARD_HEIGHT][BOARD_WIDTH];
+    public static final Tile[][] TILES = new Tile[BOARD_STRING_HEIGHT][BOARD_STRING_WIDTH];
 
     /*
      * Cards
      */
     public static final Room[] ROOMS = new Room[ROOM_COUNT];
-    public static final Suspect[] SUSPECT = new Suspect[SUSPECT_COUNT];
+    public static final Suspect[] SUSPECTS = new Suspect[SUSPECT_COUNT];
     public static final Weapon[] WEAPONS = new Weapon[WEAPON_COUNT];
 
     public static void initialize() {
         // Initialize cards
         for (int i = 0; i < ROOM_COUNT; i++) ROOMS[i] = new Room(i, ROOM_NAMES[i], i == GUESS_ROOM);
-        for (int i = 0; i < SUSPECT_COUNT; i++) SUSPECT[i] = new Suspect(i, SUSPECT_NAMES[i]);
+        for (int i = 0; i < SUSPECT_COUNT; i++) SUSPECTS[i] = new Suspect(i, SUSPECT_NAMES[i]);
         for (int i = 0; i < WEAPON_COUNT; i++) WEAPONS[i] = new Weapon(i, WEAPON_NAMES[i]);
 
         // Initialize tiles
-        for (int i = 0; i < BOARD_TILE_HEIGHT; i++) {
-            for (int j = 0; j < BOARD_TILE_WIDTH; j++) {
-                char c = BOARD.charAt((1 + (i * 2)) * BOARD_WIDTH + (1 + (j * 2)));
+        int startTileSuspectIterator = 0;
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
+                char c = BOARD_STRING.charAt((1 + (i * 2)) * BOARD_STRING_WIDTH + (1 + (j * 2)));
 
                 if (Character.isDigit(c)) {
                     int r = Integer.parseInt(Character.toString(c));
@@ -166,42 +168,37 @@ public class Board {
                             TILES[i][j] = null;
                             break;
                         case TILE_START:
-                            TILES[i][j] = new StartTile(i, j);
+                            TILES[i][j] = new StartTile(i, j, SUSPECTS[startTileSuspectIterator++]);
                             break;
                         case TILE_CORRIDOR:
                             TILES[i][j] = new CorridorTile(i, j);
                             break;
                         default:
-                            throw new IllegalArgumentException("Unknown board tile found at [" + i + ", " + j + "][" + (1 + (i * 2)) + ", " + (1 + (j * 2)) + " = " + ((1 + (i * 2)) * BOARD_WIDTH + (1 + (j * 2))) + "] '" + c + "' (" + ((int) c) + ")");
+                            throw new IllegalArgumentException("Unknown board tile found at [" + i + ", " + j + "][" + (1 + (i * 2)) + ", " + (1 + (j * 2)) + " = " + ((1 + (i * 2)) * BOARD_STRING_WIDTH + (1 + (j * 2))) + "] '" + c + "' (" + ((int) c) + ")");
                     }
                 }
             }
         }
 
-        for (int i = 0; i < BOARD_TILE_HEIGHT; i++) {
-            for (int j = 0; j < BOARD_TILE_WIDTH; j++) {
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
                 if (TILES[i][j] == null) continue;
 
                 // Set neighbouring tiles
                 Tile left = j > 0 ? TILES[i][j - 1] : null;
                 Tile up = i > 0 ? TILES[i - 1][j] : null;
-                Tile right = j < (BOARD_TILE_WIDTH - 1) ? TILES[i][j + 1] : null;
-                Tile down = i < (BOARD_TILE_HEIGHT - 1) ? TILES[i + 1][j] : null;
+                Tile right = j < (BOARD_WIDTH - 1) ? TILES[i][j + 1] : null;
+                Tile down = i < (BOARD_HEIGHT - 1) ? TILES[i + 1][j] : null;
 
-                TILES[i][j].setTiles(left, up, right, down);
-
-                // Update room center coordinates
-                if (TILES[i][j] instanceof RoomTile) {
-                    ((RoomTile) TILES[i][j]).getRoom().addTileCoordinatesToCenterCalculation(i, j);
-                }
+                TILES[i][j].setNeighbours(left, up, right, down);
             }
         }
 
         // Update doors
-        for (int i = 0; i < BOARD_HEIGHT; i++) {
+        for (int i = 0; i < BOARD_STRING_HEIGHT; i++) {
             boolean horizontal = i % 2 == 1;
-            for (int j = horizontal ? 1 : 0; j < BOARD_WIDTH; j += 2) {
-                if (BOARD.charAt(i * BOARD_WIDTH + j) == TILE_DOOR) {
+            for (int j = horizontal ? 1 : 0; j < BOARD_STRING_WIDTH; j += 2) {
+                if (BOARD_STRING.charAt(i * BOARD_STRING_WIDTH + j) == TILE_DOOR) {
                     Tile a;
                     Tile b;
                     if (horizontal) {
@@ -230,5 +227,26 @@ public class Board {
                 }
             }
         }
+
+        List<Tile> path = PathFinder.findQuickestPath(TILES[0][9], TILES[24][16], 100);
+        if (path == null) return;
+        for (int i = 0; i < BOARD_HEIGHT; i++) {
+            for (int j = 0; j < BOARD_WIDTH; j++) {
+                if (TILES[i][j] == null) {
+                    System.out.print(" ");
+                } else if (path.contains(TILES[i][j])) {
+                    System.out.print(":");
+                } else if (TILES[i][j] instanceof RoomTile) {
+                    System.out.print("R");
+                } else if (TILES[i][j] instanceof OccupyableTile) {
+                    System.out.print("=");
+                }
+            }
+            System.out.print("\n");
+        }
+        for (Tile t : path) {
+            System.out.println(t.getX() + ", " + t.getY());
+        }
+
     }
 }

@@ -9,6 +9,8 @@ public class RoomTile extends Tile {
         super(x, y);
 
         mRoom = room;
+
+        room.addTileCoordinatesToCenterCalculation(x, y);
     }
 
     public Room getRoom() {
