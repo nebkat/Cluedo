@@ -31,7 +31,7 @@ public class Game {
 	    frame.setTitle("Cluedo");
 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));
 
-		List<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[17][0], 100);
+		List<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[24][16], 100);
 		if (path == null) return;
 
 	    JPanel panel = new JPanel();
@@ -39,7 +39,7 @@ public class Game {
 	    for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
 	    	for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
 	    		Tile tile = BoardModel.TILES[i][j];
-	    		JButton button = new JButton();
+	    		JButton button = new JButton(i + ", " + j);
 
 	    		if (path.contains(tile)) {
 	    			button.setBackground(Color.GREEN);

@@ -21,18 +21,15 @@ public class PathFinder {
         }
 
         // Priority queue to hold further explorable tiles
-        PriorityQueue<Node> queue = new PriorityQueue<>((a, b) -> {
-            double af = expectedMovesForNode(a, target) + a.turns * 0.01;
-            double bf = expectedMovesForNode(b, target) + b.turns * 0.01;
-
-            return Double.compare(bf, af);
-        });
+        PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingDouble(node -> (double) expectedMovesForNode(node, target) + (double) node.turns * 0.01));
 
         // Map of tiles to nodes holding their shortest paths
         Map<Tile, Node> nodes = new HashMap<>();
 
         // Add the first
         queue.add(new Node(start, Collections.singletonList(start), false, 0));
+
+        int minTurns = -1;
 
         while (queue.size() > 0) {
             Node currentNode = queue.poll();
@@ -63,7 +60,7 @@ public class PathFinder {
                     neighbouringNode = nodes.get(neighbouringTile);
 
                     // If tile already has node and path is shorter ignore long route
-                    if (neighbouringNode.path.size() <= currentNode.path.size()) {
+                    if (neighbouringNode.path.size() <= path.size() && neighbouringNode.turns <= currentNode.turns) {
                         continue;
                     }
 
@@ -81,9 +78,10 @@ public class PathFinder {
                 // Attempting to find target
                 if (neighbouringTile != target) {
                     queue.add(neighbouringNode);
-                } else {
+                } else if (minTurns < 0 || neighbouringNode.turns < minTurns){
                     // Max moves is now the shortest path length
                     maxMoves = path.size();
+                    minTurns = neighbouringNode.turns;
 
                     // If target has been found no need to check neighbours further
                     break;
