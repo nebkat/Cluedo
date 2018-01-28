@@ -29,8 +29,6 @@ public class PathFinder {
         // Add the first
         queue.add(new Node(start, Collections.singletonList(start), false, 0));
 
-        int minTurns = -1;
-
         while (queue.size() > 0) {
             Node currentNode = queue.poll();
 
@@ -78,10 +76,9 @@ public class PathFinder {
                 // Attempting to find target
                 if (neighbouringTile != target) {
                     queue.add(neighbouringNode);
-                } else if (minTurns < 0 || neighbouringNode.turns < minTurns){
+                } else {
                     // Max moves is now the shortest path length
                     maxMoves = path.size();
-                    minTurns = neighbouringNode.turns;
 
                     // If target has been found no need to check neighbours further
                     break;
