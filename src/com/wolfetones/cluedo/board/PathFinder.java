@@ -21,57 +21,71 @@ public class PathFinder {
         }
 
         // Priority queue to hold further explorable tiles
-        PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(a -> expectedMovesForNode(a, target)));
+        PriorityQueue<Node> queue = new PriorityQueue<>((a, b) -> {
+            double af = expectedMovesForNode(a, target) + a.turns * 0.01;
+            double bf = expectedMovesForNode(b, target) + b.turns * 0.01;
+
+            return Double.compare(bf, af);
+        });
 
         // Map of tiles to nodes holding their shortest paths
         Map<Tile, Node> nodes = new HashMap<>();
 
         // Add the first
-        queue.add(new Node(start, Collections.singletonList(start)));
+        queue.add(new Node(start, Collections.singletonList(start), false, 0));
+
+        int minTurns = -1;
 
         while (queue.size() > 0) {
-            Node current = queue.poll();
+            Node currentNode = queue.poll();
 
             // If path has already exceeded max moves, don't check neighbours
-            if (expectedMovesForNode(current, target) >= maxMoves) continue;
+            if (expectedMovesForNode(currentNode, target) > maxMoves) continue;
 
             // Append current tile to the path
-            List<Tile> path = new ArrayList<>(current.path);
-            path.add(current.tile);
+            List<Tile> path = new ArrayList<>(currentNode.path);
+            path.add(currentNode.tile);
 
             // Loop through neighbours
-            for (Tile t : current.tile.getNeighbours()) {
+            for (Tile neighbouringTile : currentNode.tile.getNeighbours()) {
                 // Only occupiable tiles can be traversed
-                if (!(t instanceof OccupiableTile)) continue;
+                if (!(neighbouringTile instanceof OccupiableTile)) continue;
 
                 // Don't loop through existing tiles
-                if (current.path.contains(t)) continue;
+                if (currentNode.path.contains(neighbouringTile)) continue;
 
-                Node node;
-                if (nodes.containsKey(t)) {
+                // Check if moving to this node has caused a change of direction
+                boolean vertical = currentNode.tile.getX() == neighbouringTile.getX();
+                boolean turned = currentNode.vertical != vertical;
+
+                Node neighbouringNode;
+                if (nodes.containsKey(neighbouringTile)) {
                     // Existing node
-                    node = nodes.get(t);
+                    neighbouringNode = nodes.get(neighbouringTile);
 
                     // If tile already has node and path is shorter ignore long route
-                    if (node.path.size() <= current.path.size()) {
+                    if (neighbouringNode.path.size() <= currentNode.path.size()) {
                         continue;
                     }
 
                     // Old path was longer, replace with new path
-                    node.path = path;
+                    neighbouringNode.path = path;
+                    neighbouringNode.vertical = vertical;
+                    neighbouringNode.turns = currentNode.turns + (turned ? 1 : 0);
                 } else {
                     // New node
-                    node = new Node(t, path);
+                    neighbouringNode = new Node(neighbouringTile, path, vertical, currentNode.turns + (turned ? 1 : 0));
 
-                    nodes.put(t, node);
+                    nodes.put(neighbouringTile, neighbouringNode);
                 }
 
                 // Attempting to find target
-                if (t != target) {
-                    queue.add(node);
-                } else {
+                if (neighbouringTile != target) {
+                    queue.add(neighbouringNode);
+                } else if (minTurns < 0 || neighbouringNode.turns < minTurns){
                     // Max moves is now the shortest path length
                     maxMoves = path.size();
+                    minTurns = neighbouringNode.turns;
 
                     // If target has been found no need to check neighbours further
                     break;
@@ -92,10 +106,14 @@ public class PathFinder {
     private static class Node {
         private Tile tile;
         private List<Tile> path;
+        private boolean vertical;
+        private int turns;
 
-        private Node(Tile t, List<Tile> p) {
+        private Node(Tile t, List<Tile> p, boolean v, int d) {
             tile = t;
             path = p;
+            vertical = v;
+            turns = d;
         }
     }
 }

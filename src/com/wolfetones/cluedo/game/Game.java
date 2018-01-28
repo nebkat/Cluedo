@@ -1,6 +1,11 @@
 package com.wolfetones.cluedo.game;
 
 import com.wolfetones.cluedo.board.BoardModel;
+import com.wolfetones.cluedo.board.PathFinder;
+import com.wolfetones.cluedo.board.tiles.CorridorTile;
+import com.wolfetones.cluedo.board.tiles.RoomTile;
+import com.wolfetones.cluedo.board.tiles.StartTile;
+import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.card.Card;
 
 import javax.swing.*;
@@ -26,11 +31,33 @@ public class Game {
 	    frame.setTitle("Cluedo");
 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));
 
+		List<Tile> path = PathFinder.findQuickestPath(BoardModel.TILES[0][9], BoardModel.TILES[19][23], 100);
+		if (path == null) return;
+
 	    JPanel panel = new JPanel();
 	    panel.setLayout(new GridLayout(BoardModel.BOARD_HEIGHT, BoardModel.BOARD_WIDTH));
-	    for (int i = 0; i < BoardModel.BOARD_WIDTH * BoardModel.BOARD_HEIGHT; i++) {
-	        panel.add(new JButton(Integer.toString(i)));
-        }
+	    for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
+	    	for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
+	    		Tile tile = BoardModel.TILES[i][j];
+	    		JButton button = new JButton();
+
+	    		if (path.contains(tile)) {
+	    			button.setBackground(Color.GREEN);
+				} else if (tile instanceof RoomTile) {
+	    			button.setBackground(Color.GRAY);
+	    			button.setBorderPainted(false);
+				} else if (tile instanceof StartTile) {
+	    			button.setBackground(Color.RED);
+				} else if (tile instanceof CorridorTile) {
+	    			button.setBackground(Color.YELLOW);
+				} else if (tile == null) {
+	    			button.setBackground(Color.WHITE);
+					button.setBorderPainted(false);
+				}
+
+				panel.add(button);
+			}
+		}
 
 	    frame.add(panel);
 

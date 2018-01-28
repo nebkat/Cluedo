@@ -1,6 +1,8 @@
 package com.wolfetones.cluedo.board.tiles;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public abstract class Tile {
@@ -12,7 +14,7 @@ public abstract class Tile {
     private Tile mRight;
     private Tile mDown;
 
-    private Set<Tile> mNeighbours = new HashSet<>();
+    private List<Tile> mNeighbours = new ArrayList<>();
 
     public Tile(int x, int y) {
         mX = x;
@@ -55,7 +57,7 @@ public abstract class Tile {
         mNeighbours.add(down);
     }
 
-    public Set<Tile> getNeighbours() {
+    public List<Tile> getNeighbours() {
         return mNeighbours;
     }
 }

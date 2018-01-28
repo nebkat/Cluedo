@@ -228,7 +228,7 @@ public class BoardModel {
             }
         }
 
-        List<Tile> path = PathFinder.findQuickestPath(TILES[0][9], TILES[24][16], 100);
+        List<Tile> path = PathFinder.findQuickestPath(TILES[0][9], TILES[19][23], 100);
         if (path == null) return;
         for (int i = 0; i < BOARD_HEIGHT; i++) {
             for (int j = 0; j < BOARD_WIDTH; j++) {
@@ -243,9 +243,6 @@ public class BoardModel {
                 }
             }
             System.out.print("\n");
-        }
-        for (Tile t : path) {
-            System.out.println(t.getX() + ", " + t.getY());
         }
 
     }
