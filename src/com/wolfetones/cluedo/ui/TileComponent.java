@@ -14,6 +14,7 @@ public class TileComponent extends JComponent implements MouseListener {
     public static final Color COLOR_CORRIDOR_B = Color.decode("#e0c070");
 
     public static final Color COLOR_ROOM = Color.decode("#ab9e85");
+    public static final Color COLOR_PASSAGE = Color.decode("#756e5c");
     public static final Color COLOR_EMPTY = Color.decode("#4f8967");
 
     private final Tile mTile;
@@ -26,7 +27,6 @@ public class TileComponent extends JComponent implements MouseListener {
     public TileComponent(Tile tile) {
         super();
         addMouseListener(this);
-        setOpaque(true);
 
         mTile = tile;
 

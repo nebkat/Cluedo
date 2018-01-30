@@ -33,11 +33,11 @@ public class Room extends Card {
     }
 
     public float getCenterX() {
-        return mTileSumX / mTiles.size();
+        return mTileSumX / mTiles.size() + 0.5f;
     }
 
     public float getCenterY() {
-        return mTileSumY / mTiles.size();
+        return mTileSumY / mTiles.size() + 0.5f;
     }
 
     public boolean isGuessRoom() {

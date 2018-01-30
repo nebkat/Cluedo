@@ -121,6 +121,14 @@ public class BoardModel {
         return mTiles[y][x];
     }
 
+    public List<Room> getRooms() {
+        return mRooms;
+    }
+
+    public Room getRoom(int id) {
+        return mRooms.get(id);
+    }
+
     private static int[] tileCoordinatesToBoardStringCoordinates(int x, int y) {
         x = 1 + 2 * x;
         y = 1 + 2 * y;
