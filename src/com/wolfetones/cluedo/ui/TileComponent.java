@@ -9,7 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-public class TileComponent extends JButton implements MouseListener {
+public class TileComponent extends JComponent implements MouseListener {
     public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
     public static final Color COLOR_CORRIDOR_B = Color.decode("#e0c070");
 
@@ -24,8 +24,9 @@ public class TileComponent extends JButton implements MouseListener {
     private boolean mMouseOver = false;
 
     public TileComponent(Tile tile) {
-        super("[" + tile.getX() + ", " + tile.getY() + "]");
+        super();
         addMouseListener(this);
+        setOpaque(true);
 
         mTile = tile;
 
@@ -67,6 +68,24 @@ public class TileComponent extends JButton implements MouseListener {
         if (mActiveBackgroundColor != null) {
             setBackground(mActiveBackgroundColor);
         }
+
+        if (mTile instanceof RoomTile) {
+            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(true));
+        }
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+        g.setColor(getBackground());
+        g.fillRect(0, 0, getWidth(), getHeight());
+    }
+
+    private void setMouseOver(boolean mouseOver) {
+        mMouseOver = mouseOver;
+
+        if (mActiveBackgroundColor != null) {
+            setBackground(mMouseOver ? mActiveBackgroundColor : mDefaultBackgroundColor);
+        }
     }
 
     @Override
@@ -75,6 +94,10 @@ public class TileComponent extends JButton implements MouseListener {
 
         if (mActiveBackgroundColor != null) {
             setBackground(mDefaultBackgroundColor);
+        }
+
+        if (mTile instanceof RoomTile) {
+            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(false));
         }
     }
 }

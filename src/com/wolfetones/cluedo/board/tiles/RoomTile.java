@@ -10,7 +10,7 @@ public class RoomTile extends Tile {
 
         mRoom = room;
 
-        room.addTileCoordinatesToCenterCalculation(x, y);
+        room.addTile(this);
     }
 
     public Room getRoom() {

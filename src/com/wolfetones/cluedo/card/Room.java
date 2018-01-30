@@ -1,7 +1,8 @@
 package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
-import com.wolfetones.cluedo.game.Player;
+import com.wolfetones.cluedo.board.tiles.RoomTile;
+import com.wolfetones.cluedo.ui.Token;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +11,13 @@ public class Room extends Card {
     private boolean mIsGuessRoom;
     private Room mPassageRoom;
 
-    private List<Player> mPlayers = new ArrayList<>();
+    private List<Token> mTokens = new ArrayList<>();
 
+    private List<RoomTile> mTiles = new ArrayList<>();
     private List<CorridorTile> mEntranceCorridors = new ArrayList<>();
 
-    private float mCenterX = 0;
-    private float mCenterY = 0;
-
-    private int mTileCount;
+    private float mTileSumX = 0;
+    private float mTileSumY = 0;
 
     public Room(int id, String name, boolean isGuessRoom) {
         super(id, name);
@@ -25,22 +25,19 @@ public class Room extends Card {
         mIsGuessRoom = isGuessRoom;
     }
 
-    public void addTileCoordinatesToCenterCalculation(int x, int y) {
-        float totalX = mCenterX * (float) mTileCount + x;
-        float totalY = mCenterY * (float) mTileCount + y;
+    public void addTile(RoomTile tile) {
+        mTiles.add(tile);
 
-        mTileCount++;
-
-        mCenterX = totalX / (float) mTileCount;
-        mCenterY = totalY / (float) mTileCount;
+        mTileSumX += tile.getX();
+        mTileSumY += tile.getY();
     }
 
     public float getCenterX() {
-        return mCenterX;
+        return mTileSumX / mTiles.size();
     }
 
     public float getCenterY() {
-        return mCenterY;
+        return mTileSumY / mTiles.size();
     }
 
     public boolean isGuessRoom() {
@@ -57,6 +54,10 @@ public class Room extends Card {
 
     public Room getPassageRoom() {
         return mPassageRoom;
+    }
+
+    public List<RoomTile> getRoomTiles() {
+        return mTiles;
     }
 
     public void addEntranceCorridor(CorridorTile tile) {

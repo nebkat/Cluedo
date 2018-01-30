@@ -4,6 +4,7 @@ import com.wolfetones.cluedo.board.BoardModel;
 import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
+import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.ui.TileBorder;
 import com.wolfetones.cluedo.ui.TileComponent;
 
@@ -11,8 +12,12 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Game {
 	private Set<Card> mCards;
@@ -24,19 +29,24 @@ public class Game {
 	private static Tile mStartTile = null;
 	private static Tile mEndTile = null;
 
-    public static void main(String[] args) {
-	    System.out.println("Welcome to Cluedo");
+	private BoardModel mBoard = new BoardModel();
 
-	    BoardModel.initialize();
+	public static void main(String[] args) {
+		System.out.println("Welcome to " + Config.TITLE + " by " + Config.AUTHOR);
 
+		new Game();
+	}
+
+    public Game() {
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
 	    JFrame frame = new JFrame();
-	    frame.setTitle("Cluedo");
+	    frame.setTitle(Config.TITLE);
 	    frame.setSize((int) (screenSize.getWidth() * 0.9), (int) (screenSize.getHeight() * 0.9));
+	    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(BoardModel.BOARD_HEIGHT, BoardModel.BOARD_WIDTH));
+		panel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
 
 		Runnable update = () -> {
 			if (mStartTile == null || mEndTile == null) {
@@ -46,7 +56,7 @@ public class Game {
 			List<Tile> path = null;
 			if (mEndTile instanceof RoomTile) {
 				for (Tile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
-					List<Tile> p = PathFinder.findShortestPath(mStartTile, t, 12);
+					List<Tile> p = PathFinder.findShortestPath(mStartTile, t, 11);
 					if (p == null) continue;
 					if (path == null || p.size() < path.size()) {
 						path = p;
@@ -56,18 +66,20 @@ public class Game {
 				path = PathFinder.findShortestPath(mStartTile, mEndTile, 12);
 			}
 
-			if (path == null) return;
+			if (path == null) {
+				path = Collections.singletonList(mStartTile);
+			}
 
-			for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
-				for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
-					Tile tile = BoardModel.TILES[i][j];
-					TileComponent button = (TileComponent) panel.getComponent(i * BoardModel.BOARD_WIDTH + j);
+			for (int y = 0; y < Config.Board.HEIGHT; y++) {
+				for (int x = 0; x < Config.Board.WIDTH; x++) {
+					Tile tile = mBoard.getTile(x, y);
+					TileComponent button = (TileComponent) panel.getComponent(BoardModel.tileCoordinatesToOffset(x, y));
 
 					if (tile instanceof CorridorTile) {
 						if (path.contains(tile)) {
 							button.setBackgroundColors(Color.GREEN, Color.GREEN.darker());
 						} else {
-							if ((i + j) % 2 == 0) {
+							if ((y + x) % 2 == 0) {
 								button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
 							} else {
 								button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
@@ -78,15 +90,18 @@ public class Game {
 			}
 		};
 
-	    for (int i = 0; i < BoardModel.BOARD_HEIGHT; i++) {
-	    	for (int j = 0; j < BoardModel.BOARD_WIDTH; j++) {
-	    		Tile tile = BoardModel.TILES[i][j];
+
+		for (int y = 0; y < Config.Board.HEIGHT; y++) {
+			for (int x = 0; x < Config.Board.WIDTH; x++) {
+	    		Tile tile = mBoard.getTile(x, y);
 	    		TileComponent button = new TileComponent(tile);
-	    		button.setPreferredSize(new Dimension(75, 75));
+	    		tile.setButton(button);
+	    		button.setPreferredSize(new Dimension(70, 70));
 
-	    		char[] bc = BoardModel.getTileBordersAndCorners(j, i);
-
-	    		button.setBorder(new TileBorder(bc));
+	    		char[] bc = BoardModel.getTileBordersAndCorners(x, y);
+	    		if (!IntStream.range(0, bc.length).mapToObj((i) -> bc[i]).allMatch((c) -> c == Config.Board.Tiles.EMPTY)) {
+					button.setBorder(new TileBorder(bc));
+				}
 
 	    		button.addMouseListener(new MouseAdapter() {
 					@Override
@@ -103,9 +118,9 @@ public class Game {
 				});
 
 				if (tile instanceof RoomTile) {
-					button.setBackground(TileComponent.COLOR_ROOM);
+					button.setBackgroundColors(TileComponent.COLOR_ROOM, TileComponent.COLOR_ROOM.brighter());
 				} else if (tile instanceof CorridorTile) {
-					if ((i + j) % 2 == 0) {
+					if ((y + x) % 2 == 0) {
 						button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
 					} else {
 						button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
@@ -124,8 +139,4 @@ public class Game {
 	    frame.pack();
 	    frame.setVisible(true);
     }
-
-    public Game() {
-
-	}
 }

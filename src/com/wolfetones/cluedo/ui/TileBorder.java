@@ -1,6 +1,7 @@
 package com.wolfetones.cluedo.ui;
 
 import com.wolfetones.cluedo.board.BoardModel;
+import com.wolfetones.cluedo.config.Config;
 
 import javax.swing.border.Border;
 import java.awt.*;
@@ -34,17 +35,17 @@ public class TileBorder implements Border {
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
         for (int border = BORDER_LEFT; border <= BORDER_BOTTOM; border += 2) {
             switch (mBordersAndCorners[border]) {
-                case BoardModel.TILE_WALL:
+                case Config.Board.Tiles.WALL:
                     g.setColor(COLOR_WALL);
                     paintEdge(g, true, x, y, width, height, SIZE_WALL, border);
                     break;
-                case BoardModel.TILE_WINDOW:
+                case Config.Board.Tiles.WINDOW:
                     g.setColor(COLOR_WINDOW);
                     paintEdge(g, true, x, y, width, height, SIZE_WINDOW, border);
                     g.setColor(COLOR_CORRIDOR);
                     paintEdge(g, false, x, y, width, height, SIZE_WINDOW, border);
                     break;
-                case BoardModel.TILE_CORRIDOR:
+                case Config.Board.Tiles.CORRIDOR:
                     g.setColor(COLOR_CORRIDOR);
                     paintEdge(g, true, x, y, width, height, SIZE_CORRIDOR, border);
                     break;
@@ -53,7 +54,7 @@ public class TileBorder implements Border {
 
         for (int corner = CORNER_TOP_LEFT; corner <= CORNER_BOTTOM_LEFT; corner+= 2) {
             switch (mBordersAndCorners[corner]) {
-                case BoardModel.TILE_WALL:
+                case Config.Board.Tiles.WALL:
                     g.setColor(COLOR_WALL);
                     paintCorner(g, x, y, width, height, SIZE_WALL, corner);
                     break;
@@ -108,6 +109,6 @@ public class TileBorder implements Border {
 
     @Override
     public boolean isBorderOpaque() {
-        return false;
+        return true;
     }
 }
