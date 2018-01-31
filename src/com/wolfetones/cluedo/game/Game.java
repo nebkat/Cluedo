@@ -13,7 +13,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -27,7 +26,7 @@ public class Game {
 
 	private List<Player> mPlayers;
 	
-	private static final int TILE_SIZE = 70;
+	private static int sTileSize = 70;
 
 	private static Tile mStartTile = null;
 	private static Tile mEndTile = null;
@@ -39,6 +38,8 @@ public class Game {
 	public static void main(String[] args) {
 		System.out.println("Welcome to " + Config.TITLE + " by");
 		System.out.println(Config.AUTHOR);
+
+		sTileSize = (int) (Toolkit.getDefaultToolkit().getScreenSize().getHeight() * 0.9 / Config.Board.HEIGHT);
 
 		new Game();
 	}
@@ -52,12 +53,12 @@ public class Game {
 	    layeredPane.setBackground(TileComponent.COLOR_EMPTY);
 	    layeredPane.setOpaque(true);
 	    frame.setContentPane(layeredPane);
-	    layeredPane.setPreferredSize(new Dimension(TILE_SIZE * Config.Board.WIDTH, TILE_SIZE * Config.Board.HEIGHT));
+	    layeredPane.setPreferredSize(new Dimension(sTileSize * Config.Board.WIDTH, sTileSize * Config.Board.HEIGHT));
 	    frame.pack();
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
-		panel.setBounds(0, 0, TILE_SIZE * Config.Board.WIDTH, TILE_SIZE * Config.Board.HEIGHT);
+		panel.setBounds(0, 0, sTileSize * Config.Board.WIDTH, sTileSize * Config.Board.HEIGHT);
 		panel.setOpaque(false);
 
 		layeredPane.add(panel, new Integer(2));
@@ -68,15 +69,15 @@ public class Game {
 			label.setVerticalAlignment(JLabel.CENTER);
 			label.setFont(new Font("sans-serif", Font.BOLD, 45));
 
-			int centerX = (int) (r.getCenterX() * TILE_SIZE);
-			int centerY = (int) (r.getCenterY() * TILE_SIZE);
+			int centerX = (int) (r.getCenterX() * sTileSize);
+			int centerY = (int) (r.getCenterY() * sTileSize);
 
 			label.setBounds(centerX - 250, centerY - 100, 500, 200);
 
 			layeredPane.add(label, new Integer(3));
 		}
 
-		Token token = new SuspectToken(TILE_SIZE, new Suspect(10, "Hello", Color.BLACK));
+		Token token = new SuspectToken(sTileSize, new Suspect(10, "Hello", Color.BLACK));
 		token.setPosition(8, 7);
 
 		layeredPane.add(token, new Integer(5));
@@ -144,7 +145,7 @@ public class Game {
 	    		Tile tile = mBoard.getTile(x, y);
 	    		TileComponent button = new TileComponent(tile);
 	    		tile.setButton(button);
-	    		button.setPreferredSize(new Dimension(TILE_SIZE, TILE_SIZE));
+	    		button.setPreferredSize(new Dimension(sTileSize, sTileSize));
 
 	    		char[] bc = BoardModel.getTileBordersAndCorners(x, y);
 	    		if (!IntStream.range(0, bc.length).mapToObj((i) -> bc[i]).allMatch((c) -> c == Config.Board.Tiles.EMPTY)) {
@@ -167,9 +168,9 @@ public class Game {
 				});
 
 	    		if (tile instanceof StartTile) {
-	    			layeredPane.add(new StartTileCircle((StartTile) tile, TILE_SIZE), new Integer(1));
+	    			layeredPane.add(new StartTileCircle((StartTile) tile, sTileSize), new Integer(1));
 
-					Token t = new SuspectToken(TILE_SIZE, ((StartTile) tile).getStartingSuspect());
+					Token t = new SuspectToken(sTileSize, ((StartTile) tile).getStartingSuspect());
 					t.setTile(tile);
 
 					layeredPane.add(t, new Integer(5));
