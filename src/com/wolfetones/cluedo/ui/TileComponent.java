@@ -27,6 +27,7 @@ public class TileComponent extends JComponent implements MouseListener {
     public TileComponent(Tile tile) {
         super();
         addMouseListener(this);
+        setOpaque(true);
 
         mTile = tile;
 
@@ -76,8 +77,10 @@ public class TileComponent extends JComponent implements MouseListener {
 
     @Override
     public void paintComponent(Graphics g) {
-        g.setColor(getBackground());
-        g.fillRect(0, 0, getWidth(), getHeight());
+        if (isOpaque()) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
     }
 
     private void setMouseOver(boolean mouseOver) {

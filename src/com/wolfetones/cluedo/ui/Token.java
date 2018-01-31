@@ -26,10 +26,4 @@ public abstract class Token extends JComponent {
     public void setPosition(int x, int y) {
         setLocation(new Point(x * mTileSize, y * mTileSize));
     }
-
-    @Override
-    public void paintComponent(Graphics g) {
-        g.setColor(Color.BLUE);
-        g.fillOval((int)(getWidth() * 0.1), (int)(getHeight() * 0.1), (int)(getWidth() * 0.8), (int)(getHeight() * 0.8));
-    }
 }

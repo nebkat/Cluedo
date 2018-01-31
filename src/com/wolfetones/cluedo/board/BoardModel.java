@@ -40,8 +40,8 @@ public class BoardModel {
 
         // Initialize tiles
         int startTileSuspectIterator = 0;
-        for (int x = 0; x < Config.Board.WIDTH; x++) {
-            for (int y = 0; y < Config.Board.HEIGHT; y++) {
+        for (int y = 0; y < Config.Board.HEIGHT; y++) {
+            for (int x = 0; x < Config.Board.WIDTH; x++) {
                 char c = Config.Board.BOARD_STRING.charAt(tileCoordinatesToBoardStringOffset(x, y));
 
                 if (Character.isDigit(c)) {
@@ -58,7 +58,7 @@ public class BoardModel {
                             mTiles[y][x] = new EmptyTile(x, y);
                             break;
                         case Config.Board.Tiles.START:
-                            mTiles[y][x] = new StartTile(x, y, mSuspects.get(startTileSuspectIterator++));
+                            mTiles[y][x] = new StartTile(x, y, mSuspects.get(Config.Board.Tiles.STARTS[startTileSuspectIterator++]));
                             break;
                         case Config.Board.Tiles.CORRIDOR:
                             mTiles[y][x] = new CorridorTile(x, y);

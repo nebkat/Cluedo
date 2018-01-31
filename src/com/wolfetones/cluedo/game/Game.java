@@ -5,18 +5,15 @@ import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
+import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.config.Config;
-import com.wolfetones.cluedo.ui.BoardRoomNames;
-import com.wolfetones.cluedo.ui.TileBorder;
-import com.wolfetones.cluedo.ui.TileComponent;
-import com.wolfetones.cluedo.ui.Token;
+import com.wolfetones.cluedo.ui.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -52,6 +49,8 @@ public class Game {
 	    frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 	    JLayeredPane layeredPane = new JLayeredPane();
+	    layeredPane.setBackground(TileComponent.COLOR_EMPTY);
+	    layeredPane.setOpaque(true);
 	    frame.setContentPane(layeredPane);
 	    layeredPane.setPreferredSize(new Dimension(TILE_SIZE * Config.Board.WIDTH, TILE_SIZE * Config.Board.HEIGHT));
 	    frame.pack();
@@ -59,8 +58,9 @@ public class Game {
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
 		panel.setBounds(0, 0, TILE_SIZE * Config.Board.WIDTH, TILE_SIZE * Config.Board.HEIGHT);
+		panel.setOpaque(false);
 
-		layeredPane.add(panel, new Integer(1));
+		layeredPane.add(panel, new Integer(2));
 
 		for (Room r : mBoard.getRooms()) {
 			JLabel label = new JLabel(r.getName().toUpperCase());
@@ -73,13 +73,13 @@ public class Game {
 
 			label.setBounds(centerX - 250, centerY - 100, 500, 200);
 
-			layeredPane.add(label, new Integer(2));
+			layeredPane.add(label, new Integer(3));
 		}
 
-		Token token = new Token(TILE_SIZE) {};
+		Token token = new SuspectToken(TILE_SIZE, new Suspect(10, "Hello", Color.BLACK));
 		token.setPosition(8, 7);
 
-		layeredPane.add(token, new Integer(3));
+		layeredPane.add(token, new Integer(5));
 
 
 		Runnable update = () -> {
@@ -166,6 +166,15 @@ public class Game {
 					}
 				});
 
+	    		if (tile instanceof StartTile) {
+	    			layeredPane.add(new StartTileCircle((StartTile) tile, TILE_SIZE), new Integer(1));
+
+					Token t = new SuspectToken(TILE_SIZE, ((StartTile) tile).getStartingSuspect());
+					t.setTile(tile);
+
+					layeredPane.add(t, new Integer(5));
+				}
+
 	    		if (tile instanceof PassageTile) {
 					button.setBackgroundColors(TileComponent.COLOR_PASSAGE, TileComponent.COLOR_PASSAGE.brighter());
 				} else if (tile instanceof RoomTile) {
@@ -178,7 +187,7 @@ public class Game {
 					}
 				} else if (tile instanceof EmptyTile) {
 	    			button.setEnabled(false);
-					button.setBackground(TileComponent.COLOR_EMPTY);
+					button.setOpaque(false);
 				}
 
 				panel.add(button);

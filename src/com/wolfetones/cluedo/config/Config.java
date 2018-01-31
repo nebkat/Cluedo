@@ -1,6 +1,7 @@
 package com.wolfetones.cluedo.config;
 
 
+import java.awt.*;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -92,6 +93,15 @@ public class Config {
             public static final char CORRIDOR = '=';
             public static final char PASSAGE = 'P';
 
+            public static final int[] STARTS = new int[] {
+                    2,
+                    3,
+                    4,
+                    1,
+                    5,
+                    0
+            };
+
             public static final Map<Character, int[]> PASSAGES = new HashMap<Character, int[]>() {{
                 put('A', new int[]{1, 9});
                 put('B', new int[]{9, 1});
@@ -116,12 +126,12 @@ public class Config {
         };
 
         public static final Suspect[] SUSPECTS = {
-                new Suspect("Miss Scarlett", "red"),
-                new Suspect("Colonel Mustard", "yellow"),
-                new Suspect("Mrs. White", "white"),
-                new Suspect("Reverend Green", "green"),
-                new Suspect("Mrs. Peacock", "blue"),
-                new Suspect("Professor Plum", "purple")
+                new Suspect("Miss Scarlett", Color.RED),
+                new Suspect("Colonel Mustard", Color.YELLOW),
+                new Suspect("Mrs. White", Color.WHITE),
+                new Suspect("Reverend Green", Color.GREEN),
+                new Suspect("Mrs. Peacock", Color.BLUE),
+                new Suspect("Professor Plum", Color.MAGENTA)
         };
 
         public static final Weapon[] WEAPONS = {
@@ -159,9 +169,9 @@ public class Config {
 
         public static class Suspect {
             public final String name;
-            public final String color;
+            public final Color color;
 
-            public Suspect(String n, String c) {
+            public Suspect(String n, Color c) {
                 name = n;
                 color = c;
             }

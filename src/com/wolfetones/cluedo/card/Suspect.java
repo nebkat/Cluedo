@@ -1,15 +1,17 @@
 package com.wolfetones.cluedo.card;
 
-public class Suspect extends Card {
-    private String mColor;
+import java.awt.*;
 
-    public Suspect(int id, String name, String color) {
+public class Suspect extends Card {
+    private Color mColor;
+
+    public Suspect(int id, String name, Color color) {
         super(id, name);
 
         mColor = color;
     }
 
-    public String getColor() {
+    public Color getColor() {
         return mColor;
     }
 }
