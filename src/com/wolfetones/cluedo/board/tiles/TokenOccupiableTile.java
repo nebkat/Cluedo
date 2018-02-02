@@ -20,4 +20,7 @@ public abstract class TokenOccupiableTile extends Tile {
     public boolean isOccupied() {
         return mToken != null;
     }
+    public boolean isFree() {
+        return mToken == null;
+    }
 }

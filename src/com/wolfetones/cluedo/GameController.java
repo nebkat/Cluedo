@@ -9,9 +9,11 @@ import com.wolfetones.cluedo.card.Token;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.game.Player;
+import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,10 +21,8 @@ import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.*;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameController {
@@ -30,9 +30,16 @@ public class GameController {
     private static final String COMMAND_PASSAGE = "passage";
     private static final String COMMAND_DONE = "done";
     private static final String COMMAND_QUIT = "quit";
+    private static final String COMMAND_CHEAT = "cheat";
+
+    private static final String COMMAND_LEFT = "l";
+    private static final String COMMAND_UP = "u";
+    private static final String COMMAND_RIGHT = "r";
+    private static final String COMMAND_DOWN = "d";
+
 
     private Game mGame = new Game();
-    
+
     private int mTileSize;
 
     private JFrame mMainFrame;
@@ -47,14 +54,14 @@ public class GameController {
     private Timer mTimer;
 
     private Scanner mInputScanner;
-    
+
     public static void main(String[] args) {
         System.out.println("Welcome to " + Config.TITLE + " by");
         System.out.println(Config.AUTHOR);
 
         new GameController();
     }
-    
+
     private GameController() {
         mInputScanner = new Scanner(System.in);
 
@@ -63,30 +70,118 @@ public class GameController {
 
         mGame.start();
 
-        performMove();
+        while (true) {
+            performMove();
+        }
+    }
+
+    private String readCommand(String question, String... validCommands) {
+        List<String> validCommandsList = Arrays.asList(validCommands);
+        System.out.println(question + " [valid: " + Util.implode(validCommands, ", ") + "]");
+        String command;
+        while (true) {
+            command = mInputScanner.nextLine();
+
+            if (validCommandsList.contains(command)) {
+                break;
+            }
+
+            System.err.println("Invalid command '" + command + "'");
+        }
+
+        return command;
     }
 
     private void performMove() {
-        Player player = mGame.getCurrentPlayer();
+        Player player = mGame.nextMove();
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
-        System.out.println("Please enter a command:");
 
-        String command = mInputScanner.nextLine();
-        if (command.equals(COMMAND_ROLL)) {
-            int movements = mGame.rollDice();
+        boolean success = false;
+        do {
+            String command = readCommand("Enter command", COMMAND_ROLL, COMMAND_PASSAGE, COMMAND_QUIT, COMMAND_CHEAT);
+            if (command.equals(COMMAND_ROLL)) {
+                int remainingMovements = mGame.rollDice();
 
-            if (movements < 0) {
-                performMove();
-                return;
+                if (remainingMovements < 0) {
+                    continue;
+                }
+
+                System.out.println("Rolled " + remainingMovements);
+                success = true;
+
+                Tile moveTile = mGame.getCurrentPlayerTile();
+
+                Room startingRoom = null;
+                if (moveTile instanceof RoomTile) {
+                    startingRoom = ((RoomTile) moveTile).getRoom();
+                    List<CorridorTile> corridorTiles = ((RoomTile) moveTile).getRoom().getEntranceCorridors();
+                    String[] validCommands = new String[corridorTiles.size()];
+                    for (int i = 1; i <= corridorTiles.size(); i++) {
+                        validCommands[i - 1] = Integer.toString(i);
+                    }
+                    String entranceCorridor = readCommand("Choose room exit", validCommands);
+
+                    moveTile = corridorTiles.get(Integer.parseInt(entranceCorridor) - 1);
+                    player.getCharacter().setTile(moveTile);
+
+                    remainingMovements--;
+                }
+
+                CorridorTile currentTile = (CorridorTile) moveTile;
+                while (remainingMovements > 0) {
+                    List<String> validCommands = new ArrayList<>(4);
+                    if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
+                    if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
+                    if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
+                    if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
+
+                    String direction = readCommand("Choose direction", validCommands.toArray(new String[validCommands.size()]));
+                    switch (direction) {
+                        case COMMAND_LEFT:
+                            moveTile = currentTile.getLeft();
+                            break;
+                        case COMMAND_UP:
+                            moveTile = currentTile.getUp();
+                            break;
+                        case COMMAND_RIGHT:
+                            moveTile = currentTile.getRight();
+                            break;
+                        case COMMAND_DOWN:
+                            moveTile = currentTile.getDown();
+                            break;
+                    }
+
+                    if (moveTile instanceof RoomTile) {
+                        if (((RoomTile) moveTile).getRoom() == startingRoom) {
+                            System.err.println("Can't return to same room");
+                            continue;
+                        }
+
+                        break;
+                    } else {
+                        currentTile = (CorridorTile) moveTile;
+                    }
+
+                    remainingMovements--;
+
+                    player.getCharacter().setTile(currentTile);
+                }
+
+                if (moveTile instanceof RoomTile) {
+                    moveTile = ((RoomTile) moveTile).getRoom().getNextUnoccupiedTile();
+                }
+
+                player.getCharacter().setTile(moveTile);
+            } else if (command.equals(COMMAND_PASSAGE)) {
+                success = mGame.usePassage();
+            } else if (command.equals(COMMAND_QUIT)) {
+                System.out.println("The solution was: " + mGame.getSolution().asSuggestionString());
+                System.exit(0);
+            } else if (command.equals(COMMAND_CHEAT)) {
+                System.out.println("The solution is: " + mGame.getSolution().asSuggestionString());
             }
-
-            System.out.println("Rolled " + movements);
-
-            
-        } else if (command.equals(COMMAND_PASSAGE)) {
-            mGame.usePassage();
-        }
+        } while (!success);
 
         Tile currentTile = mGame.getCurrentPlayerTile();
         if (currentTile instanceof RoomTile) {
@@ -99,8 +194,12 @@ public class GameController {
         List<Suspect> suspects = mGame.getBoard().getSuspects();
 
         // TODO: Temporarily insert all suspects as players
-        for (Suspect suspect : suspects) {
-            mGame.addPlayer(new Player(suspect, suspect.getName()));
+        //for (Suspect suspect : suspects) {
+        //    mGame.addPlayer(new Player(suspect, suspect.getName()));
+        //}
+
+        for (int i = 0; i < 3; i++) {
+            mGame.addPlayer(new Player(suspects.get(i), suspects.get(i).getName()));
         }
     }
 
@@ -117,7 +216,7 @@ public class GameController {
 
         mMainFrame.setVisible(true);
     }
-    
+
     private void setupBoard() {
         mBoardLayeredPane = new JLayeredPane();
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);

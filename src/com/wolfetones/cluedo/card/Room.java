@@ -2,6 +2,7 @@ package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
+import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,10 @@ public class Room extends Card {
     }
 
     public RoomTile getNextUnoccupiedTile() {
-        return null;
+        return mTiles.stream()
+                .filter(TokenOccupiableTile::isFree)
+                .findFirst()
+                .orElse(null);
     }
 
     public List<RoomTile> getRoomTiles() {

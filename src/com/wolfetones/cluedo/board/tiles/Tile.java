@@ -10,10 +10,10 @@ public abstract class Tile {
     protected int mX;
     protected int mY;
 
-    private Tile mLeft;
-    private Tile mUp;
-    private Tile mRight;
-    private Tile mDown;
+    protected Tile mLeft;
+    protected Tile mUp;
+    protected Tile mRight;
+    protected Tile mDown;
 
     private TileComponent mButton;
 

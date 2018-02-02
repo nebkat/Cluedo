@@ -38,12 +38,10 @@ public class Game {
 	    mPlayers.add(player);
     }
 
-    public Player start() {
+    public void start() {
 	    mStarted = true;
 
 	    setupCards();
-
-	    return nextMove();
     }
 
     public Player nextMove() {
@@ -94,7 +92,7 @@ public class Game {
             return -1;
         }
 
-        mRemainingMovements = sRandom.nextInt(12 - 1) + 2;
+        mRemainingMovements = sRandom.nextInt(30 - 1) + 2;
 
         mMoveMovementsCompleted = true;
 
@@ -109,8 +107,12 @@ public class Game {
         return mCurrentPlayer;
     }
 
-    public Tile getCurrentPlayerTile() {
+    public TokenOccupiableTile getCurrentPlayerTile() {
         return mCurrentPlayerTile;
+    }
+
+    public Suggestion getSolution() {
+        return mSolution;
     }
 
     private void setupCards() {

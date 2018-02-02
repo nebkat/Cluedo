@@ -24,6 +24,10 @@ public class Suggestion {
         return Arrays.asList(room, suspect, weapon);
     }
 
+    public String asSuggestionString() {
+        return suspect.getName() + " in the " + room.getName() + " with a " + weapon.getName();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

@@ -82,6 +82,11 @@ public class BoardModel {
             }
         }
 
+        // Update passages
+        for (int[] passage : Config.Board.Tiles.PASSAGES.values()) {
+            mRooms.get(passage[0]).setPassageRoom(mRooms.get(passage[1]));
+        }
+
         // Update doors
         for (int y = 0; y < Config.Board.STRING_HEIGHT; y++) {
             boolean horizontal = y % 2 == 1;
@@ -110,7 +115,7 @@ public class BoardModel {
                         throw new IllegalArgumentException("Door does not connect corridor and room piece [" + a.getX() + ", " + a.getY() + "] and [" + b.getX() + ", " + b.getY() + "]");
                     }
 
-                    corridorTile.setDoorRoom(roomTile.getRoom());
+                    corridorTile.setDoorTile(roomTile);
                     roomTile.getRoom().addEntranceCorridor(corridorTile);
                 }
             }
