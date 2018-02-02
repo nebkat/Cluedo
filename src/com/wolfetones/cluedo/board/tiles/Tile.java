@@ -71,4 +71,9 @@ public abstract class Tile {
     public void setButton(TileComponent button) {
         mButton = button;
     }
+
+    @Override
+    public String toString() {
+        return "[" + mX + ", " + mY + "]";
+    }
 }

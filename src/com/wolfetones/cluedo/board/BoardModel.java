@@ -129,6 +129,22 @@ public class BoardModel {
         return mRooms.get(id);
     }
 
+    public List<Suspect> getSuspects() {
+        return mSuspects;
+    }
+
+    public Suspect getSuspect(int id) {
+        return mSuspects.get(id);
+    }
+
+    public List<Weapon> getWeapons() {
+        return mWeapons;
+    }
+
+    public Weapon getWeapon(int id) {
+        return mWeapons.get(id);
+    }
+
     private static int[] tileCoordinatesToBoardStringCoordinates(int x, int y) {
         x = 1 + 2 * x;
         y = 1 + 2 * y;

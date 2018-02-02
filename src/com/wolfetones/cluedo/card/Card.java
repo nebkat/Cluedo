@@ -4,7 +4,7 @@ public abstract class Card {
     private int mId;
     private String mName;
 
-    public Card(int id, String name) {
+    Card(int id, String name) {
         mId = id;
         mName = name;
     }

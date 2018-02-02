@@ -4,18 +4,14 @@ import com.wolfetones.cluedo.card.Suspect;
 
 import java.awt.*;
 
-public class SuspectToken extends Token {
-    private Suspect mSuspect;
-
-    public SuspectToken(int tileSize, Suspect suspect) {
-        super(tileSize);
-
-        mSuspect = suspect;
+public class SuspectTokenComponent extends TokenComponent {
+    public SuspectTokenComponent(Suspect suspect, int tileSize) {
+        super(suspect, tileSize);
     }
 
     @Override
     public void paintComponent(Graphics g) {
-        g.setColor(mSuspect.getColor());
+        g.setColor(((Suspect) mToken).getColor());
         g.fillOval((int)(getWidth() * 0.1), (int)(getHeight() * 0.1), (int)(getWidth() * 0.8), (int)(getHeight() * 0.8));
     }
 }

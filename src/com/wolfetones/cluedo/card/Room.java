@@ -2,7 +2,6 @@ package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
-import com.wolfetones.cluedo.ui.Token;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +53,18 @@ public class Room extends Card {
 
     public Room getPassageRoom() {
         return mPassageRoom;
+    }
+
+    public void addToken(Token token) {
+        mTokens.add(token);
+    }
+
+    public void removeToken(Token token) {
+        mTokens.remove(token);
+    }
+
+    public RoomTile getNextUnoccupiedTile() {
+        return null;
     }
 
     public List<RoomTile> getRoomTiles() {
