@@ -1,11 +1,10 @@
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.board.tiles.Tile;
-
-import java.awt.*;
+import java.awt.Color;
 
 public class Suspect extends Token {
     private Color mColor;
+    private boolean mMovedSinceLastTurn = false;
 
     public Suspect(int id, String name, Color color) {
         super(id, name);
@@ -17,8 +16,11 @@ public class Suspect extends Token {
         return mColor;
     }
 
-    @Override
-    protected boolean validTile(Tile t) {
-        return true;
+    public void setMovedSinceLastTurn(boolean moved) {
+        mMovedSinceLastTurn = moved;
+    }
+
+    public boolean getMovedSinceLastTurn() {
+        return mMovedSinceLastTurn;
     }
 }

@@ -16,4 +16,8 @@ public abstract class Card {
     public String getName() {
         return mName;
     }
+
+    public String getShortName() {
+        return mName.replace(" ", "").replace(".", "").toLowerCase();
+    }
 }

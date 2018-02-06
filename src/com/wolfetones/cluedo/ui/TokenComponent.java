@@ -2,12 +2,11 @@ package com.wolfetones.cluedo.ui;
 
 import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.card.Token;
-import com.wolfetones.cluedo.card.TokenTileListener;
 
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class TokenComponent extends JComponent implements TokenTileListener {
+public abstract class TokenComponent extends JComponent implements Token.TokenTileListener {
     private int mTileSize;
     protected Token mToken;
 
@@ -15,6 +14,7 @@ public abstract class TokenComponent extends JComponent implements TokenTileList
         mToken = token;
         mTileSize = tileSize;
         setSize(tileSize, tileSize);
+        setTile(token.getTile());
 
         token.setTileListener(this);
     }
@@ -25,10 +25,10 @@ public abstract class TokenComponent extends JComponent implements TokenTileList
 
     @Override
     public void onTileSet(Tile tile) {
-        setPosition(tile.getX(), tile.getY());
+        setTile(tile);
     }
 
-    public void setPosition(int x, int y) {
-        setLocation(new Point(x * mTileSize, y * mTileSize));
+    public void setTile(Tile tile) {
+        setLocation(new Point(tile.getX() * mTileSize, tile.getY() * mTileSize));
     }
 }

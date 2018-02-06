@@ -3,11 +3,10 @@ package com.wolfetones.cluedo;
 import com.wolfetones.cluedo.board.BoardModel;
 import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
-import com.wolfetones.cluedo.card.Room;
-import com.wolfetones.cluedo.card.Suspect;
-import com.wolfetones.cluedo.card.Token;
+import com.wolfetones.cluedo.card.*;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
+import com.wolfetones.cluedo.game.Location;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
@@ -22,20 +21,32 @@ import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameController {
+    private static final boolean CHEAT_ENABLED = true;
+
+    private static final String HIDDEN_COMMAND_PREFIX = "@";
+
     private static final String COMMAND_ROLL = "roll";
     private static final String COMMAND_PASSAGE = "passage";
     private static final String COMMAND_DONE = "done";
     private static final String COMMAND_QUIT = "quit";
+    private static final String COMMAND_QUESTION = "question";
+    private static final String COMMAND_ACCUSE = "accuse";
+    private static final String COMMAND_NOTES = "notes";
     private static final String COMMAND_CHEAT = "cheat";
 
     private static final String COMMAND_LEFT = "l";
     private static final String COMMAND_UP = "u";
     private static final String COMMAND_RIGHT = "r";
     private static final String COMMAND_DOWN = "d";
+    private static final String COMMAND_STOP = "stop";
+
+    private static final String COMMAND_YES = "y";
+    private static final String COMMAND_NO = "n";
 
 
     private Game mGame = new Game();
@@ -68,20 +79,56 @@ public class GameController {
         selectPlayers();
         setupFrame();
 
+
         mGame.start();
 
-        while (true) {
-            performMove();
+        while (!mGame.isFinished()) {
+            performTurn();
         }
     }
 
+    /**
+     * Requests that the user enter a valid command from a list of possible commands
+     *
+     * Allows input as array instead of list
+     */
     private String readCommand(String question, String... validCommands) {
-        List<String> validCommandsList = Arrays.asList(validCommands);
-        System.out.println(question + " [valid: " + Util.implode(validCommands, ", ") + "]");
+        return readCommand(question, Arrays.asList(validCommands));
+    }
+
+    /**
+     * Requests that the user enter a valid command from a list of possible commands
+     *
+     * @param question Question to ask the user when listing valid commands
+     * @param validCommandsList Valid commands
+     * @return The command that the user entered
+     */
+    private String readCommand(String question, List<String> validCommandsList) {
+        // Maintain a separate list for commands that are printed, excluding hidden commands
+        List<String> printedCommandsList = new ArrayList<>();
+
+        // Iterate valid commands to find hidden commands
+        ListIterator<String> commandIterator = validCommandsList.listIterator();
+        while (commandIterator.hasNext()) {
+            String current = commandIterator.next();
+
+            // Only add the command to the printed commands list if it is not hidden
+            if (current.startsWith(HIDDEN_COMMAND_PREFIX)) {
+                // Don't include the hidden command prefix in the actual command
+                commandIterator.set(current.substring(HIDDEN_COMMAND_PREFIX.length()));
+            } else {
+                printedCommandsList.add(current);
+            }
+        }
+
+        // Print the question along with the valid commands/answers
+        System.out.println(question + " [valid: " + Util.implode(printedCommandsList, ", ") + "]");
+
         String command;
         while (true) {
             command = mInputScanner.nextLine();
 
+            // Exit the loop if the command is valid
             if (validCommandsList.contains(command)) {
                 break;
             }
@@ -92,52 +139,74 @@ public class GameController {
         return command;
     }
 
-    private void performMove() {
-        Player player = mGame.nextMove();
+    private void performTurn() {
+        Player player = mGame.nextTurn();
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
-        boolean success = false;
-        do {
-            String command = readCommand("Enter command", COMMAND_ROLL, COMMAND_PASSAGE, COMMAND_QUIT, COMMAND_CHEAT);
-            if (command.equals(COMMAND_ROLL)) {
-                int remainingMovements = mGame.rollDice();
+        List<String> commands = new ArrayList<>();
+        while (true) {
+            // Remove previous commands
+            commands.clear();
 
+            // Add commands depending on whether they are available
+            if (mGame.canRollDice()) commands.add(COMMAND_ROLL);
+            if (mGame.canUsePassage()) commands.add(COMMAND_PASSAGE);
+            if (mGame.canPoseQuestion()) commands.add(COMMAND_QUESTION);
+            if (mGame.canMakeFinalAccusation()) commands.add(COMMAND_ACCUSE);
+            if (mGame.isTurnFinished()) commands.add(COMMAND_DONE);
+            if (CHEAT_ENABLED) commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_CHEAT);
+            commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_QUIT);
+
+            String command = readCommand("Choose action", commands);
+
+            if (command.equalsIgnoreCase(COMMAND_QUIT)) {
+                System.out.println("The solution was: " + mGame.getSolution().asSuggestionString());
+                System.exit(0);
+            } else if (command.equalsIgnoreCase(COMMAND_CHEAT)) {
+                System.out.println("The solution is: " + mGame.getSolution().asSuggestionString());
+            } else if (command.equalsIgnoreCase(COMMAND_DONE)) {
+                break;
+            } else if (command.equalsIgnoreCase(COMMAND_ROLL)) {
+                int[] dice = new int[2];
+                mGame.rollDice(dice);
+                int remainingMovements = dice[0] + dice[1];
                 if (remainingMovements < 0) {
                     continue;
                 }
 
-                System.out.println("Rolled " + remainingMovements);
-                success = true;
+                System.out.println("Rolled " + dice[0] + " + " + dice[1] + " = " + remainingMovements);
 
-                Tile moveTile = mGame.getCurrentPlayerTile();
-
-                Room startingRoom = null;
-                if (moveTile instanceof RoomTile) {
-                    startingRoom = ((RoomTile) moveTile).getRoom();
-                    List<CorridorTile> corridorTiles = ((RoomTile) moveTile).getRoom().getEntranceCorridors();
+                Location startLocation = mGame.getCurrentPlayerLocation();
+                if (startLocation.isRoom()) {
+                    List<CorridorTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
                     String[] validCommands = new String[corridorTiles.size()];
                     for (int i = 1; i <= corridorTiles.size(); i++) {
                         validCommands[i - 1] = Integer.toString(i);
                     }
                     String entranceCorridor = readCommand("Choose room exit", validCommands);
 
-                    moveTile = corridorTiles.get(Integer.parseInt(entranceCorridor) - 1);
-                    player.getCharacter().setTile(moveTile);
-
-                    remainingMovements--;
+                    remainingMovements = mGame.moveTo(corridorTiles.get(Integer.parseInt(entranceCorridor) - 1));
                 }
 
-                CorridorTile currentTile = (CorridorTile) moveTile;
+                Tile moveTile = null;
+                CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
+                boolean moved = false;
                 while (remainingMovements > 0) {
                     List<String> validCommands = new ArrayList<>(4);
                     if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
                     if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
                     if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
                     if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
+                    if (moved) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
 
-                    String direction = readCommand("Choose direction", validCommands.toArray(new String[validCommands.size()]));
-                    switch (direction) {
+                    String direction = readCommand("Choose direction", validCommands);
+                    if (direction.equalsIgnoreCase(COMMAND_STOP)) {
+                        mGame.stopMoving();
+                        break;
+                    }
+
+                    switch (direction.toLowerCase()) {
                         case COMMAND_LEFT:
                             moveTile = currentTile.getLeft();
                             break;
@@ -153,40 +222,64 @@ public class GameController {
                     }
 
                     if (moveTile instanceof RoomTile) {
-                        if (((RoomTile) moveTile).getRoom() == startingRoom) {
+                        if (((RoomTile) moveTile).getRoom() == startLocation) {
                             System.err.println("Can't return to same room");
                             continue;
                         }
 
+                        mGame.moveTo(((RoomTile) moveTile).getRoom());
                         break;
                     } else {
                         currentTile = (CorridorTile) moveTile;
                     }
 
-                    remainingMovements--;
+                    remainingMovements = mGame.moveTo(currentTile);
+                    moved = true;
+                }
+            } else if (command.equalsIgnoreCase(COMMAND_PASSAGE)) {
+                mGame.usePassage();
+            } else if (command.equalsIgnoreCase(COMMAND_QUESTION)) {
+                Suggestion suggestion = makeSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+                Player matchingPlayer = mGame.poseQuestion(suggestion);
 
-                    player.getCharacter().setTile(currentTile);
+                if (matchingPlayer != null) {
+                    List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
+
+                    passToPlayer(matchingPlayer);
+
+                    Card shownCard = chooseCard("Choose which card to show", matchingCards);
+
+                    passToPlayer(player);
+
+                    System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
+                    player.addKnowledge(shownCard);
+                } else {
+                    System.out.println("No players have any of the suggested cards");
                 }
 
-                if (moveTile instanceof RoomTile) {
-                    moveTile = ((RoomTile) moveTile).getRoom().getNextUnoccupiedTile();
-                }
+            } else if (command.equalsIgnoreCase(COMMAND_ACCUSE)) {
+                Suggestion suggestion;
+                boolean correct;
+                do {
+                    suggestion = makeSuggestion(null);
+                    correct = mGame.makeFinalAccusation(suggestion);
+                } while (readCommand("Are you sure? Final accusation: " + suggestion.asSuggestionString(), COMMAND_YES, COMMAND_NO).equalsIgnoreCase(COMMAND_NO));
 
-                player.getCharacter().setTile(moveTile);
-            } else if (command.equals(COMMAND_PASSAGE)) {
-                success = mGame.usePassage();
-            } else if (command.equals(COMMAND_QUIT)) {
-                System.out.println("The solution was: " + mGame.getSolution().asSuggestionString());
-                System.exit(0);
-            } else if (command.equals(COMMAND_CHEAT)) {
-                System.out.println("The solution is: " + mGame.getSolution().asSuggestionString());
+                if (correct) {
+                    System.out.println("Congratulations! You were correct!");
+                }
+            } else if (command.equalsIgnoreCase(COMMAND_NOTES)) {
+
             }
-        } while (!success);
-
-        Tile currentTile = mGame.getCurrentPlayerTile();
-        if (currentTile instanceof RoomTile) {
-            System.out.println("Guessing");
         }
+    }
+
+    private <T extends Card> T chooseCard(String question, List<T> cards) {
+        List<String> names = cards.stream().map(Card::getShortName).collect(Collectors.toList());
+        Map<String, T> map = cards.stream().collect(Collectors.toMap(Card::getShortName, Function.identity()));
+
+        String card = readCommand(question, names);
+        return map.get(card);
     }
 
     private void selectPlayers() {
@@ -201,6 +294,24 @@ public class GameController {
         for (int i = 0; i < 3; i++) {
             mGame.addPlayer(new Player(suspects.get(i), suspects.get(i).getName()));
         }
+    }
+
+    private void passToPlayer(Player p) {
+        // TODO: Dialog requesting player
+        System.out.println("Please pass to " + p.getName());
+    }
+
+    private Suggestion makeSuggestion(Room currentRoom) {
+        // TODO: Create selection dialog
+        List<Suspect> suspects = mGame.getBoard().getSuspects();
+        List<Weapon> weapons = mGame.getBoard().getWeapons();
+        List<Room> rooms = mGame.getBoard().getRooms();
+
+        Suspect suspect = chooseCard("Choose suspect", suspects);
+        Weapon weapon = chooseCard("Choose weapon", weapons);
+        Room room = currentRoom == null ? chooseCard("Choose room", rooms) : currentRoom;
+
+        return new Suggestion(room, suspect, weapon);
     }
 
     private void setupFrame() {
@@ -252,10 +363,10 @@ public class GameController {
                 return;
             }
 
-            java.util.List<Tile> path = null;
+            List<Tile> path = null;
             if (mEndTile instanceof RoomTile) {
-                for (Tile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
-                    java.util.List<Tile> p = PathFinder.findShortestPath(mToken.getTile(), t, 101);
+                for (CorridorTile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
+                    List<Tile> p = PathFinder.findShortestPath(mToken.getTile(), t.getDoorTile(), 101);
                     if (p == null) continue;
                     if (path == null || p.size() < path.size()) {
                         path = p;
@@ -336,7 +447,6 @@ public class GameController {
                     mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), new Integer(1));
 
                     TokenComponent t = new SuspectTokenComponent(((StartTile) tile).getStartingSuspect(), mTileSize);
-                    ((StartTile) tile).getStartingSuspect().setTile(tile);
 
                     mBoardLayeredPane.add(t, new Integer(5));
                 }

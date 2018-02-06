@@ -2,7 +2,6 @@ package com.wolfetones.cluedo.board.tiles;
 
 import com.wolfetones.cluedo.ui.TileComponent;
 
-import javax.swing.JButton;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +16,8 @@ public abstract class Tile {
 
     private TileComponent mButton;
 
-    private List<Tile> mNeighbours = new ArrayList<>();
+    protected List<Tile> mNeighbours = new ArrayList<>();
+    protected List<TokenOccupiableTile> mTokenTraversableNeighbours = new ArrayList<>();
 
     public Tile(int x, int y) {
         mX = x;
@@ -58,10 +58,19 @@ public abstract class Tile {
         mNeighbours.add(up);
         mNeighbours.add(right);
         mNeighbours.add(down);
+
+        if (left instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) left);
+        if (up instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) up);
+        if (right instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) right);
+        if (down instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) down);
     }
 
     public List<Tile> getNeighbours() {
         return mNeighbours;
+    }
+
+    public List<TokenOccupiableTile> getTokenTraversableNeighbours() {
+        return mTokenTraversableNeighbours;
     }
 
     public TileComponent getButton() {

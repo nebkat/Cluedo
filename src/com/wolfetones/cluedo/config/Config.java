@@ -148,19 +148,19 @@ public class Config {
             public final boolean guess;
             public final int passage;
 
-            public Room(String n) {
+            Room(String n) {
                 this(n, false);
             }
 
-            public Room(String n, int p) {
+            Room(String n, int p) {
                 this(n, false, p);
             }
 
-            public Room(String n, boolean g) {
+            Room(String n, boolean g) {
                 this(n, g, -1);
             }
 
-            public Room(String n, boolean g, int p) {
+            Room(String n, boolean g, int p) {
                 name = n;
                 guess = g;
                 passage = p;
@@ -171,7 +171,7 @@ public class Config {
             public final String name;
             public final Color color;
 
-            public Suspect(String n, Color c) {
+            Suspect(String n, Color c) {
                 name = n;
                 color = c;
             }
@@ -180,7 +180,7 @@ public class Config {
         public static class Weapon {
             public final String name;
 
-            public Weapon(String n) {
+            Weapon(String n) {
                 name = n;
             }
         }

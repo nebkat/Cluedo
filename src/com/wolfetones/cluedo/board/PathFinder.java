@@ -2,6 +2,9 @@ package com.wolfetones.cluedo.board;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
+import com.wolfetones.cluedo.card.Room;
+import com.wolfetones.cluedo.game.Location;
 
 import java.util.*;
 
@@ -19,6 +22,112 @@ public class PathFinder {
     public static int tileManhattanDistance(Tile a, Tile b) {
         return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
     }
+
+    /**
+     * Finds the shortest path availaable between two tiles, taking into account rooms
+     */
+    public static List<Tile> findShortestPathAdvanced(Location fromTile, Location toTile, int maxMoves) {
+        Room fromRoom = null;
+        Room toRoom = null;
+
+        // Get rooms if using room tiles
+        if (fromTile instanceof Room) {
+            fromRoom = (Room) fromTile;
+        }
+        if (toTile instanceof Room) {
+            toRoom = (Room) toTile;
+        }
+
+        List<Tile> path;
+        if (fromRoom != null && toRoom != null) { // Two
+            // Loop through each possible combination of entrance corridors
+            // to check whether the player can move between the two rooms
+            for (CorridorTile fromRoomEntranceCorridor : fromRoom.getEntranceCorridors()) {
+                for (CorridorTile toRoomEntranceCorridor : toRoom.getEntranceCorridors()) {
+                    if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor.getDoorTile(),
+                            toRoomEntranceCorridor.getDoorTile(),
+                            maxMoves)) != null) {
+                        return path;
+                    }
+                }
+            }
+        } else if (fromRoom == null && toRoom == null) { // No rooms
+            return PathFinder.findShortestPath((CorridorTile) fromTile, (CorridorTile) toTile, maxMoves);
+        } else { // One room
+            Room loopRoom;
+            Tile targetTile;
+            if (fromRoom != null) {
+                loopRoom = fromRoom;
+                targetTile = (CorridorTile) toTile;
+            } else {
+                loopRoom = toRoom;
+                targetTile = (CorridorTile) fromTile;
+            }
+
+            for (CorridorTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
+                if ((path = PathFinder.findShortestPath(fromRoom != null ? loopRoomEntranceCorridor.getDoorTile() : targetTile,
+                        fromRoom != null ? targetTile : loopRoomEntranceCorridor.getDoorTile(),
+                        maxMoves)) != null) {
+                    return path;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds the shortest path availaable between two tiles, taking into account rooms
+     */
+    /*public static List<Tile> findShortestPathAdvanced(Tile fromTile, Tile toTile, int maxMoves) {
+        Room fromRoom = null;
+        Room toRoom = null;
+
+        // Get rooms if using room tiles
+        if (fromTile instanceof RoomTile) {
+            fromRoom = ((RoomTile) fromTile).getRoom();
+        }
+        if (toTile instanceof RoomTile) {
+            toRoom = ((RoomTile) toTile).getRoom();
+        }
+
+        List<Tile> path;
+        if (fromRoom != null && toRoom != null) { // Two
+            // Loop through each possible combination of entrance corridors
+            // to check whether the player can move between the two rooms
+            for (CorridorTile fromRoomEntranceCorridor : fromRoom.getEntranceCorridors()) {
+                for (CorridorTile toRoomEntranceCorridor : toRoom.getEntranceCorridors()) {
+                    if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor.getDoorTile(),
+                            toRoomEntranceCorridor.getDoorTile(),
+                            maxMoves)) != null) {
+                        return path;
+                    }
+                }
+            }
+        } else if (fromRoom == null && toRoom == null) { // No rooms
+            return PathFinder.findShortestPath(fromTile, toTile, maxMoves);
+        } else { // One room
+            Room loopRoom;
+            Tile targetTile;
+            if (fromRoom != null) {
+                loopRoom = fromRoom;
+                targetTile = toTile;
+            } else {
+                loopRoom = toRoom;
+                targetTile = fromTile;
+            }
+
+            for (CorridorTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
+                if ((path = PathFinder.findShortestPath(fromRoom != null ? loopRoomEntranceCorridor.getDoorTile() : targetTile,
+                        fromRoom != null ? targetTile : loopRoomEntranceCorridor.getDoorTile(),
+                        maxMoves)) != null) {
+                    return path;
+                }
+            }
+        }
+
+        return null;
+    }*/
 
     /**
      * Finds the shortest path available between two tiles.
@@ -46,7 +155,7 @@ public class PathFinder {
         }
 
         // Add the first
-        queue.add(new Node(start, Collections.singletonList(start), false, 0));
+        queue.add(new Node(start, new ArrayList<>(), false, 0));
 
         while (queue.size() > 0) {
             Node currentNode = queue.poll();
@@ -59,10 +168,10 @@ public class PathFinder {
             path.add(currentNode.tile);
 
             // Loop through neighbours
-            for (Tile neighbouringTile : currentNode.tile.getNeighbours()) {
+            for (TokenOccupiableTile neighbouringTile : currentNode.tile.getTokenTraversableNeighbours()) {
                 // Only empty corridor tiles can be traversed
-                if (!(neighbouringTile instanceof CorridorTile) ||
-                        ((CorridorTile) neighbouringTile).isOccupied()) continue;
+                if (neighbouringTile instanceof CorridorTile &&
+                        neighbouringTile.isOccupied()) continue;
 
                 // Don't loop through existing tiles
                 if (currentNode.path.contains(neighbouringTile)) continue;
