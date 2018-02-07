@@ -267,6 +267,8 @@ public class GameController {
 
                 if (correct) {
                     System.out.println("Congratulations! You were correct!");
+                } else {
+                    System.out.println("Your guess was incorrect. You have been eliminated.");
                 }
             } else if (command.equalsIgnoreCase(COMMAND_NOTES)) {
 
