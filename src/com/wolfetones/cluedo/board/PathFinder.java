@@ -24,26 +24,15 @@ public class PathFinder {
     }
 
     /**
-     * Finds the shortest path availaable between two tiles, taking into account rooms
+     * Finds the shortest path availaable between two locations, taking into account room entrance corridors
      */
-    public static List<Tile> findShortestPathAdvanced(Location fromTile, Location toTile, int maxMoves) {
-        Room fromRoom = null;
-        Room toRoom = null;
-
-        // Get rooms if using room tiles
-        if (fromTile instanceof Room) {
-            fromRoom = (Room) fromTile;
-        }
-        if (toTile instanceof Room) {
-            toRoom = (Room) toTile;
-        }
-
+    public static List<Tile> findShortestPathAdvanced(Location from, Location to, int maxMoves) {
         List<Tile> path;
-        if (fromRoom != null && toRoom != null) { // Two
+        if (from.isRoom() && to.isRoom()) { // Two
             // Loop through each possible combination of entrance corridors
             // to check whether the player can move between the two rooms
-            for (CorridorTile fromRoomEntranceCorridor : fromRoom.getEntranceCorridors()) {
-                for (CorridorTile toRoomEntranceCorridor : toRoom.getEntranceCorridors()) {
+            for (CorridorTile fromRoomEntranceCorridor : from.asRoom().getEntranceCorridors()) {
+                for (CorridorTile toRoomEntranceCorridor : to.asRoom().getEntranceCorridors()) {
                     if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor.getDoorTile(),
                             toRoomEntranceCorridor.getDoorTile(),
                             maxMoves)) != null) {
@@ -51,23 +40,24 @@ public class PathFinder {
                     }
                 }
             }
-        } else if (fromRoom == null && toRoom == null) { // No rooms
-            return PathFinder.findShortestPath((CorridorTile) fromTile, (CorridorTile) toTile, maxMoves);
+        } else if (!from.isRoom() && !to.isRoom()) { // No rooms
+            return PathFinder.findShortestPath(from.asTile(), to.asTile(), maxMoves);
         } else { // One room
-            Room loopRoom;
-            Tile targetTile;
-            if (fromRoom != null) {
-                loopRoom = fromRoom;
-                targetTile = (CorridorTile) toTile;
-            } else {
-                loopRoom = toRoom;
-                targetTile = (CorridorTile) fromTile;
-            }
+            // Find which of from/to locations is the room
+            Room loopRoom = from.isRoom() ? from.asRoom() : to.asRoom();
 
+            // Loop through each entrance corridor
             for (CorridorTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
-                if ((path = PathFinder.findShortestPath(fromRoom != null ? loopRoomEntranceCorridor.getDoorTile() : targetTile,
-                        fromRoom != null ? targetTile : loopRoomEntranceCorridor.getDoorTile(),
-                        maxMoves)) != null) {
+                Tile fromTile;
+                Tile toTile;
+                if (from.isRoom()) {
+                    fromTile = loopRoomEntranceCorridor.getDoorTile();
+                    toTile = to.asTile();
+                } else {
+                    fromTile = from.asTile();
+                    toTile = loopRoomEntranceCorridor.getDoorTile();
+                }
+                if ((path = PathFinder.findShortestPath(fromTile, toTile, maxMoves)) != null) {
                     return path;
                 }
             }
@@ -75,59 +65,6 @@ public class PathFinder {
 
         return null;
     }
-
-    /**
-     * Finds the shortest path availaable between two tiles, taking into account rooms
-     */
-    /*public static List<Tile> findShortestPathAdvanced(Tile fromTile, Tile toTile, int maxMoves) {
-        Room fromRoom = null;
-        Room toRoom = null;
-
-        // Get rooms if using room tiles
-        if (fromTile instanceof RoomTile) {
-            fromRoom = ((RoomTile) fromTile).getRoom();
-        }
-        if (toTile instanceof RoomTile) {
-            toRoom = ((RoomTile) toTile).getRoom();
-        }
-
-        List<Tile> path;
-        if (fromRoom != null && toRoom != null) { // Two
-            // Loop through each possible combination of entrance corridors
-            // to check whether the player can move between the two rooms
-            for (CorridorTile fromRoomEntranceCorridor : fromRoom.getEntranceCorridors()) {
-                for (CorridorTile toRoomEntranceCorridor : toRoom.getEntranceCorridors()) {
-                    if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor.getDoorTile(),
-                            toRoomEntranceCorridor.getDoorTile(),
-                            maxMoves)) != null) {
-                        return path;
-                    }
-                }
-            }
-        } else if (fromRoom == null && toRoom == null) { // No rooms
-            return PathFinder.findShortestPath(fromTile, toTile, maxMoves);
-        } else { // One room
-            Room loopRoom;
-            Tile targetTile;
-            if (fromRoom != null) {
-                loopRoom = fromRoom;
-                targetTile = toTile;
-            } else {
-                loopRoom = toRoom;
-                targetTile = fromTile;
-            }
-
-            for (CorridorTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
-                if ((path = PathFinder.findShortestPath(fromRoom != null ? loopRoomEntranceCorridor.getDoorTile() : targetTile,
-                        fromRoom != null ? targetTile : loopRoomEntranceCorridor.getDoorTile(),
-                        maxMoves)) != null) {
-                    return path;
-                }
-            }
-        }
-
-        return null;
-    }*/
 
     /**
      * Finds the shortest path available between two tiles.
