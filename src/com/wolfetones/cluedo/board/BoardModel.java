@@ -115,8 +115,8 @@ public class BoardModel {
                         throw new IllegalArgumentException("Door does not connect corridor and room piece [" + a.getX() + ", " + a.getY() + "] and [" + b.getX() + ", " + b.getY() + "]");
                     }
 
-                    corridorTile.setDoorTile(roomTile);
-                    roomTile.getRoom().addEntranceCorridor(corridorTile);
+                    roomTile.getRoom().addEntranceCorridor(roomTile);
+                    corridorTile.addDoor(roomTile);
                 }
             }
         }

@@ -5,6 +5,7 @@ import com.wolfetones.cluedo.card.Token;
 
 public class RoomTile extends TokenOccupiableTile {
     private Room mRoom;
+    private CorridorTile mDoorTile;
 
     public RoomTile(int x, int y, Room room) {
         super(x, y);
@@ -18,16 +19,15 @@ public class RoomTile extends TokenOccupiableTile {
         return mRoom;
     }
 
-    @Override
-    public void setToken(Token token) {
-        if (mToken != null) {
-            mRoom.removeToken(mToken);
-        }
+    public void setDoorTile(CorridorTile room) {
+        mDoorTile = room;
+    }
 
-        super.setToken(token);
+    public CorridorTile getDoorTile() {
+        return mDoorTile;
+    }
 
-        if (token != null) {
-            mRoom.addToken(token);
-        }
+    public boolean hasDoor() {
+        return mDoorTile != null;
     }
 }

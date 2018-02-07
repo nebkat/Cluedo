@@ -16,7 +16,6 @@ public abstract class Tile {
 
     private TileComponent mButton;
 
-    protected List<Tile> mNeighbours = new ArrayList<>();
     protected List<TokenOccupiableTile> mTokenTraversableNeighbours = new ArrayList<>();
 
     public Tile(int x, int y) {
@@ -54,19 +53,10 @@ public abstract class Tile {
         mRight = right;
         mDown = down;
 
-        mNeighbours.add(left);
-        mNeighbours.add(up);
-        mNeighbours.add(right);
-        mNeighbours.add(down);
-
         if (left instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) left);
         if (up instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) up);
         if (right instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) right);
         if (down instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) down);
-    }
-
-    public List<Tile> getNeighbours() {
-        return mNeighbours;
     }
 
     public List<TokenOccupiableTile> getTokenTraversableNeighbours() {

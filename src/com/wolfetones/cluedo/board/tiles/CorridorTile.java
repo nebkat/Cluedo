@@ -3,23 +3,8 @@ package com.wolfetones.cluedo.board.tiles;
 import com.wolfetones.cluedo.game.Location;
 
 public class CorridorTile extends TokenOccupiableTile implements Location {
-    private RoomTile mDoorTile = null;
-
     public CorridorTile(int x, int y) {
         super(x, y);
-    }
-
-    public void setDoorTile(RoomTile room) {
-        mDoorTile = room;
-        mTokenTraversableNeighbours.add(room);
-    }
-
-    public boolean hasDoor() {
-        return mDoorTile != null;
-    }
-
-    public RoomTile getDoorTile() {
-        return mDoorTile;
     }
 
     public boolean canMove() {
@@ -43,8 +28,11 @@ public class CorridorTile extends TokenOccupiableTile implements Location {
     }
 
     private boolean canMoveToTile(Tile t) {
-        return (t instanceof CorridorTile && !((CorridorTile) t).isOccupied()) ||
-                t == mDoorTile;
+        return t instanceof TokenOccupiableTile && mTokenTraversableNeighbours.contains(t);
+    }
+
+    public void addDoor(RoomTile t) {
+        mTokenTraversableNeighbours.add(t);
     }
 
     @Override

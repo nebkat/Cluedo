@@ -1,6 +1,5 @@
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
 import com.wolfetones.cluedo.game.Location;
@@ -13,10 +12,8 @@ public class Room extends Card implements Location {
     private boolean mIsGuessRoom;
     private Room mPassageRoom;
 
-    private List<Token> mTokens = new ArrayList<>();
-
     private List<RoomTile> mTiles = new ArrayList<>();
-    private List<CorridorTile> mEntranceCorridors = new ArrayList<>();
+    private List<RoomTile> mEntranceCorridors = new ArrayList<>();
 
     private int mTileSumX = 0;
     private int mTileSumY = 0;
@@ -90,14 +87,6 @@ public class Room extends Card implements Location {
         return mPassageRoom;
     }
 
-    public void addToken(Token token) {
-        mTokens.add(token);
-    }
-
-    public void removeToken(Token token) {
-        mTokens.remove(token);
-    }
-
     public RoomTile getNextUnoccupiedTile(Token token) {
         // If token is already in room return its current tile
         if (token.getTile() instanceof RoomTile && mTiles.contains(token.getTile())) {
@@ -114,11 +103,11 @@ public class Room extends Card implements Location {
         return mTiles;
     }
 
-    public void addEntranceCorridor(CorridorTile tile) {
+    public void addEntranceCorridor(RoomTile tile) {
         mEntranceCorridors.add(tile);
     }
 
-    public List<CorridorTile> getEntranceCorridors() {
+    public List<RoomTile> getEntranceCorridors() {
         return mEntranceCorridors;
     }
 

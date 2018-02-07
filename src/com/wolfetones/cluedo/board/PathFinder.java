@@ -1,6 +1,7 @@
 package com.wolfetones.cluedo.board;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
+import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
 import com.wolfetones.cluedo.card.Room;
@@ -31,10 +32,10 @@ public class PathFinder {
         if (from.isRoom() && to.isRoom()) { // Two
             // Loop through each possible combination of entrance corridors
             // to check whether the player can move between the two rooms
-            for (CorridorTile fromRoomEntranceCorridor : from.asRoom().getEntranceCorridors()) {
-                for (CorridorTile toRoomEntranceCorridor : to.asRoom().getEntranceCorridors()) {
-                    if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor.getDoorTile(),
-                            toRoomEntranceCorridor.getDoorTile(),
+            for (RoomTile fromRoomEntranceCorridor : from.asRoom().getEntranceCorridors()) {
+                for (RoomTile toRoomEntranceCorridor : to.asRoom().getEntranceCorridors()) {
+                    if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor,
+                            toRoomEntranceCorridor,
                             maxMoves)) != null) {
                         return path;
                     }
@@ -47,16 +48,9 @@ public class PathFinder {
             Room loopRoom = from.isRoom() ? from.asRoom() : to.asRoom();
 
             // Loop through each entrance corridor
-            for (CorridorTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
-                Tile fromTile;
-                Tile toTile;
-                if (from.isRoom()) {
-                    fromTile = loopRoomEntranceCorridor.getDoorTile();
-                    toTile = to.asTile();
-                } else {
-                    fromTile = from.asTile();
-                    toTile = loopRoomEntranceCorridor.getDoorTile();
-                }
+            for (RoomTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
+                Tile fromTile = from.isRoom() ? loopRoomEntranceCorridor : from.asTile();
+                Tile toTile = to.isRoom() ? loopRoomEntranceCorridor : to.asTile();
                 if ((path = PathFinder.findShortestPath(fromTile, toTile, maxMoves)) != null) {
                     return path;
                 }

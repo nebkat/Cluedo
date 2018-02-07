@@ -179,14 +179,14 @@ public class GameController {
 
                 Location startLocation = mGame.getCurrentPlayerLocation();
                 if (startLocation.isRoom()) {
-                    List<CorridorTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
+                    List<RoomTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
                     String[] validCommands = new String[corridorTiles.size()];
                     for (int i = 1; i <= corridorTiles.size(); i++) {
                         validCommands[i - 1] = Integer.toString(i);
                     }
-                    String entranceCorridor = readCommand("Choose room exit", validCommands);
+                    int entranceCorridor = Integer.parseInt(readCommand("Choose room exit", validCommands)) - 1;
 
-                    remainingMovements = mGame.moveTo(corridorTiles.get(Integer.parseInt(entranceCorridor) - 1));
+                    remainingMovements = mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
                 }
 
                 Tile moveTile = null;
@@ -365,8 +365,8 @@ public class GameController {
 
             List<Tile> path = null;
             if (mEndTile instanceof RoomTile) {
-                for (CorridorTile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
-                    List<Tile> p = PathFinder.findShortestPath(mToken.getTile(), t.getDoorTile(), 101);
+                for (RoomTile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
+                    List<Tile> p = PathFinder.findShortestPath(mToken.getTile(), t, 101);
                     if (p == null) continue;
                     if (path == null || p.size() < path.size()) {
                         path = p;
