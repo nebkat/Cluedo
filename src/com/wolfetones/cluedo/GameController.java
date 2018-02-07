@@ -28,6 +28,11 @@ import java.util.stream.IntStream;
 public class GameController {
     private static final boolean CHEAT_ENABLED = true;
 
+    private static final Integer BOARD_LAYER_START_TILE_CIRCLES = 0;
+    private static final Integer BOARD_LAYER_TILES = 1;
+    private static final Integer BOARD_LAYER_ROOM_NAMES = 2;
+    private static final Integer BOARD_LAYER_TOKENS = 3;
+
     private static final String HIDDEN_COMMAND_PREFIX = "@";
 
     private static final String COMMAND_ROLL = "roll";
@@ -343,7 +348,7 @@ public class GameController {
         mBoardTilePanel.setBounds(0, 0, mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
         mBoardTilePanel.setOpaque(false);
 
-        mBoardLayeredPane.add(mBoardTilePanel, new Integer(2));
+        mBoardLayeredPane.add(mBoardTilePanel, BOARD_LAYER_TILES);
 
         for (Room r : mGame.getBoard().getRooms()) {
             JLabel label = new JLabel(r.getName().toUpperCase());
@@ -356,7 +361,11 @@ public class GameController {
 
             label.setBounds(centerX - 250, centerY - 100, 500, 200);
 
-            mBoardLayeredPane.add(label, new Integer(3));
+            mBoardLayeredPane.add(label, BOARD_LAYER_ROOM_NAMES);
+        }
+
+        for (Suspect s : mGame.getBoard().getSuspects()) {
+            mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
         }
 
         Runnable update = () -> {
@@ -446,11 +455,7 @@ public class GameController {
                 }
 
                 if (tile instanceof StartTile) {
-                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), new Integer(1));
-
-                    TokenComponent t = new SuspectTokenComponent(((StartTile) tile).getStartingSuspect(), mTileSize);
-
-                    mBoardLayeredPane.add(t, new Integer(5));
+                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), BOARD_LAYER_START_TILE_CIRCLES);
                 }
 
                 if (tile instanceof PassageTile) {
