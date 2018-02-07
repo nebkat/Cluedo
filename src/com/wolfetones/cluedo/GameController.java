@@ -62,8 +62,7 @@ public class GameController {
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
 
-    private static Tile mStartTile = null;
-    private static Tile mEndTile = null;
+    private static Location mEndLocation = null;
 
     private static Token mToken = null;
 
@@ -369,33 +368,21 @@ public class GameController {
         }
 
         Runnable update = () -> {
-            if (mToken == null || mEndTile == null) {
+            if (mToken == null || mEndLocation == null) {
                 if (mTimer != null) mTimer.stop();
                 return;
             }
 
-            List<Tile> path = null;
-            if (mEndTile instanceof RoomTile) {
-                for (RoomTile t : ((RoomTile) mEndTile).getRoom().getEntranceCorridors()) {
-                    List<Tile> p = PathFinder.findShortestPath(mToken.getTile(), t, 101);
-                    if (p == null) continue;
-                    if (path == null || p.size() < path.size()) {
-                        path = p;
-                    }
-                }
-            } else {
-                path = PathFinder.findShortestPath(mToken.getTile(), mEndTile, 120);
-            }
-
+            List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(mToken.getLocation(), mEndLocation, 101);
             if (path == null) {
                 path = Collections.singletonList(mToken.getTile());
             }
 
-            final Iterator<Tile> finalPath = path.iterator();
+            final Iterator<TokenOccupiableTile> finalPath = path.iterator();
             if (mTimer != null) mTimer.stop();
             mTimer = new Timer(100, evt -> {
-                Tile next = finalPath.next();
-                mToken.setTile(next);
+                TokenOccupiableTile next = finalPath.next();
+                mToken.setLocation(next instanceof RoomTile ? ((RoomTile) next).getRoom() : (CorridorTile) next);
                 if (!finalPath.hasNext()) {
                     mTimer.stop();
                 }
@@ -440,7 +427,6 @@ public class GameController {
                     button.addMouseListener(new MouseAdapter() {
                         @Override
                         public void mousePressed(MouseEvent e) {
-                            mStartTile = tile;
                             mToken = ((TokenOccupiableTile) tile).getToken();
 
                             update.run();
@@ -448,7 +434,7 @@ public class GameController {
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
-                            mEndTile = tile;
+                            mEndLocation = tile instanceof RoomTile ? ((RoomTile) tile).getRoom() : (CorridorTile) tile;
                             update.run();
                         }
                     });
