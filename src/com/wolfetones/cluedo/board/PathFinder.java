@@ -27,20 +27,24 @@ public class PathFinder {
     /**
      * Finds the shortest path availaable between two locations, taking into account room entrance corridors
      */
-    public static List<Tile> findShortestPathAdvanced(Location from, Location to, int maxMoves) {
-        List<Tile> path;
+    public static List<TokenOccupiableTile> findShortestPathAdvanced(Location from, Location to, int maxMoves) {
+        List<TokenOccupiableTile> path;
         if (from.isRoom() && to.isRoom()) { // Two
             // Loop through each possible combination of entrance corridors
             // to check whether the player can move between the two rooms
+            List<TokenOccupiableTile> min = null;
             for (RoomTile fromRoomEntranceCorridor : from.asRoom().getEntranceCorridors()) {
                 for (RoomTile toRoomEntranceCorridor : to.asRoom().getEntranceCorridors()) {
                     if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor,
                             toRoomEntranceCorridor,
                             maxMoves)) != null) {
-                        return path;
+                        if (min == null || path.size() < min.size()) {
+                            min = path;
+                        }
                     }
                 }
             }
+            return min;
         } else if (!from.isRoom() && !to.isRoom()) { // No rooms
             return PathFinder.findShortestPath(from.asTile(), to.asTile(), maxMoves);
         } else { // One room
@@ -48,16 +52,18 @@ public class PathFinder {
             Room loopRoom = from.isRoom() ? from.asRoom() : to.asRoom();
 
             // Loop through each entrance corridor
+            List<TokenOccupiableTile> min = null;
             for (RoomTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
-                Tile fromTile = from.isRoom() ? loopRoomEntranceCorridor : from.asTile();
-                Tile toTile = to.isRoom() ? loopRoomEntranceCorridor : to.asTile();
+                TokenOccupiableTile fromTile = from.isRoom() ? loopRoomEntranceCorridor : from.asTile();
+                TokenOccupiableTile toTile = to.isRoom() ? loopRoomEntranceCorridor : to.asTile();
                 if ((path = PathFinder.findShortestPath(fromTile, toTile, maxMoves)) != null) {
-                    return path;
+                    if (min == null || path.size() < min.size()) {
+                        min = path;
+                    }
                 }
             }
+            return min;
         }
-
-        return null;
     }
 
     /**
@@ -68,7 +74,7 @@ public class PathFinder {
      * @param maxMoves The maximum number of moves allowed to reach the target
      * @return A list of tiles containing the shortest path from {@code start} to {@code target}
      */
-    public static List<Tile> findShortestPath(Tile start, Tile target, int maxMoves) {
+    public static List<TokenOccupiableTile> findShortestPath(TokenOccupiableTile start, TokenOccupiableTile target, int maxMoves) {
         // If tiles are too distant by manhattan route a path is not possible
         if (tileManhattanDistance(start, target) > maxMoves) {
             return null;
@@ -95,7 +101,7 @@ public class PathFinder {
             if (expectedMovesForNode(currentNode, target) > maxMoves) continue;
 
             // Append current tile to the path
-            List<Tile> path = new ArrayList<>(currentNode.path);
+            List<TokenOccupiableTile> path = new ArrayList<>(currentNode.path);
             path.add(currentNode.tile);
 
             // Loop through neighbours
@@ -147,7 +153,7 @@ public class PathFinder {
 
         // If path to target was found return
         if (nodes.containsKey(target)) {
-            List<Tile> path = nodes.get(target).path;
+            List<TokenOccupiableTile> path = nodes.get(target).path;
             path.add(target);
             return path;
         }
@@ -174,8 +180,8 @@ public class PathFinder {
      * A node in the search for a path between two tiles
      */
     private static class Node {
-        private Tile tile;
-        private List<Tile> path;
+        private TokenOccupiableTile tile;
+        private List<TokenOccupiableTile> path;
         private boolean vertical;
         private int turns;
 
@@ -187,7 +193,7 @@ public class PathFinder {
          * @param v Whether the last movement was vertical
          * @param d The total number of changes of direction
          */
-        private Node(Tile t, List<Tile> p, boolean v, int d) {
+        private Node(TokenOccupiableTile t, List<TokenOccupiableTile> p, boolean v, int d) {
             tile = t;
             path = p;
             vertical = v;

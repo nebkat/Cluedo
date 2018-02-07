@@ -171,7 +171,7 @@ public class Game {
         }
 
         // Make sure tile can be reached within the allowed number of moves
-        List<Tile> shortestPath = PathFinder.findShortestPathAdvanced(mCurrentPlayerLocation, location, mTurnRemainingMoves);
+        List<TokenOccupiableTile> shortestPath = PathFinder.findShortestPathAdvanced(mCurrentPlayerLocation, location, mTurnRemainingMoves);
         if (shortestPath == null) {
             throw new InvalidStateException("Cannot move to location " + location);
         }
