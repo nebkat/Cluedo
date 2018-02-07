@@ -10,12 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BoardModel {
+    /**
+     * Cards
+     */
     private List<Room> mRooms = new ArrayList<>();
     private List<Suspect> mSuspects = new ArrayList<>();
     private List<Weapon> mWeapons = new ArrayList<>();
 
+    /**
+     * A 2D array containing the tiles on the board, in format {@code [y][x]}.
+     */
     private Tile[][] mTiles = new Tile[Config.Board.HEIGHT][Config.Board.WIDTH];
 
+    /**
+     * Constructs a new {@code BoardModel} and initializes all cards and tiles.
+     */
     public BoardModel() {
         // Initialize rooms
         for (int i = 0; i < Config.Cards.ROOMS.length; i++) {
@@ -45,14 +54,17 @@ public class BoardModel {
                 char c = Config.Board.BOARD_STRING.charAt(tileCoordinatesToBoardStringOffset(x, y));
 
                 if (Character.isDigit(c)) {
+                    // Room
                     int r = Integer.parseInt(Character.toString(c));
 
                     mTiles[y][x] = new RoomTile(x, y, mRooms.get(r));
                 } else if (Config.Board.Tiles.PASSAGES.containsKey(c)) {
+                    // Passage
                     int[] passage = Config.Board.Tiles.PASSAGES.get(c);
 
                     mTiles[y][x] = new PassageTile(x, y, mRooms.get(passage[0]), mRooms.get(passage[1]));
                 } else {
+                    // Other tile
                     switch (c) {
                         case Config.Board.Tiles.EMPTY:
                             mTiles[y][x] = new EmptyTile(x, y);
@@ -89,43 +101,60 @@ public class BoardModel {
 
         // Update doors
         for (int y = 0; y < Config.Board.STRING_HEIGHT; y++) {
+            // Checking horizontal or vertical doors depends on row
             boolean horizontal = y % 2 == 1;
             for (int x = horizontal ? 0 : 1; x < Config.Board.STRING_WIDTH; x += 2) {
-                if (Config.Board.BOARD_STRING.charAt(boardStringCoordinatesToOffset(x, y)) == Config.Board.Tiles.DOOR) {
-                    Tile a;
-                    Tile b;
-                    if (horizontal) {
-                        a = mTiles[y / 2][(x - 1) / 2];
-                        b = mTiles[y / 2][(x + 1) / 2];
-                    } else {
-                        a = mTiles[(y - 1) / 2][x / 2];
-                        b = mTiles[(y + 1) / 2][x / 2];
-                    }
+                // Ignore all except doors
+                if (Config.Board.BOARD_STRING.charAt(boardStringCoordinatesToOffset(x, y)) != Config.Board.Tiles.DOOR) continue;
 
-                    RoomTile roomTile;
-                    CorridorTile corridorTile;
-
-                    if (a instanceof RoomTile && b instanceof CorridorTile) {
-                        roomTile = (RoomTile) a;
-                        corridorTile = (CorridorTile) b;
-                    } else if (a instanceof CorridorTile && b instanceof RoomTile) {
-                        roomTile = (RoomTile) b;
-                        corridorTile = (CorridorTile) a;
-                    } else {
-                        throw new IllegalArgumentException("Door does not connect corridor and room piece [" + a.getX() + ", " + a.getY() + "] and [" + b.getX() + ", " + b.getY() + "]");
-                    }
-
-                    roomTile.getRoom().addEntranceCorridor(roomTile);
-                    corridorTile.addDoor(roomTile);
+                Tile a;
+                Tile b;
+                if (horizontal) {
+                    a = mTiles[y / 2][(x - 1) / 2];
+                    b = mTiles[y / 2][(x + 1) / 2];
+                } else {
+                    a = mTiles[(y - 1) / 2][x / 2];
+                    b = mTiles[(y + 1) / 2][x / 2];
                 }
+
+                RoomTile roomTile;
+                CorridorTile corridorTile;
+
+                if (a instanceof RoomTile && b instanceof CorridorTile) {
+                    roomTile = (RoomTile) a;
+                    corridorTile = (CorridorTile) b;
+                } else if (a instanceof CorridorTile && b instanceof RoomTile) {
+                    roomTile = (RoomTile) b;
+                    corridorTile = (CorridorTile) a;
+                } else {
+                    throw new IllegalArgumentException("Door does not connect corridor and room piece [" + a.getX() + ", " + a.getY() + "] and [" + b.getX() + ", " + b.getY() + "]");
+                }
+
+                roomTile.setDoorTile(corridorTile);
+                corridorTile.addDoor(roomTile);
             }
         }
+
+        // Remove guess room from rooms list
+        mRooms.remove(0);
     }
 
+    /**
+     * Returns the tile at the specified coordinates.
+     *
+     * @param x X coordinate of the tile.
+     * @param y Y coordinate of the tile.
+     * @return
+     */
     public Tile getTile(int x, int y) {
         return mTiles[y][x];
     }
 
+    /**
+     * Returns a list containing all of the {@code Room} cards.
+     *
+     * @return a list containing all of the {@code Room} cards.
+     */
     public List<Room> getRooms() {
         return mRooms;
     }
