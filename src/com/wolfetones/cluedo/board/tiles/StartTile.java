@@ -10,7 +10,6 @@ public class StartTile extends CorridorTile {
 
     public StartTile(int x, int y, Suspect startingSuspect) {
         super(x, y);
-        startingSuspect.setLocation(this);
         mStartingSuspect = startingSuspect;
     }
 

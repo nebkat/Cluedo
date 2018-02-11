@@ -74,7 +74,9 @@ public class BoardModel {
                             mTiles[y][x] = new EmptyTile(x, y);
                             break;
                         case Config.Board.Tiles.START:
-                            mTiles[y][x] = new StartTile(x, y, mSuspects.get(Config.Board.Tiles.STARTS[startTileSuspectIterator++]));
+                            Suspect startingSuspect = mSuspects.get(Config.Board.Tiles.STARTS[startTileSuspectIterator++]);
+                            mTiles[y][x] = new StartTile(x, y, startingSuspect);
+                            startingSuspect.setLocation((CorridorTile) mTiles[y][x]);
                             break;
                         case Config.Board.Tiles.CORRIDOR:
                             mTiles[y][x] = new CorridorTile(x, y);
