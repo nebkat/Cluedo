@@ -1,8 +1,12 @@
 package com.wolfetones.cluedo.card;
 
+import javax.swing.*;
+
 public abstract class Card {
     private int mId;
     private String mName;
+
+    private ImageIcon mCardImage;
 
     Card(int id, String name) {
         mId = id;

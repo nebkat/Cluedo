@@ -113,75 +113,71 @@ public class Config {
 
     public static class Cards {
         public static final Room[] ROOMS = {
-            new Room("Guess Room", true),
-            new Room("Kitchen", 9),
-            new Room("Ball Room"),
-            new Room("Conservatory", 7),
-            new Room("Dining Room"),
-            new Room("Billiard Room"),
-            new Room("Library"),
-            new Room("Lounge", 3),
-            new Room("Hall"),
-            new Room("Study", 1)
+            new Room("Guess Room", null, true),
+            new Room("Kitchen", "card-room-kitchen.png"),
+            new Room("Living Room", "card-room-.png"),
+            new Room("Conservatory", "card-room-conservatory.png"),
+            new Room("Library", "card-room-library.png"),
+            new Room("Billiard Room", "card-room-billiard-room.png"),
+            new Room("Trophy Room", "card-room-trophy-room.png"),
+            new Room("Bedroom", "card-room-bedroom.png"),
+            new Room("Hall", "card-room-hall.png"),
+            new Room("Studio", "card-room-studio.png")
         };
 
         public static final Suspect[] SUSPECTS = {
-                new Suspect("Miss Scarlett", Color.RED),
-                new Suspect("Colonel Mustard", Color.YELLOW),
-                new Suspect("Mrs. White", Color.WHITE),
-                new Suspect("Reverend Green", Color.GREEN),
-                new Suspect("Mrs. Peacock", Color.BLUE),
-                new Suspect("Professor Plum", Color.MAGENTA)
+                new Suspect("Miss Scarlett", "card-suspect-miss-scarlett.png", Color.RED),
+                new Suspect("Colonel Mustard", "card-suspect-colonel-mustard.png", Color.YELLOW),
+                new Suspect("Mrs. White", "card-suspect-mrs-white.png", Color.WHITE),
+                new Suspect("Reverend Green", "card-suspect-reverend-green.png", Color.GREEN),
+                new Suspect("Mrs. Peacock", "card-suspect-mrs-peacock.png", Color.BLUE),
+                new Suspect("Professor Plum", "card-suspect-professor-plum.png", Color.MAGENTA)
         };
 
         public static final Weapon[] WEAPONS = {
-                new Weapon("Candlestick"),
-                new Weapon("Dagger"),
-                new Weapon("Lead Pipe"),
-                new Weapon("Revolver"),
-                new Weapon("Rope"),
-                new Weapon("Spanner")
+                new Weapon("Candlestick", "card-weapon-candlestick.png"),
+                new Weapon("Fire Poker", "card-weapon-fire-poker.png"),
+                new Weapon("Garden Shears", "card-weapon-garden-shears.png"),
+                new Weapon("Poison", "card-weapon-poison.png"),
+                new Weapon("Ice Pick", "card-weapon-ice-pick.png"),
+                new Weapon("Revolver", "card-weapon-revolver.png")
         };
 
-        public static class Room {
-            public final String name;
+        public static class Room extends Card {
             public final boolean guess;
-            public final int passage;
 
-            Room(String n) {
-                this(n, false);
+            Room(String n, String i) {
+                this(n, i, false);
             }
 
-            Room(String n, int p) {
-                this(n, false, p);
-            }
-
-            Room(String n, boolean g) {
-                this(n, g, -1);
-            }
-
-            Room(String n, boolean g, int p) {
-                name = n;
+            Room(String n, String i, boolean g) {
+                super(n, i);
                 guess = g;
-                passage = p;
             }
         }
 
-        public static class Suspect {
-            public final String name;
+        public static class Suspect extends Card {
             public final Color color;
 
-            Suspect(String n, Color c) {
-                name = n;
+            Suspect(String n, String i, Color c) {
+                super(n, i);
                 color = c;
             }
         }
 
-        public static class Weapon {
-            public final String name;
+        public static class Weapon extends Card {
+            Weapon(String n, String i) {
+                super(n, i);
+            }
+        }
 
-            Weapon(String n) {
+        public abstract static class Card {
+            public final String name;
+            public final String image;
+
+            Card(String n, String i) {
                 name = n;
+                image = i;
             }
         }
     }
