@@ -13,14 +13,11 @@ import com.wolfetones.cluedo.ui.*;
 
 import javax.swing.*;
 import javax.swing.Timer;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.awt.GridLayout;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.*;
+import java.io.PrintStream;
 import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -53,14 +50,17 @@ public class GameController {
     private static final String COMMAND_YES = "y";
     private static final String COMMAND_NO = "n";
 
-
     private Game mGame = new Game();
 
     private int mTileSize;
 
     private JFrame mMainFrame;
+
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
+
+    private OutputPanel mOutputPanel;
+    private InputPanel mInputPanel;
 
     private static Location mEndLocation = null;
 
@@ -78,11 +78,10 @@ public class GameController {
     }
 
     private GameController() {
-        mInputScanner = new Scanner(System.in);
-
         selectPlayers();
         setupFrame();
 
+        mInputScanner = new Scanner(System.in);
 
         mGame.start();
 
@@ -130,7 +129,12 @@ public class GameController {
 
         String command;
         while (true) {
-            command = mInputScanner.nextLine();
+            command = mInputScanner.nextLine().trim().toLowerCase();
+
+            // Wait for text
+            if (command.length() == 0) {
+                continue;
+            }
 
             // Exit the loop if the command is valid
             if (validCommandsList.contains(command)) {
@@ -304,7 +308,8 @@ public class GameController {
 
     private void passToPlayer(Player p) {
         // TODO: Dialog requesting player
-        System.out.println("Please pass to " + p.getName());
+        System.out.println("Please pass to " + p.getName() + " and press enter to continue");
+        mInputScanner.nextLine();
     }
 
     private Suggestion makeSuggestion(Room currentRoom) {
@@ -329,8 +334,35 @@ public class GameController {
         Rectangle windowSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
         mTileSize = (int) (windowSize.getHeight() * 0.80 / Config.Board.HEIGHT);
 
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
+        mMainFrame.setContentPane(mainPanel);
+
         setupBoard();
 
+        JPanel terminal = new JPanel();
+        terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
+
+        mOutputPanel = new OutputPanel();
+        mInputPanel = new InputPanel();
+
+        JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
+        outputScrollPane.setPreferredSize(mOutputPanel.getPreferredSize());
+        outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        outputScrollPane.setPreferredSize(new Dimension((int)(screenSize.width * 0.25), (int)(screenSize.height * 0.4)));
+
+        terminal.add(outputScrollPane);
+        terminal.add(mInputPanel);
+
+        System.setOut(new PrintStream(mOutputPanel.getOutputStream()));
+        System.setErr(System.out);
+        System.setIn(mInputPanel.getInputStream());
+
+        mMainFrame.add(terminal);
+
+        mMainFrame.pack();
         mMainFrame.setVisible(true);
     }
 
@@ -338,9 +370,8 @@ public class GameController {
         mBoardLayeredPane = new JLayeredPane();
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
         mBoardLayeredPane.setOpaque(true);
-        mMainFrame.setContentPane(mBoardLayeredPane);
+        mMainFrame.add(mBoardLayeredPane);
         mBoardLayeredPane.setPreferredSize(new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT));
-        mMainFrame.pack();
 
         mBoardTilePanel = new JPanel();
         mBoardTilePanel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
