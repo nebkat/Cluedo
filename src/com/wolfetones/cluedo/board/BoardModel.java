@@ -7,7 +7,11 @@ import com.wolfetones.cluedo.card.Weapon;
 import com.wolfetones.cluedo.config.Config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class BoardModel {
     /**
@@ -134,6 +138,17 @@ public class BoardModel {
                 corridorTile.addDoor(roomTile);
             }
         }
+
+        // Place weapons in rooms
+        List<Integer> weaponRooms = IntStream.range(1, mRooms.size())
+                .boxed()
+                .collect(Collectors.toList());
+        Collections.shuffle(weaponRooms);
+
+        for (int i = 0; i < mWeapons.size(); i++) {
+            mWeapons.get(i).setLocation(mRooms.get(weaponRooms.get(i)));
+        }
+
 
         // Remove guess room from rooms list
         mRooms.remove(0);
