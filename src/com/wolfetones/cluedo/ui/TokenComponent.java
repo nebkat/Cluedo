@@ -29,6 +29,10 @@ public abstract class TokenComponent extends JComponent implements Token.TokenTi
     }
 
     public void setTile(Tile tile) {
-        setLocation(new Point(tile.getX() * mTileSize, tile.getY() * mTileSize));
+        if (tile == null) {
+            setLocation(new Point(0, 0));
+        } else {
+            setLocation(new Point(tile.getX() * mTileSize, tile.getY() * mTileSize));
+        }
     }
 }

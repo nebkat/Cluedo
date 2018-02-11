@@ -367,6 +367,10 @@ public class GameController {
             mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
         }
 
+        for (Weapon w : mGame.getBoard().getWeapons()) {
+            mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
+        }
+
         Runnable update = () -> {
             if (mToken == null || mEndLocation == null) {
                 if (mTimer != null) mTimer.stop();
