@@ -5,6 +5,9 @@ import javax.swing.border.Border;
 import java.awt.*;
 import java.io.OutputStream;
 
+/**
+ * Text output panel.
+ */
 public class OutputPanel extends JTextArea {
     private PanelOutputStream mOutputStream = new PanelOutputStream();
 

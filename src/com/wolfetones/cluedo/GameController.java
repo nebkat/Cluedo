@@ -23,15 +23,30 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameController {
+    /**
+     * Setting to enable cheat command that gives the solution.
+     */
     private static final boolean CHEAT_ENABLED = true;
 
+    /**
+     * Layers for the board's {@code JLayeredPane}.
+     */
     private static final Integer BOARD_LAYER_START_TILE_CIRCLES = 0;
     private static final Integer BOARD_LAYER_TILES = 1;
     private static final Integer BOARD_LAYER_ROOM_NAMES = 2;
     private static final Integer BOARD_LAYER_TOKENS = 3;
 
+    /**
+     * Prefix placed in front of commands to hide from the list of valid commands
+     *
+     * Used with commands such as quit and cheat which are always available
+     * but not necessary to be shown every time.
+     */
     private static final String HIDDEN_COMMAND_PREFIX = "@";
 
+    /**
+     * Commands that can be executed by the user
+     */
     private static final String COMMAND_ROLL = "roll";
     private static final String COMMAND_PASSAGE = "passage";
     private static final String COMMAND_DONE = "done";
@@ -39,6 +54,7 @@ public class GameController {
     private static final String COMMAND_QUESTION = "question";
     private static final String COMMAND_ACCUSE = "accuse";
     private static final String COMMAND_NOTES = "notes";
+    private static final String COMMAND_LOG = "log";
     private static final String COMMAND_CHEAT = "cheat";
 
     private static final String COMMAND_LEFT = "l";
@@ -50,10 +66,16 @@ public class GameController {
     private static final String COMMAND_YES = "y";
     private static final String COMMAND_NO = "n";
 
+    /**
+     * Game instance
+     */
     private Game mGame = new Game();
 
     private int mTileSize;
 
+    /**
+     * Swing containers
+     */
     private JFrame mMainFrame;
 
     private JLayeredPane mBoardLayeredPane;
@@ -62,12 +84,16 @@ public class GameController {
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
 
+    /**
+     * TODO: Temporary pathfinding test code
+     */
     private static Location mEndLocation = null;
-
     private static Token mToken = null;
-
     private Timer mTimer;
 
+    /**
+     * Scanner for reading stdin
+     */
     private Scanner mInputScanner;
 
     public static void main(String[] args) {
@@ -78,13 +104,14 @@ public class GameController {
     }
 
     private GameController() {
-        selectPlayers();
+        setupPlayers();
         setupFrame();
 
         mInputScanner = new Scanner(System.in);
 
         mGame.start();
 
+        // Keep performing new turns until the game is over
         while (!mGame.isFinished()) {
             performTurn();
         }
@@ -102,7 +129,7 @@ public class GameController {
     /**
      * Requests that the user enter a valid command from a list of possible commands
      *
-     * @param question Question to ask the user when listing valid commands
+     * @param question Prompt to provide to the user when listing valid commands
      * @param validCommandsList Valid commands
      * @return The command that the user entered
      */
@@ -147,6 +174,9 @@ public class GameController {
         return command;
     }
 
+    /**
+     * Performs all necessary steps for a player turn
+     */
     private void performTurn() {
         Player player = mGame.nextTurn();
 
@@ -169,10 +199,10 @@ public class GameController {
             String command = readCommand("Choose action", commands);
 
             if (command.equalsIgnoreCase(COMMAND_QUIT)) {
-                System.out.println("The solution was: " + mGame.getSolution().asSuggestionString());
+                System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
                 System.exit(0);
             } else if (command.equalsIgnoreCase(COMMAND_CHEAT)) {
-                System.out.println("The solution is: " + mGame.getSolution().asSuggestionString());
+                System.out.println("The solution is: " + mGame.getSolution().asHumanReadableString());
             } else if (command.equalsIgnoreCase(COMMAND_DONE)) {
                 break;
             } else if (command.equalsIgnoreCase(COMMAND_ROLL)) {
@@ -247,7 +277,7 @@ public class GameController {
             } else if (command.equalsIgnoreCase(COMMAND_PASSAGE)) {
                 mGame.usePassage();
             } else if (command.equalsIgnoreCase(COMMAND_QUESTION)) {
-                Suggestion suggestion = makeSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+                Suggestion suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
                 Player matchingPlayer = mGame.poseQuestion(suggestion);
 
                 if (matchingPlayer != null) {
@@ -269,9 +299,9 @@ public class GameController {
                 Suggestion suggestion;
                 boolean correct;
                 do {
-                    suggestion = makeSuggestion(null);
+                    suggestion = createSuggestion(null);
                     correct = mGame.makeFinalAccusation(suggestion);
-                } while (readCommand("Are you sure? Final accusation: " + suggestion.asSuggestionString(), COMMAND_YES, COMMAND_NO).equalsIgnoreCase(COMMAND_NO));
+                } while (readCommand("Are you sure? Final accusation: " + suggestion.asHumanReadableString(), COMMAND_YES, COMMAND_NO).equalsIgnoreCase(COMMAND_NO));
 
                 if (correct) {
                     System.out.println("Congratulations! You were correct!");
@@ -279,11 +309,21 @@ public class GameController {
                     System.out.println("Your guess was incorrect. You have been eliminated.");
                 }
             } else if (command.equalsIgnoreCase(COMMAND_NOTES)) {
-
+                // TODO
+            } else if (command.equalsIgnoreCase(COMMAND_LOG)) {
+                // TODO
             }
         }
     }
 
+    /**
+     * Requests that the user choose a card from the list of cards provided.
+     *
+     * @param question Prompt to provide to the user when listing valid cards.
+     * @param cards List of cards available.
+     * @param <T> {@code Room}, {@code Suspect} or {@code Weapon}.
+     * @return Card chosen by the user.
+     */
     private <T extends Card> T chooseCard(String question, List<T> cards) {
         List<String> names = cards.stream().map(Card::getShortName).collect(Collectors.toList());
         Map<String, T> map = cards.stream().collect(Collectors.toMap(Card::getShortName, Function.identity()));
@@ -292,7 +332,10 @@ public class GameController {
         return map.get(card);
     }
 
-    private void selectPlayers() {
+    /**
+     * Opens a dialog and allows for players to be registered to the game.
+     */
+    private void setupPlayers() {
         // TODO: Create selection dialog
         List<Suspect> suspects = mGame.getBoard().getSuspects();
 
@@ -306,13 +349,26 @@ public class GameController {
         }
     }
 
+    /**
+     * Requests that the game be passed to a player.
+     *
+     * @param p Player to pass to.
+     */
     private void passToPlayer(Player p) {
         // TODO: Dialog requesting player
         System.out.println("Please pass to " + p.getName() + " and press enter to continue");
         mInputScanner.nextLine();
     }
 
-    private Suggestion makeSuggestion(Room currentRoom) {
+    /**
+     * Creates a new {@code Suggestion} from user selection in a dialog.
+     *
+     * If {@code currentRoom} is provided then that room is used, otherwise room is prompted too.
+     *
+     * @param currentRoom Player's current room, used in the suggestion if not null.
+     * @return Suggestion created by user.
+     */
+    private Suggestion createSuggestion(Room currentRoom) {
         // TODO: Create selection dialog
         List<Suspect> suspects = mGame.getBoard().getSuspects();
         List<Weapon> weapons = mGame.getBoard().getWeapons();
@@ -325,6 +381,9 @@ public class GameController {
         return new Suggestion(room, suspect, weapon);
     }
 
+    /**
+     * Initializes main UI
+     */
     private void setupFrame() {
         mMainFrame = new JFrame();
         mMainFrame.setTitle(Config.TITLE);
@@ -366,6 +425,9 @@ public class GameController {
         mMainFrame.setVisible(true);
     }
 
+    /**
+     * Initializes board UI
+     */
     private void setupBoard() {
         mBoardLayeredPane = new JLayeredPane();
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
@@ -402,6 +464,7 @@ public class GameController {
             mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
         }
 
+        // TODO: Testing pathfinder code
         Runnable update = () -> {
             if (mToken == null || mEndLocation == null) {
                 if (mTimer != null) mTimer.stop();
@@ -445,7 +508,6 @@ public class GameController {
             }
         };
 
-
         for (int y = 0; y < Config.Board.HEIGHT; y++) {
             for (int x = 0; x < Config.Board.WIDTH; x++) {
                 Tile tile = mGame.getBoard().getTile(x, y);
@@ -458,6 +520,7 @@ public class GameController {
                     button.setBorder(new TileBorder(bc));
                 }
 
+                // TODO: Testing pathfinder code
                 if (tile instanceof TokenOccupiableTile) {
                     button.addMouseListener(new MouseAdapter() {
                         @Override

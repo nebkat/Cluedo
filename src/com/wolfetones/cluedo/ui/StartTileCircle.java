@@ -6,6 +6,9 @@ import com.wolfetones.cluedo.board.tiles.StartTile;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Colored circle placed behind starting tiles to show which player starts where.
+ */
 public class StartTileCircle extends JComponent {
     private Color mColor;
 
@@ -17,6 +20,7 @@ public class StartTileCircle extends JComponent {
 
         int size = (int) (tileSize * 2.25f);
 
+        // Move circle towards the nearest corridor tile
         if (startTile.getLeft() instanceof CorridorTile) {
             x -= tileSize / 4f;
         } else if (startTile.getUp() instanceof CorridorTile) {

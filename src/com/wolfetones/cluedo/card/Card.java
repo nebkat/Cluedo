@@ -2,6 +2,9 @@ package com.wolfetones.cluedo.card;
 
 import javax.swing.*;
 
+/**
+ * Base card class, representing a game card.
+ */
 public abstract class Card {
     private int mId;
     private String mName;

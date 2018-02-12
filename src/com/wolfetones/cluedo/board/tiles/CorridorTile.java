@@ -86,20 +86,4 @@ public class CorridorTile extends TokenOccupiableTile implements Location {
     public void addDoor(RoomTile t) {
         mTokenTraversableNeighbours.add(t);
     }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isRoom() {
-        return false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CorridorTile asTile() {
-        return this;
-    }
 }

@@ -2,6 +2,9 @@ package com.wolfetones.cluedo.card;
 
 import java.awt.Color;
 
+/**
+ * Suspect
+ */
 public class Suspect extends Token {
     private Color mColor;
     private boolean mMovedSinceLastTurn = false;

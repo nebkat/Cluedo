@@ -9,25 +9,48 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Class representing a murder suggestion.
+ *
+ * Composed of a {@code Room}, {@code Suspect} and {@code Weapon}.
+ */
 public class Suggestion {
     public final Room room;
     public final Suspect suspect;
     public final Weapon weapon;
 
+    /**
+     * Suggestion constructor.
+     *
+     * @param r Room in which the murder was committed.
+     * @param s Suspect that committed the murder.
+     * @param w Weapon that was used in the murder.
+     */
     public Suggestion(Room r, Suspect s, Weapon w) {
         room = r;
         suspect = s;
         weapon = w;
     }
 
+    /**
+     * Returns the {@code Room}, {@code Suspect} and {@code Weapon} cards of this suggestion in a list.
+     *
+     * @return The cards of the suggestion.
+     */
     public List<Card> asList() {
         return Arrays.asList(room, suspect, weapon);
     }
 
-    public String asSuggestionString() {
+    public String asHumanReadableString() {
         return suspect.getName() + " in the " + room.getName() + " with a " + weapon.getName();
     }
 
+    /**
+     * Custom comparator, returns {@code true} if {@code Suggestion}s are identical (same room/suspect/weapon).
+     *
+     * @param obj Object to compare to.
+     * @return {@code true} if {@code Suggestion}s are identical.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

@@ -1,6 +1,5 @@
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.board.BoardModel;
 import com.wolfetones.cluedo.config.Config;
 
 import javax.swing.border.Border;

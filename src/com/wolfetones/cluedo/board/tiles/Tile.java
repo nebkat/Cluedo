@@ -6,17 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Base tile class, representing a tile on the board
+ * Base tile class, representing a tile on the board.
  */
 public abstract class Tile {
     /**
-     * Tile Coordinates
+     * Tile coordinates.
      */
     protected int mX;
     protected int mY;
 
     /**
-     * Neighbouring tiles
+     * Neighbouring tiles.
      */
     protected Tile mLeft;
     protected Tile mUp;

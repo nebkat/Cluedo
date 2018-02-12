@@ -8,6 +8,9 @@ import java.awt.event.KeyListener;
 import java.io.InputStream;
 import java.nio.BufferOverflowException;
 
+/**
+ * User text input panel.
+ */
 public class InputPanel extends JTextField implements KeyListener {
     private PanelInputStream mInputStream = new PanelInputStream();
 
