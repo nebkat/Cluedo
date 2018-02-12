@@ -100,6 +100,13 @@ public class GameController {
         System.out.println("Welcome to " + Config.TITLE + " by");
         System.out.println(Config.AUTHOR);
 
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException | ClassNotFoundException e) {
+            // Ignore
+        }
+
+
         new GameController();
     }
 
