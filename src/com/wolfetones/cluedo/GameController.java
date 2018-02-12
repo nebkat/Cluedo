@@ -181,6 +181,7 @@ public class GameController {
         }
 
         mInputPanel.setCommandHints(null);
+        mInputPanel.clear();
 
         return command;
     }

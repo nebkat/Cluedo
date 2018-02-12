@@ -39,6 +39,7 @@ public class InputPanel extends JTextField implements KeyListener {
 
     public void clear() {
         setText(null);
+        mUnhintedText = "";
     }
 
     public InputStream getInputStream() {
@@ -80,7 +81,9 @@ public class InputPanel extends JTextField implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (!Character.isISOControl(e.getKeyChar())) {
+        if (!Character.isISOControl(e.getKeyChar()) ||
+                e.getKeyCode() == KeyEvent.VK_DELETE ||
+                e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
             mUnhintedText = getText().toLowerCase();
         }
 
