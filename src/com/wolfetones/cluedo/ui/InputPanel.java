@@ -2,11 +2,14 @@ package com.wolfetones.cluedo.ui;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.InputStream;
 import java.nio.BufferOverflowException;
+import java.util.List;
 
 /**
  * User text input panel.
@@ -14,7 +17,10 @@ import java.nio.BufferOverflowException;
 public class InputPanel extends JTextField implements KeyListener {
     private PanelInputStream mInputStream = new PanelInputStream();
 
-    public InputPanel () {
+    private String mUnhintedText;
+    private List<String> mCommandHints;
+
+    public InputPanel() {
         Border border = BorderFactory.createLineBorder(Color.BLACK);
         setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
@@ -25,7 +31,10 @@ public class InputPanel extends JTextField implements KeyListener {
         setMaximumSize(new Dimension(Short.MAX_VALUE, 48));
 
         addKeyListener(this);
+        setFocusTraversalKeysEnabled(false);
         setEditable(true);
+
+        mUnhintedText = getText();
     }
 
     public void clear() {
@@ -36,6 +45,10 @@ public class InputPanel extends JTextField implements KeyListener {
         return mInputStream;
     }
 
+    public void setCommandHints(List<String> commands) {
+        mCommandHints = commands;
+    }
+
     @Override
     public void keyTyped(KeyEvent e) {
 
@@ -43,10 +56,34 @@ public class InputPanel extends JTextField implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_TAB && mCommandHints != null) {
+            boolean foundCurrent = getText().equals(mUnhintedText);
+            boolean foundNext = false;
+            for (String command : mCommandHints) {
+                if (!foundCurrent) {
+                    if (getText().equalsIgnoreCase(command)) {
+                        foundCurrent = true;
+                    }
+                } else {
+                    if (command.toLowerCase().startsWith(mUnhintedText)) {
+                        setText(command);
+                        foundNext = true;
+                        break;
+                    }
+                }
+            }
+            if (!foundNext) {
+                setText(mUnhintedText);
+            }
+        }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (!Character.isISOControl(e.getKeyChar())) {
+            mUnhintedText = getText().toLowerCase();
+        }
+
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             mInputStream.append(getText() + "\n");
             System.out.println("> " + getText());

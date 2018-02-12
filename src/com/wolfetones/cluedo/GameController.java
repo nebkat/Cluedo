@@ -161,6 +161,8 @@ public class GameController {
         // Print the question along with the valid commands/answers
         System.out.println(question + " [valid: " + Util.implode(printedCommandsList, ", ") + "]");
 
+        mInputPanel.setCommandHints(printedCommandsList);
+
         String command;
         while (true) {
             command = mInputScanner.nextLine().trim().toLowerCase();
@@ -177,6 +179,8 @@ public class GameController {
 
             System.err.println("Invalid command '" + command + "'");
         }
+
+        mInputPanel.setCommandHints(null);
 
         return command;
     }
