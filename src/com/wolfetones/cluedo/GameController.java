@@ -218,8 +218,7 @@ public class GameController {
                 break;
             } else if (command.equalsIgnoreCase(COMMAND_ROLL)) {
                 int[] dice = new int[2];
-                mGame.rollDice(dice);
-                int remainingMovements = dice[0] + dice[1];
+                int remainingMovements = mGame.rollDice(dice);
                 if (remainingMovements < 0) {
                     continue;
                 }

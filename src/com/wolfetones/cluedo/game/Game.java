@@ -190,12 +190,13 @@ public class Game {
     }
 
     /**
-     * Rolls the dice randomly and sets the number of allowed moves.
+     * Rolls the dice randomly and returns the number of allowed moves.
      *
-     * @param dice Array of size {@value NUM_DICE} to store dice values.
+     * @param dice Array of size {@value NUM_DICE} to store individual dice values.
+     * @return The total number of allowed moves.
      * @throws IllegalStateException If the player has already moved or has nowhere to move to.
      */
-    public void rollDice(int[] dice) {
+    public int rollDice(int[] dice) {
         // Can't roll dice if player has already moved this turn
         if (mTurnMovementComplete) {
             throw new IllegalStateException("Player has already moved");
@@ -221,6 +222,8 @@ public class Game {
 
         // Can no longer guess (until movement is complete)
         mTurnCanPoseQuestion = false;
+
+        return mTurnRemainingMoves;
     }
 
     /**
