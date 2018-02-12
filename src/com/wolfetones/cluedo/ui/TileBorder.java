@@ -13,8 +13,8 @@ public class TileBorder implements Border {
     private static final Color COLOR_CORRIDOR = Color.decode("#666666");
     private static final Color COLOR_PASSAGE = Color.BLACK;
 
-    private static final int SIZE_WALL = 6;
-    private static final int SIZE_WINDOW = 3;
+    private static final int SIZE_WALL = 3;
+    private static final int SIZE_WINDOW = 2;
     private static final int SIZE_CORRIDOR = 1;
     private static final int SIZE_PASSAGE = 2;
 
