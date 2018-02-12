@@ -5,7 +5,6 @@ import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import java.util.*;
 import java.util.List;
@@ -233,13 +232,13 @@ public class Game {
      */
     public int moveTo(Location location) {
         if (mTurnRemainingMoves == 0) {
-            throw new InvalidStateException("No more moves remaining");
+            throw new IllegalStateException("No more moves remaining");
         }
 
         // Make sure tile can be reached within the allowed number of moves
         List<TokenOccupiableTile> shortestPath = PathFinder.findShortestPathAdvanced(mCurrentPlayerLocation, location, mTurnRemainingMoves);
         if (shortestPath == null) {
-            throw new InvalidStateException("Cannot move to location " + location);
+            throw new IllegalStateException("Cannot move to location " + location);
         }
 
         // Subtract the number of moves used
