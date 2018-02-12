@@ -18,7 +18,7 @@ public class OutputPanel extends JTextArea {
         setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(20, 5, 10, 10)));
 
         setBackground(Color.GRAY);
-        setFont(new Font("Serif", Font.PLAIN, 32));
+        setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 32));
         setWrapStyleWord(true);
         setLineWrap(true);
 

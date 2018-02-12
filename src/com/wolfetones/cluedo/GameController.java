@@ -456,7 +456,7 @@ public class GameController {
             JLabel label = new JLabel(r.getName().toUpperCase());
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.CENTER);
-            label.setFont(new Font("sans-serif", Font.BOLD, (int) (mTileSize * 0.65f)));
+            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, (int) (mTileSize * 0.65f)));
 
             int centerX = (int) (r.getCenterX() * mTileSize);
             int centerY = (int) (r.getCenterY() * mTileSize);

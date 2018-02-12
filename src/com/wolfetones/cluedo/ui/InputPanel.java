@@ -19,7 +19,7 @@ public class InputPanel extends JTextField implements KeyListener {
         setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
 
         setBackground(Color.BLACK);
-        setFont(new Font("Serif", Font.PLAIN, 48));
+        setFont(new Font(Font.MONOSPACED, Font.PLAIN, 48));
         setForeground(Color.GREEN);
 
         setMaximumSize(new Dimension(Short.MAX_VALUE, 48));
