@@ -436,12 +436,14 @@ public class GameController {
      * Initializes board UI
      */
     private void setupBoard() {
+        // Setup layered pane container
         mBoardLayeredPane = new JLayeredPane();
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
         mBoardLayeredPane.setOpaque(true);
         mMainFrame.add(mBoardLayeredPane);
         mBoardLayeredPane.setPreferredSize(new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT));
 
+        // Add tile panel
         mBoardTilePanel = new JPanel();
         mBoardTilePanel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
         mBoardTilePanel.setBounds(0, 0, mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
@@ -449,6 +451,7 @@ public class GameController {
 
         mBoardLayeredPane.add(mBoardTilePanel, BOARD_LAYER_TILES);
 
+        // Add room labels
         for (Room r : mGame.getBoard().getRooms()) {
             JLabel label = new JLabel(r.getName().toUpperCase());
             label.setHorizontalAlignment(JLabel.CENTER);
@@ -463,10 +466,12 @@ public class GameController {
             mBoardLayeredPane.add(label, BOARD_LAYER_ROOM_NAMES);
         }
 
+        // Add suspect tokens
         for (Suspect s : mGame.getBoard().getSuspects()) {
             mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
         }
 
+        // Add weapon tokens
         for (Weapon w : mGame.getBoard().getWeapons()) {
             mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
         }
@@ -515,6 +520,7 @@ public class GameController {
             }
         };
 
+        // Add tiles
         for (int y = 0; y < Config.Board.HEIGHT; y++) {
             for (int x = 0; x < Config.Board.WIDTH; x++) {
                 Tile tile = mGame.getBoard().getTile(x, y);
@@ -522,6 +528,7 @@ public class GameController {
                 tile.setButton(button);
                 button.setPreferredSize(new Dimension(mTileSize, mTileSize));
 
+                // Tile borders
                 char[] bc = BoardModel.getTileBordersAndCorners(x, y);
                 if (!IntStream.range(0, bc.length).mapToObj((i) -> bc[i]).allMatch((c) -> c == Config.Board.Tiles.EMPTY)) {
                     button.setBorder(new TileBorder(bc));
@@ -545,10 +552,12 @@ public class GameController {
                     });
                 }
 
+                // Add start tile background circle
                 if (tile instanceof StartTile) {
                     mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), BOARD_LAYER_START_TILE_CIRCLES);
                 }
 
+                // Set colors
                 if (tile instanceof PassageTile) {
                     button.setBackgroundColors(TileComponent.COLOR_PASSAGE, TileComponent.COLOR_PASSAGE.brighter());
                 } else if (tile instanceof RoomTile) {
