@@ -1,12 +1,8 @@
 package com.wolfetones.cluedo.config;
 
 
-import java.awt.*;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.util.ArrayList;
+import java.awt.Color;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Config {

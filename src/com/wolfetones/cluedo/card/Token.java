@@ -6,7 +6,7 @@ import com.wolfetones.cluedo.game.Location;
 
 public abstract class Token extends Card {
     private TokenOccupiableTile mTile;
-    private TokenTileListener mTileListner;
+    private TokenTileListener mTileListener;
     private Location mLocation;
 
     Token(int id, String name) {
@@ -42,8 +42,8 @@ public abstract class Token extends Card {
         mTile.setToken(this);
 
         // Notify the tile listener
-        if (mTileListner != null) {
-            mTileListner.onTileSet(tile);
+        if (mTileListener != null) {
+            mTileListener.onTileSet(tile);
         }
     }
 
@@ -52,7 +52,7 @@ public abstract class Token extends Card {
     }
 
     public void setTileListener(TokenTileListener listener) {
-        mTileListner = listener;
+        mTileListener = listener;
     }
 
     public interface TokenTileListener {

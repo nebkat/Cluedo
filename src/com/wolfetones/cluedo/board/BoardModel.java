@@ -161,7 +161,7 @@ public class BoardModel {
      *
      * @param x X coordinate of the tile.
      * @param y Y coordinate of the tile.
-     * @return
+     * @return The tile at the specified coordinates.
      */
     public Tile getTile(int x, int y) {
         return mTiles[y][x];

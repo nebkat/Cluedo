@@ -25,16 +25,21 @@ public class PathFinder {
     }
 
     /**
-     * Finds the shortest path availaable between two locations, taking into account room entrance corridors
+     * Finds the shortest path available between two locations, taking into account room entrance corridors
+     *
+     * @param start From location.
+     * @param target To location.
+     * @param maxMoves The maximum number of moves allowed to reach the target.
+     * @return A list of tiles containing the shortest path from {@code start} to {@code target}.
      */
-    public static List<TokenOccupiableTile> findShortestPathAdvanced(Location from, Location to, int maxMoves) {
+    public static List<TokenOccupiableTile> findShortestPathAdvanced(Location start, Location target, int maxMoves) {
         List<TokenOccupiableTile> path;
-        if (from.isRoom() && to.isRoom()) { // Two
+        if (start.isRoom() && target.isRoom()) { // Two
             // Loop through each possible combination of entrance corridors
             // to check whether the player can move between the two rooms
             List<TokenOccupiableTile> min = null;
-            for (RoomTile fromRoomEntranceCorridor : from.asRoom().getEntranceCorridors()) {
-                for (RoomTile toRoomEntranceCorridor : to.asRoom().getEntranceCorridors()) {
+            for (RoomTile fromRoomEntranceCorridor : start.asRoom().getEntranceCorridors()) {
+                for (RoomTile toRoomEntranceCorridor : target.asRoom().getEntranceCorridors()) {
                     if ((path = PathFinder.findShortestPath(fromRoomEntranceCorridor,
                             toRoomEntranceCorridor,
                             maxMoves)) != null) {
@@ -45,17 +50,17 @@ public class PathFinder {
                 }
             }
             return min;
-        } else if (!from.isRoom() && !to.isRoom()) { // No rooms
-            return PathFinder.findShortestPath(from.asTile(), to.asTile(), maxMoves);
+        } else if (!start.isRoom() && !target.isRoom()) { // No rooms
+            return PathFinder.findShortestPath(start.asTile(), target.asTile(), maxMoves);
         } else { // One room
             // Find which of from/to locations is the room
-            Room loopRoom = from.isRoom() ? from.asRoom() : to.asRoom();
+            Room loopRoom = start.isRoom() ? start.asRoom() : target.asRoom();
 
             // Loop through each entrance corridor
             List<TokenOccupiableTile> min = null;
             for (RoomTile loopRoomEntranceCorridor : loopRoom.getEntranceCorridors()) {
-                TokenOccupiableTile fromTile = from.isRoom() ? loopRoomEntranceCorridor : from.asTile();
-                TokenOccupiableTile toTile = to.isRoom() ? loopRoomEntranceCorridor : to.asTile();
+                TokenOccupiableTile fromTile = start.isRoom() ? loopRoomEntranceCorridor : start.asTile();
+                TokenOccupiableTile toTile = target.isRoom() ? loopRoomEntranceCorridor : target.asTile();
                 if ((path = PathFinder.findShortestPath(fromTile, toTile, maxMoves)) != null) {
                     if (min == null || path.size() < min.size()) {
                         min = path;
@@ -69,10 +74,10 @@ public class PathFinder {
     /**
      * Finds the shortest path available between two tiles.
      *
-     * @param start The starting tile
-     * @param target The target tile
-     * @param maxMoves The maximum number of moves allowed to reach the target
-     * @return A list of tiles containing the shortest path from {@code start} to {@code target}
+     * @param start The starting tile.
+     * @param target The target tile.
+     * @param maxMoves The maximum number of moves allowed to reach the target.
+     * @return A list of tiles containing the shortest path from {@code start} to {@code target}.
      */
     public static List<TokenOccupiableTile> findShortestPath(TokenOccupiableTile start, TokenOccupiableTile target, int maxMoves) {
         // If tiles are too distant by manhattan route a path is not possible

@@ -128,6 +128,10 @@ public class GameController {
      * Requests that the user enter a valid command from a list of possible commands
      *
      * Allows input as array instead of list
+     *
+     * @param question Prompt to provide to the user when listing valid commands
+     * @param validCommands Valid commands
+     * @return The command that the user entered
      */
     private String readCommand(String question, String... validCommands) {
         return readCommand(question, Arrays.asList(validCommands));
@@ -243,6 +247,9 @@ public class GameController {
                 boolean moved = false;
                 while (remainingMovements > 0) {
                     List<String> validCommands = new ArrayList<>(4);
+                    if (currentTile == null) {
+                        throw new IllegalStateException("Current tile cannot be null");
+                    }
                     if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
                     if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
                     if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);

@@ -33,11 +33,11 @@ public class RoomTile extends TokenOccupiableTile {
     }
 
     /**
-     * Sets the {@code CorridorTile} that this {@RoomTile} leads to through a door.
+     * Sets the {@code CorridorTile} that this {@code RoomTile} leads to through a door.
      *
      * Also defines itself as a corridor in the room using {@link Room#addEntranceCorridor}.
      *
-     * @param doorTile the {@code CorridorTile} that this {@RoomTile} leads to through a door.
+     * @param doorTile the {@code CorridorTile} that this {@code RoomTile} leads to through a door.
      */
     public void setDoorTile(CorridorTile doorTile) {
         mDoorTile = doorTile;
@@ -47,9 +47,9 @@ public class RoomTile extends TokenOccupiableTile {
     }
 
     /**
-     * Gets the {@code CorridorTile} that this {@RoomTile} leads to through a door.
+     * Gets the {@code CorridorTile} that this {@code RoomTile} leads to through a door.
      *
-     * @return the {@code CorridorTile} that this {@RoomTile} leads to through a door.
+     * @return the {@code CorridorTile} that this {@code RoomTile} leads to through a door.
      */
     public CorridorTile getDoorTile() {
         return mDoorTile;

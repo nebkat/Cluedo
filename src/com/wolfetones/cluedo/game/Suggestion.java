@@ -5,7 +5,6 @@ import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
