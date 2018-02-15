@@ -113,7 +113,6 @@ public class GameController {
      */
     private static Location mEndLocation = null;
     private static Token mToken = null;
-    private Timer mTimer;
 
     /**
      * Scanner for reading stdin
@@ -514,7 +513,6 @@ public class GameController {
         // TODO: Testing pathfinder code
         Runnable update = () -> {
             if (mToken == null || mEndLocation == null) {
-                if (mTimer != null) mTimer.stop();
                 return;
             }
 
@@ -523,17 +521,7 @@ public class GameController {
                 return;
             }
 
-            final Iterator<TokenOccupiableTile> finalPath = path.iterator();
-            if (mTimer != null) mTimer.stop();
-            mTimer = new Timer(100, evt -> {
-                TokenOccupiableTile next = finalPath.next();
-                mToken.setLocation(next instanceof RoomTile ? ((RoomTile) next).getRoom() : (CorridorTile) next);
-                if (!finalPath.hasNext()) {
-                    mTimer.stop();
-                }
-            });
-            mTimer.setRepeats(true);
-            mTimer.start();
+            mToken.setLocation(mEndLocation);
 
             for (int y = 0; y < Config.Board.HEIGHT; y++) {
                 for (int x = 0; x < Config.Board.WIDTH; x++) {

@@ -47,4 +47,8 @@ public class Util {
         int y = (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
         g.drawString(s, x, y);
     }
+
+    public static double easeInOutQuint(double t) {
+        return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
+    }
 }
