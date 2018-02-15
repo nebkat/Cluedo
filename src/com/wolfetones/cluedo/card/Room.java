@@ -38,6 +38,26 @@ import java.util.List;
  * Holds information about the room's tiles and coordinates.
  */
 public class Room extends Card implements Location {
+    /**
+     * How to lay out tokens in center of room depending on the number of tokens
+     */
+    private static final int[][] TOKEN_LAYOUTS = {
+            {1},
+            {2},
+            {2, 1},
+            {2, 2},
+            {3, 2},
+            {3, 3},
+            {2, 3, 2},
+            {3, 3, 2},
+            {3, 3, 3},
+            {3, 4, 3},
+            {4, 4, 3},
+            {4, 4, 4}
+    };
+
+    private List<Token> mTokens = new ArrayList<>();
+
     private boolean mIsGuessRoom;
     private Room mPassageRoom;
 
@@ -49,14 +69,6 @@ public class Room extends Card implements Location {
      */
     private int mTileSumX = 0;
     private int mTileSumY = 0;
-
-    /**
-     * Bounding rectangle calculations
-     */
-    private int mMinX;
-    private int mMaxX;
-    private int mMinY;
-    private int mMaxY;
 
     public Room(int id, String name, boolean isGuessRoom) {
         super(id, name);
@@ -72,40 +84,10 @@ public class Room extends Card implements Location {
      * @param tile The tile to add.
      */
     public void addTile(RoomTile tile) {
-        if (mTiles.isEmpty()) {
-            mMinX = tile.getX();
-            mMaxX = tile.getX();
-            mMinY = tile.getY();
-            mMaxY = tile.getY();
-        } else {
-            mMinX = Math.min(mMinX, tile.getX());
-            mMaxX = Math.max(mMaxX, tile.getX());
-            mMinY = Math.min(mMinY, tile.getY());
-            mMaxY = Math.max(mMaxY, tile.getY());
-        }
-
         mTiles.add(tile);
 
         mTileSumX += tile.getX();
         mTileSumY += tile.getY();
-    }
-
-    /**
-     * Returns the X coordinate of the center of the bounding rectangle of the room.
-     *
-     * @return The X coordinate of the center of the bounding rectangle of the room.
-     */
-    private float getBoundingCenterX() {
-        return ((float) mMaxX + mMinX) / 2f;
-    }
-
-    /**
-     * Returns the Y coordinate of the center of the bounding rectangle of the room.
-     *
-     * @return The Y coordinate of the center of the bounding rectangle of the room.
-     */
-    private float getBoundingCenterY() {
-        return ((float) mMaxY + mMinY) / 2f;
     }
 
     /**
@@ -124,19 +106,6 @@ public class Room extends Card implements Location {
      */
     public float getCenterY() {
         return ((float) mTileSumY) / mTiles.size() + 0.5f;
-    }
-
-    /**
-     * Returns the pythagorean distance of a tile from the center of the bounding rectangle of the room.
-     *
-     * @param t Tile from which to calculate distance to center.
-     * @return The pythagorean distance of a tile from the center of the bounding rectangle of the room.
-     */
-    private double tileDistanceFromCenter(RoomTile t) {
-        float x = Math.abs(getBoundingCenterX() - t.getX());
-        float y = Math.abs(getBoundingCenterY() - t.getY());
-
-        return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
     }
 
     /**
@@ -168,26 +137,6 @@ public class Room extends Card implements Location {
     }
 
     /**
-     * Returns the tile closest to the center of the room that is not currently occupied.
-     *
-     * If the token being placed is already in a tile it is not moved and that tile is returned.
-     *
-     * @param token Token being placed.
-     * @return The tile closest to the center of the room that is not currently occupied.
-     */
-    public RoomTile getNextUnoccupiedTile(Token token) {
-        // If token is already in room return its current tile
-        if (token.getTile() instanceof RoomTile && mTiles.contains(token.getTile())) {
-            return (RoomTile) token.getTile();
-        }
-
-        return mTiles.stream()
-                .filter(TokenOccupiableTile::isFree)
-                .min(Comparator.comparingDouble(this::tileDistanceFromCenter))
-                .orElse(null);
-    }
-
-    /**
      * A list of all of the tiles in the room.
      *
      * @return A list of all the tiles in the room.
@@ -212,5 +161,57 @@ public class Room extends Card implements Location {
      */
     public List<RoomTile> getEntranceCorridors() {
         return mEntranceCorridors;
+    }
+
+    /**
+     * Adds the token to the list of tokens currently in the room.
+     *
+     * @param token Token being added to the room.
+     */
+    public void addToken(Token token) {
+        mTokens.add(token);
+
+        updateTokenLocations();
+    }
+
+    /**
+     * Removes the token from the list of tokens currently in the room.
+     *
+     * @param token Token being removed from the room.
+     */
+    public void removeToken(Token token) {
+        mTokens.remove(token);
+
+        updateTokenLocations();
+    }
+
+    /**
+     * Updates the coordinates of tokens in the room to be distributed centrally
+     */
+    private void updateTokenLocations() {
+        int count = mTokens.size();
+
+        // No tokens to update
+        if (count == 0) {
+            return;
+        }
+
+        // Choose the appropriate token layout for the number of tokens
+        int[] layout = TOKEN_LAYOUTS[count - 1];
+
+        int tokenIndex = 0;
+
+        float centerX = getCenterX() - 0.5f;
+        float centerY = getCenterY() - 0.5f;
+
+        int rows = layout.length;
+        float relativeRow = (float) (1 - rows) / 2f;
+        for (int i = 0; i < rows; i++, relativeRow++) {
+            int columns = layout[i];
+            float relativeColumn = (float) (1 - columns) / 2f;
+            for (int j = 0; j < columns; j++, relativeColumn++) {
+                mTokens.get(tokenIndex++).setCoordinates(relativeColumn + centerX, relativeRow + centerY);
+            }
+        }
     }
 }

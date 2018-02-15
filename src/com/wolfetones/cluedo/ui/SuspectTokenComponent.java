@@ -30,6 +30,9 @@ import com.wolfetones.cluedo.card.Suspect;
 import java.awt.*;
 
 public class SuspectTokenComponent extends TokenComponent {
+    private static final float MARGIN_ACTIVE = 0.05f;
+    private static final float MARGIN = 0.1f;
+
     public SuspectTokenComponent(Suspect suspect, int tileSize) {
         super(suspect, tileSize);
     }

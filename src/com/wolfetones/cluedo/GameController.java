@@ -520,7 +520,7 @@ public class GameController {
 
             List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(mToken.getLocation(), mEndLocation, 101);
             if (path == null) {
-                path = Collections.singletonList(mToken.getTile());
+                return;
             }
 
             final Iterator<TokenOccupiableTile> finalPath = path.iterator();

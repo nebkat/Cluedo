@@ -24,62 +24,89 @@
 
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.board.tiles.Tile;
-import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
 import com.wolfetones.cluedo.game.Location;
 
 public abstract class Token extends Card {
-    private TokenOccupiableTile mTile;
-    private TokenTileListener mTileListener;
     private Location mLocation;
+
+    private Runnable mCoordinatesUpdateListener;
+    private float mCoordinateX;
+    private float mCoordinateY;
 
     Token(int id, String name) {
         super(id, name);
     }
 
+    /**
+     * Sets the {@link Location} of the {@code Token}.
+     *
+     * If the {@code Location} is a {@code Room}, the token is added to the room.
+     * If the {@code Location} is a {@code CorridorTile}, the tile's token is set.
+     *
+     * @param location The {@code Location} of the {@code Token}.
+     */
     public void setLocation(Location location) {
+        if (mLocation != null) {
+            if (mLocation.isRoom()) {
+                mLocation.asRoom().removeToken(this);
+            } else {
+                mLocation.asTile().setToken(null);
+            }
+        }
+
         mLocation = location;
 
         if (location.isRoom()) {
-            // Find an unoccupied room tile
-            setTile(((Room) location).getNextUnoccupiedTile(this));
+            location.asRoom().addToken(this);
+
+            // Coordinates will be handled by room
         } else {
-            setTile((Tile) location);
+            location.asTile().setToken(this);
+
+            setCoordinates(location.asTile().getX(), location.asTile().getY());
         }
     }
 
+    /**
+     * Gets the {@link Location} of the {@code Token}.
+     *
+     * @return The {@code Location} of the {@code Token}.
+     */
     public Location getLocation() {
         return mLocation;
     }
 
-    public void setTile(Tile tile) {
-        if (!(tile instanceof TokenOccupiableTile)) {
-            throw new IllegalStateException("Tile " + tile + " is not of class TokenOccupiableTile");
-        }
+    /**
+     * Sets the board coordinates of the {@code Token}.
+     *
+     * @param x X coordinate.
+     * @param y Y coordinate.
+     */
+    public void setCoordinates(float x, float y) {
+        mCoordinateX = x;
+        mCoordinateY = y;
 
-        // Remove token from old tile
-        if (mTile != null) {
-            mTile.setToken(null);
-        }
-
-        mTile = (TokenOccupiableTile) tile;
-        mTile.setToken(this);
-
-        // Notify the tile listener
-        if (mTileListener != null) {
-            mTileListener.onTileSet(tile);
+        if (mCoordinatesUpdateListener != null) {
+            mCoordinatesUpdateListener.run();
         }
     }
 
-    public TokenOccupiableTile getTile() {
-        return mTile;
+    public float getCoordinateX() {
+        return mCoordinateX;
     }
 
-    public void setTileListener(TokenTileListener listener) {
-        mTileListener = listener;
+    public float getCoordinateY() {
+        return mCoordinateY;
     }
 
-    public interface TokenTileListener {
-        void onTileSet(Tile tile);
+    /**
+     * Sets the coordinates update listener.
+     *
+     * Allows the token to notify its respective {@link com.wolfetones.cluedo.ui.TokenComponent} of coordinate changes.
+     *
+     * @param listener Runnable to run.
+     */
+    public void setCoordinatesListener(Runnable listener) {
+        mCoordinatesUpdateListener = listener;
     }
 }
