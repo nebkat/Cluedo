@@ -36,9 +36,9 @@ import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.List;
@@ -397,7 +397,10 @@ public class GameController {
      */
     private void passToPlayer(Player p) {
         // TODO: Dialog requesting player
-        System.out.println("Please pass to " + p.getName() + " and press enter to continue");
+        ImageIcon playerIcon = new ImageIcon(p.getCharacter().getCardImage());
+
+        JOptionPane.showMessageDialog(null, "Please pass to " + p.getName() + " and press enter to continue", "Pass To " + p.getName(), JOptionPane.INFORMATION_MESSAGE, playerIcon);
+
         mInputScanner.nextLine();
     }
 
