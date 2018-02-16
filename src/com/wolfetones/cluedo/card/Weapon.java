@@ -28,7 +28,7 @@ package com.wolfetones.cluedo.card;
  * Weapon
  */
 public class Weapon extends Token {
-    public Weapon(int id, String name) {
-        super(id, name);
+    public Weapon(int id, String name, String cardImage) {
+        super(id, name, cardImage);
     }
 }

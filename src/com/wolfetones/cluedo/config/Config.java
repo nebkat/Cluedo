@@ -135,7 +135,7 @@ public class Config {
         public static final Room[] ROOMS = {
             new Room("Guess Room", null, true),
             new Room("Kitchen", "card-room-kitchen.png"),
-            new Room("Living Room", "card-room-.png"),
+            new Room("Living Room", "card-room-living-room.png"),
             new Room("Conservatory", "card-room-conservatory.png"),
             new Room("Library", "card-room-library.png"),
             new Room("Billiard Room", "card-room-billiard-room.png"),

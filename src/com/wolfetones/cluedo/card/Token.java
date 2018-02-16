@@ -33,8 +33,8 @@ public abstract class Token extends Card {
     private float mCoordinateX;
     private float mCoordinateY;
 
-    Token(int id, String name) {
-        super(id, name);
+    Token(int id, String name, String cardImage) {
+        super(id, name, cardImage);
     }
 
     /**

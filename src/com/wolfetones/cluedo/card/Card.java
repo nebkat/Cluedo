@@ -24,7 +24,10 @@
 
 package com.wolfetones.cluedo.card;
 
-import javax.swing.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Base card class, representing a game card.
@@ -33,11 +36,20 @@ public abstract class Card {
     private int mId;
     private String mName;
 
-    private ImageIcon mCardImage;
+    private BufferedImage mCardImage;
 
-    Card(int id, String name) {
+    Card(int id, String name, String cardImage) {
         mId = id;
         mName = name;
+
+        if (cardImage != null) {
+            try {
+                mCardImage = ImageIO.read(new File("resources/" + cardImage));
+            } catch (IOException e) {
+                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + cardImage);
+                e.printStackTrace();
+            }
+        }
     }
 
     public int getId() {
@@ -50,5 +62,9 @@ public abstract class Card {
 
     public String getShortName() {
         return mName.replace(" ", "").replace(".", "").toLowerCase();
+    }
+
+    public BufferedImage getCardImage() {
+        return mCardImage;
     }
 }
