@@ -16,19 +16,19 @@ public class CardPickerDialog extends JDialog {
             getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 
             if (suspects != null) {
-                add(new CardPickerPanel(suspects));
+                add(new CardPickerPanel("Suspects", suspects));
             }
 
             if (weapons != null) {
-                add(new CardPickerPanel(weapons));
+                add(new CardPickerPanel("Weapons", weapons));
             }
 
             if (rooms != null) {
-                add(new CardPickerPanel(rooms));
+                add(new CardPickerPanel("Rooms", rooms));
             }
 
             if (cards != null) {
-                add(new CardPickerPanel(cards));
+                add(new CardPickerPanel("Cards", cards));
             }
 
             setVisible(true);
