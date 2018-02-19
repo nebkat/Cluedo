@@ -123,12 +123,14 @@ public class GameController {
         System.out.println("Welcome to " + Config.TITLE + " by");
         System.out.println(Config.AUTHOR);
 
+        // Disable HiDPI scaling
+        System.setProperty("sun.java2d.uiScale.enabled", "false");
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (IllegalAccessException | InstantiationException | UnsupportedLookAndFeelException | ClassNotFoundException e) {
             // Ignore
         }
-
 
         new GameController();
     }
