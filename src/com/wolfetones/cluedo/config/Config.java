@@ -46,7 +46,7 @@ public class Config {
 
     static {
         try {
-            FONT = Font.createFont(Font.TRUETYPE_FONT, new File("resources/capone-cg-light.otf"));
+            FONT = Font.createFont(Font.TRUETYPE_FONT, Config.class.getClassLoader().getResourceAsStream("capone-cg-light.otf"));
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
         }
