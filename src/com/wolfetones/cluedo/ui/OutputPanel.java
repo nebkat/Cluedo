@@ -24,6 +24,8 @@
 
 package com.wolfetones.cluedo.ui;
 
+import com.wolfetones.cluedo.config.Config;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
@@ -39,10 +41,14 @@ public class OutputPanel extends JTextArea {
         super();
 
         Border border = BorderFactory.createLineBorder(Color.BLACK);
-        setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(20, 5, 10, 10)));
+        setBorder(BorderFactory.createCompoundBorder(border,
+                BorderFactory.createEmptyBorder(Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10))));
 
         setBackground(Color.GRAY);
-        setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 32));
+        setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
         setWrapStyleWord(true);
         setLineWrap(true);
 

@@ -34,15 +34,18 @@ import java.awt.*;
  * Colored circle placed behind starting tiles to show which player starts where.
  */
 public class StartTileCircle extends JComponent {
+    private static final float SIZE_RELATIVE = 2.25f;
+
     private Color mColor;
 
     public StartTileCircle(StartTile startTile, int tileSize) {
         mColor = startTile.getStartingSuspect().getColor().darker();
 
-        int x = (int) (((float) startTile.getX() - 0.625f) * tileSize);
-        int y = (int) (((float) startTile.getY() - 0.625f) * tileSize);
+        int size = (int) (tileSize * SIZE_RELATIVE);
 
-        int size = (int) (tileSize * 2.25f);
+        float offset_relative = (SIZE_RELATIVE - 1f) / 2;
+        int x = (int) (((float) startTile.getX() - offset_relative) * tileSize);
+        int y = (int) (((float) startTile.getY() - offset_relative) * tileSize);
 
         // Move circle towards the nearest corridor tile
         if (startTile.getLeft() instanceof CorridorTile) {

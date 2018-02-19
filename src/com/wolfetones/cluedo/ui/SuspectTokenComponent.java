@@ -30,7 +30,6 @@ import com.wolfetones.cluedo.card.Suspect;
 import java.awt.*;
 
 public class SuspectTokenComponent extends TokenComponent {
-    private static final float MARGIN_ACTIVE = 0.05f;
     private static final float MARGIN = 0.1f;
 
     public SuspectTokenComponent(Suspect suspect, int tileSize) {
@@ -40,7 +39,11 @@ public class SuspectTokenComponent extends TokenComponent {
     @Override
     public void paintComponent(Graphics g) {
         g.setColor(((Suspect) mToken).getColor());
-        g.fillOval((int)(getWidth() * 0.1), (int)(getHeight() * 0.1), (int)(getWidth() * 0.8), (int)(getHeight() * 0.8));
+        g.fillOval(
+                (int) (getWidth() * MARGIN),
+                (int) (getHeight() * MARGIN),
+                (int) (getWidth() * (1 - 2 * MARGIN)),
+                (int) (getHeight() * (1 - 2 * MARGIN)));
 
         g.setColor(Color.BLACK);
         Util.drawCenteredString(mToken.getName().substring(0, 1), getWidth(), getHeight(), g);

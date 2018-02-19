@@ -30,6 +30,8 @@ import com.wolfetones.cluedo.card.Weapon;
 import java.awt.*;
 
 public class WeaponTokenComponent extends TokenComponent {
+    private static final float MARGIN = 0.1f;
+
     public WeaponTokenComponent(Weapon weapon, int tileSize) {
         super(weapon, tileSize);
     }
@@ -37,7 +39,11 @@ public class WeaponTokenComponent extends TokenComponent {
     @Override
     public void paintComponent(Graphics g) {
         g.setColor(Color.BLACK);
-        g.fillOval((int)(getWidth() * 0.1), (int)(getHeight() * 0.1), (int)(getWidth() * 0.8), (int)(getHeight() * 0.8));
+        g.fillOval(
+                (int) (getWidth() * MARGIN),
+                (int) (getHeight() * MARGIN),
+                (int) (getWidth() * (1 - 2 * MARGIN)),
+                (int) (getHeight() * (1 - 2 * MARGIN)));
 
         g.setColor(Color.WHITE);
         Util.drawCenteredString(mToken.getName().substring(0, 1), getWidth(), getHeight(), g);

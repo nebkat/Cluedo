@@ -37,10 +37,10 @@ public class TileBorder implements Border {
     private static final Color COLOR_CORRIDOR = Color.decode("#666666");
     private static final Color COLOR_PASSAGE = Color.BLACK;
 
-    private static final int SIZE_WALL = 3;
-    private static final int SIZE_WINDOW = 2;
+    private static final int SIZE_WALL = Config.screenRelativeSize(3);
+    private static final int SIZE_WINDOW = Config.screenRelativeSize(2);
     private static final int SIZE_CORRIDOR = 1;
-    private static final int SIZE_PASSAGE = 2;
+    private static final int SIZE_PASSAGE = Config.screenRelativeSize(1);
 
     private static final int CORNER_TOP_LEFT = 1;
     private static final int CORNER_TOP_RIGHT = 3;
@@ -86,6 +86,10 @@ public class TileBorder implements Border {
                 case Config.Board.Tiles.WALL:
                     g.setColor(COLOR_WALL);
                     paintCorner(g, x, y, width, height, SIZE_WALL, corner);
+                    break;
+                case Config.Board.Tiles.PASSAGE:
+                    g.setColor(COLOR_PASSAGE);
+                    paintCorner(g, x, y, width, height, SIZE_PASSAGE, corner);
                     break;
             }
         }

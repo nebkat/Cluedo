@@ -434,8 +434,7 @@ public class GameController {
         mMainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mMainFrame.setResizable(false);
 
-        Rectangle windowSize = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-        mTileSize = (int) (windowSize.getHeight() * 0.80 / Config.Board.HEIGHT);
+        mTileSize = Config.screenHeightPercentage(0.8f) / Config.Board.HEIGHT;
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
@@ -452,9 +451,7 @@ public class GameController {
         JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
         outputScrollPane.setPreferredSize(mOutputPanel.getPreferredSize());
         outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        outputScrollPane.setPreferredSize(new Dimension((int)(screenSize.width * 0.25), (int)(screenSize.height * 0.4)));
+        outputScrollPane.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), Config.screenHeightPercentage(0.6f)));
 
         terminal.add(outputScrollPane);
         terminal.add(mInputPanel);
@@ -493,7 +490,7 @@ public class GameController {
             JLabel label = new JLabel(r.getName().toUpperCase());
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.CENTER);
-            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, (int) (mTileSize * 0.65f)));
+            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
 
             int centerX = (int) (r.getCenterX() * mTileSize);
             int centerY = (int) (r.getCenterY() * mTileSize);

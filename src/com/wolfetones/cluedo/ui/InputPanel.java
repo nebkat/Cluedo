@@ -24,6 +24,8 @@
 
 package com.wolfetones.cluedo.ui;
 
+import com.wolfetones.cluedo.config.Config;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.Color;
@@ -45,14 +47,20 @@ public class InputPanel extends JTextField implements KeyListener {
     private List<String> mCommandHints;
 
     public InputPanel() {
+        super();
+
         Border border = BorderFactory.createLineBorder(Color.BLACK);
-        setBorder(BorderFactory.createCompoundBorder(border, BorderFactory.createEmptyBorder(10, 10, 10, 10)));
+        setBorder(BorderFactory.createCompoundBorder(border,
+                BorderFactory.createEmptyBorder(Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10),
+                        Config.screenRelativeSize(10))));
 
         setBackground(Color.BLACK);
-        setFont(new Font(Font.MONOSPACED, Font.PLAIN, 48));
+        setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(24)));
         setForeground(Color.GREEN);
 
-        setMaximumSize(new Dimension(Short.MAX_VALUE, 48));
+        setMaximumSize(new Dimension(Short.MAX_VALUE, Config.screenRelativeSize(24)));
 
         addKeyListener(this);
         setFocusTraversalKeysEnabled(false);
