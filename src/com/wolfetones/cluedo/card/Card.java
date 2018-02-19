@@ -38,13 +38,16 @@ public abstract class Card {
 
     private BufferedImage mCardImage;
 
+    private static BufferedImage sCardHighlightOverlayImage;
+    private static BufferedImage sCardSelectedOverlayImage;
+
     Card(int id, String name, String cardImage) {
         mId = id;
         mName = name;
 
         if (cardImage != null) {
             try {
-                mCardImage = ImageIO.read(new File("resources/" + cardImage));
+                mCardImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(cardImage));
             } catch (IOException e) {
                 System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + cardImage);
                 e.printStackTrace();
@@ -66,5 +69,31 @@ public abstract class Card {
 
     public BufferedImage getCardImage() {
         return mCardImage;
+    }
+
+    public static BufferedImage getCardHighlightOverlayImage() {
+        if (sCardHighlightOverlayImage != null) {
+            return sCardHighlightOverlayImage;
+        }
+
+        try {
+            sCardHighlightOverlayImage = ImageIO.read(Card.class.getClassLoader().getResourceAsStream("card-highlight-overlay.png"));
+        } catch (IOException e) {
+        }
+
+        return sCardHighlightOverlayImage;
+    }
+
+    public static BufferedImage getCardSelectedOverlayImage() {
+        if (sCardSelectedOverlayImage != null) {
+            return sCardSelectedOverlayImage;
+        }
+
+        try {
+            sCardSelectedOverlayImage = ImageIO.read(Card.class.getClassLoader().getResourceAsStream("card-selected-overlay.png"));
+        } catch (IOException e) {
+        }
+
+        return sCardSelectedOverlayImage;
     }
 }

@@ -42,6 +42,16 @@ public class Config {
             "  |____|   |___|  /\\___  >   \\__/\\  / \\____/|____/__|  \\___  >   |____| \\____/|___|  /\\___  >____  >\n" +
             "                \\/     \\/         \\/                       \\/                      \\/     \\/     \\/ ";
 
+    public static Font FONT = null;
+
+    static {
+        try {
+            FONT = Font.createFont(Font.TRUETYPE_FONT, new File("resources/capone-cg-light.otf"));
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static class Board {
         public static final int WIDTH = 26;
         public static final int HEIGHT = 27;

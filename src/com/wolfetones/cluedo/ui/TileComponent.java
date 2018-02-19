@@ -100,10 +100,15 @@ public class TileComponent extends JComponent implements MouseListener {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        if (isOpaque()) {
-            g.setColor(getBackground());
-            g.fillRect(0, 0, getWidth(), getHeight());
+    public void mouseExited(MouseEvent e) {
+        mMouseOver = false;
+
+        if (mActiveBackgroundColor != null) {
+            setBackground(mDefaultBackgroundColor);
+        }
+
+        if (mTile instanceof RoomTile) {
+            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(false));
         }
     }
 
@@ -116,15 +121,10 @@ public class TileComponent extends JComponent implements MouseListener {
     }
 
     @Override
-    public void mouseExited(MouseEvent e) {
-        mMouseOver = false;
-
-        if (mActiveBackgroundColor != null) {
-            setBackground(mDefaultBackgroundColor);
-        }
-
-        if (mTile instanceof RoomTile) {
-            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(false));
+    public void paintComponent(Graphics g) {
+        if (isOpaque()) {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
         }
     }
 }
