@@ -457,7 +457,6 @@ public class GameController {
         terminal.add(mInputPanel);
 
         System.setOut(new PrintStream(mOutputPanel.getOutputStream()));
-        System.setErr(System.out);
         System.setIn(mInputPanel.getInputStream());
 
         mMainFrame.add(terminal);
