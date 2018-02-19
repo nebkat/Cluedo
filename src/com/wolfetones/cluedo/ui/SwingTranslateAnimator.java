@@ -22,7 +22,9 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.cluedo;
+package com.wolfetones.cluedo.ui;
+
+import com.wolfetones.cluedo.Util;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;

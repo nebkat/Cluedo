@@ -24,7 +24,6 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.SwingTranslateAnimator;
 import com.wolfetones.cluedo.card.Token;
 
 import javax.swing.*;
