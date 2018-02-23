@@ -206,7 +206,7 @@ public class GameController {
                 break;
             }
 
-            System.err.println("Invalid command '" + command + "'");
+            System.out.println("Invalid command '" + command + "'");
         }
 
         mInputPanel.setCommandHints(null);
@@ -304,7 +304,7 @@ public class GameController {
 
                     if (moveTile instanceof RoomTile) {
                         if (((RoomTile) moveTile).getRoom() == startLocation) {
-                            System.err.println("Can't return to same room");
+                            System.out.println("Can't return to same room");
                             continue;
                         }
 
