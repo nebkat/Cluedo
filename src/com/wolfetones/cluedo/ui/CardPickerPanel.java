@@ -50,7 +50,7 @@ public class CardPickerPanel<T extends Card> extends JPanel {
         mResult = c;
     }
 
-    private T getResult() {
+    public T getResult() {
         return mResult;
     }
 }
