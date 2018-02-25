@@ -4,15 +4,26 @@ import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
+import com.wolfetones.cluedo.config.Config;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.List;
 
 public class CardPickerDialog extends JDialog {
-    private CardPickerDialog(JFrame frame, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<Card> cards) {
+    private CardPickerDialog(JFrame frame, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
         super(frame, true);
 
+        setUndecorated(true);
+
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        ((JPanel) getContentPane()).setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createDashedBorder(Color.BLACK, 4, 5, 5, true),
+                        BorderFactory.createEmptyBorder(Config.screenRelativeSize(10),
+                                Config.screenRelativeSize(10),
+                                Config.screenRelativeSize(10),
+                                Config.screenRelativeSize(10))));
 
         if (suspects != null) {
             add(new CardPickerPanel<>("Suspects", suspects));
@@ -30,7 +41,10 @@ public class CardPickerDialog extends JDialog {
             add(new CardPickerPanel<>("Cards", cards));
         }
 
+        setOpacity(0.9f);
+
         pack();
+        setLocation(frame.getX() + frame.getWidth() / 2 - getWidth() / 2, frame.getY() + frame.getHeight() / 2 - getHeight() / 2);
         setVisible(true);
     }
 
@@ -46,7 +60,7 @@ public class CardPickerDialog extends JDialog {
         return new CardPickerDialog(frame, false, suspects, weapons, null, null);
     }
 
-    public static CardPickerDialog showCardPickerDialog(JFrame frame, List<Card> cards) {
+    public static CardPickerDialog showCardPickerDialog(JFrame frame, List<? extends Card> cards) {
         return new CardPickerDialog(frame, false, null, null, null, cards);
     }
 }
