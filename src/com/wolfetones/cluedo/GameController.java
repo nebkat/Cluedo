@@ -98,6 +98,12 @@ public class GameController {
     private int mTileSize;
 
     /**
+     * Info on the people playing
+     */
+    int mNumberOfPlayers;
+    ArrayList<String> mPlayerNames;
+
+    /**
      * Swing containers
      */
     private JFrame mMainFrame;
@@ -379,16 +385,13 @@ public class GameController {
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
-        // TODO: Create selection dialog
-        List<Suspect> suspects = mGame.getBoard().getSuspects();
+        mNumberOfPlayers = Integer.parseInt(JOptionPane.showInputDialog("Enter the number of players"));
 
-        // TODO: Temporarily insert all suspects as players
-        //for (Suspect suspect : suspects) {
-        //    mGame.addPlayer(new Player(suspect, suspect.getName()));
-        //}
+        List<Suspect> remainingSuspects = mGame.getBoard().getSuspects();
 
-        for (int i = 0; i < 3; i++) {
-            mGame.addPlayer(new Player(suspects.get(i), suspects.get(i).getName()));
+        for (int i = 0; i < mNumberOfPlayers; i++) {
+            Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
+            mGame.addPlayer(player);
         }
     }
 
