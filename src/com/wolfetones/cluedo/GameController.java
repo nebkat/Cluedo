@@ -328,7 +328,7 @@ public class GameController {
 
                     passToPlayer(matchingPlayer);
 
-                    Card shownCard = chooseCard("Choose which card to show", matchingCards);
+                    Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
 
                     passToPlayer(player);
 
@@ -395,12 +395,9 @@ public class GameController {
      * @param p Player to pass to.
      */
     private void passToPlayer(Player p) {
-        // TODO: Dialog requesting player
         ImageIcon playerIcon = new ImageIcon(p.getCharacter().getCardImage());
 
-        JOptionPane.showMessageDialog(null, "Please pass to " + p.getName() + " and press enter to continue", "Pass To " + p.getName(), JOptionPane.INFORMATION_MESSAGE, playerIcon);
-
-        mInputScanner.nextLine();
+        JOptionPane.showMessageDialog(null, "Please pass to " + p.getName(), "Pass To " + p.getName(), JOptionPane.INFORMATION_MESSAGE, playerIcon);
     }
 
     /**
@@ -412,16 +409,21 @@ public class GameController {
      * @return Suggestion created by user.
      */
     private Suggestion createSuggestion(Room currentRoom) {
-        // TODO: Create selection dialog
         List<Suspect> suspects = mGame.getBoard().getSuspects();
         List<Weapon> weapons = mGame.getBoard().getWeapons();
         List<Room> rooms = mGame.getBoard().getRooms();
 
-        Suspect suspect = chooseCard("Choose suspect", suspects);
+        if (currentRoom != null) {
+            return CardPickerDialog.showSuggestionPickerDialog(mMainFrame, suspects, weapons, currentRoom);
+        } else {
+            return CardPickerDialog.showAccusationPickerDialog(mMainFrame, suspects, weapons, rooms);
+        }
+
+        /*Suspect suspect = chooseCard("Choose suspect", suspects);
         Weapon weapon = chooseCard("Choose weapon", weapons);
         Room room = currentRoom == null ? chooseCard("Choose room", rooms) : currentRoom;
 
-        return new Suggestion(room, suspect, weapon);
+        return new Suggestion(room, suspect, weapon);*/
     }
 
     /**
