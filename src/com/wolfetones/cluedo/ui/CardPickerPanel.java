@@ -12,14 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CardPickerPanel<T extends Card> extends JPanel {
-    private List<T> mCards;
+    private CardPickerDialog mCardPickerDialog;
+    private List<CardPickerCardComponent> mComponents = new ArrayList<>();
 
     private T mResult;
 
-    public CardPickerPanel(String title, List<T> cards) {
+    public CardPickerPanel(CardPickerDialog dialog, String title, List<T> cards) {
         super();
 
-        mCards = cards;
+        mCardPickerDialog = dialog;
 
         TitledBorder border = BorderFactory.createTitledBorder(null, title,
                 TitledBorder.DEFAULT_JUSTIFICATION,
@@ -29,25 +30,38 @@ public class CardPickerPanel<T extends Card> extends JPanel {
 
         setBorder(border);
 
-        for (T c : mCards) {
+        for (T c : cards) {
             CardPickerCardComponent component = new CardPickerCardComponent<>(this, c);
+            mComponents.add(component);
 
             add(component);
         }
+
+        if (cards.size() == 1) {
+            mResult = cards.get(0);
+            mComponents.get(0).setSelected(true);
+        }
+
+        if (cards.size() < 3) {
+            Insets borderInsets = border.getBorderInsets(this);
+            Dimension cardSize = mComponents.get(0).getPreferredSize();
+            int width = cardSize.width * 3 + 2 * ((FlowLayout) getLayout()).getHgap() + borderInsets.left + borderInsets.right;
+            Dimension preferredSize = getPreferredSize();
+            preferredSize.width = width;
+            setPreferredSize(preferredSize);
+        }
+
     }
 
     public void onCardComponentSelected(CardPickerCardComponent<T> cardComponent) {
-        setResult(cardComponent.getCard());
+        mResult = cardComponent.getCard();
+        mCardPickerDialog.updateConfirmButton();
 
-        for (Component component : getComponents()) {
+        for (CardPickerCardComponent component : mComponents) {
             if (component == cardComponent) continue;
 
-            ((CardPickerCardComponent) component).setSelected(false);
+            component.setSelected(false);
         }
-    }
-
-    private void setResult(T c) {
-        mResult = c;
     }
 
     public T getResult() {

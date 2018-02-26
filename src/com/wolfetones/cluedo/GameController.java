@@ -98,12 +98,6 @@ public class GameController {
     private int mTileSize;
 
     /**
-     * Info on the people playing
-     */
-    int mNumberOfPlayers;
-    ArrayList<String> mPlayerNames;
-
-    /**
      * Swing containers
      */
     private JFrame mMainFrame;
@@ -142,8 +136,8 @@ public class GameController {
     }
 
     private GameController() {
-        setupPlayers();
         setupFrame();
+        setupPlayers();
 
         mInputScanner = new Scanner(System.in);
 
@@ -385,13 +379,13 @@ public class GameController {
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
-        mNumberOfPlayers = Integer.parseInt(JOptionPane.showInputDialog("Enter the number of players"));
+        List<Suspect> remainingSuspects = new ArrayList<>(mGame.getBoard().getSuspects());
 
-        List<Suspect> remainingSuspects = mGame.getBoard().getSuspects();
-
-        for (int i = 0; i < mNumberOfPlayers; i++) {
-            Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
+        Player player;
+        while (remainingSuspects.size() > 0 &&
+                (player = CardPickerDialog.showPlayerPickerDialog(mMainFrame, remainingSuspects)) != null) {
             mGame.addPlayer(player);
+            remainingSuspects.remove(player.getCharacter());
         }
     }
 
