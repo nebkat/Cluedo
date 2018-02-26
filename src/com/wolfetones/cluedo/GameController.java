@@ -258,6 +258,7 @@ public class GameController {
                 Location startLocation = mGame.getCurrentPlayerLocation();
                 if (startLocation.isRoom()) {
                     List<RoomTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
+                    corridorTiles.sort(Comparator.comparingInt(Tile::getX));
                     String[] validCommands = new String[corridorTiles.size()];
                     for (int i = 1; i <= corridorTiles.size(); i++) {
                         validCommands[i - 1] = Integer.toString(i);
