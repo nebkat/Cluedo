@@ -107,6 +107,10 @@ public class Game {
             throw new IllegalStateException("Game already started");
         }
 
+        if (mPlayers.size() < 2) {
+            throw new IllegalStateException("Not enough players to start game");
+        }
+
 	    mStarted = true;
 
 	    mActivePlayers = new ArrayList<>(mPlayers);
@@ -414,6 +418,10 @@ public class Game {
 
     public Location getCurrentPlayerLocation() {
         return mCurrentPlayerLocation;
+    }
+
+    public int getPlayerCount() {
+        return mPlayers.size();
     }
 
     public Suggestion getSolution() {

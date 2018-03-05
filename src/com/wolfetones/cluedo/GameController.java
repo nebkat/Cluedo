@@ -382,11 +382,15 @@ public class GameController {
     private void setupPlayers() {
         List<Suspect> remainingSuspects = new ArrayList<>(mGame.getBoard().getSuspects());
 
-        Player player;
-        while (remainingSuspects.size() > 0 &&
-                (player = CardPickerDialog.showPlayerPickerDialog(mMainFrame, remainingSuspects)) != null) {
-            mGame.addPlayer(player);
-            remainingSuspects.remove(player.getCharacter());
+        while (remainingSuspects.size() > 0) {
+            Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
+            if (player != null) {
+                mGame.addPlayer(player);
+                remainingSuspects.remove(player.getCharacter());
+            } else if (mGame.getPlayerCount() > 2) {
+                // Must have at least 2 players to play
+                break;
+            }
         }
     }
 
