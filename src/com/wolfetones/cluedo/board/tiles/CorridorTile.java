@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.board.tiles;
 
-import com.wolfetones.cluedo.game.Location;
+import com.wolfetones.cluedo.board.Location;
 
 /**
  * Corridor tile

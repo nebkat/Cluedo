@@ -30,7 +30,7 @@ import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.*;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
-import com.wolfetones.cluedo.game.Location;
+import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;

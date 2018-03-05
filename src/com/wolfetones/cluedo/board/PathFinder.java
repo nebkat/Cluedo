@@ -29,7 +29,6 @@ import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
 import com.wolfetones.cluedo.card.Room;
-import com.wolfetones.cluedo.game.Location;
 
 import java.util.*;
 

@@ -25,11 +25,9 @@
 package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.RoomTile;
-import com.wolfetones.cluedo.board.tiles.TokenOccupiableTile;
-import com.wolfetones.cluedo.game.Location;
+import com.wolfetones.cluedo.board.Location;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 /**

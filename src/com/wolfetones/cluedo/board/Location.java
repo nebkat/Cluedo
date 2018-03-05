@@ -22,7 +22,7 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.cluedo.game;
+package com.wolfetones.cluedo.board;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.card.Room;

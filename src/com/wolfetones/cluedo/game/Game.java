@@ -25,6 +25,7 @@
 package com.wolfetones.cluedo.game;
 
 import com.wolfetones.cluedo.board.BoardModel;
+import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;

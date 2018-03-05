@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.game.Location;
+import com.wolfetones.cluedo.board.Location;
 
 public abstract class Token extends Card {
     private Location mLocation;
