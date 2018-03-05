@@ -136,8 +136,8 @@ public class GameController {
     }
 
     private GameController() {
-        setupFrame();
         setupPlayers();
+        setupFrame();
 
         mInputScanner = new Scanner(System.in);
 
