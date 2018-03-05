@@ -36,51 +36,51 @@ import java.util.List;
 public class Game {
     private static final int NUM_DICE = 2;
 
-	private static Random sRandom = new Random();
+    private static Random sRandom = new Random();
 
     /**
      * State
      */
-	private boolean mStarted = false;
-	private boolean mFinished = false;
+    private boolean mStarted = false;
+    private boolean mFinished = false;
 
     /**
      * Cards
      */
-	private List<Card> mCards = new ArrayList<>(21);
-	private List<Card> mRemainingCards = new ArrayList<>(2);
+    private List<Card> mCards = new ArrayList<>(21);
+    private List<Card> mRemainingCards = new ArrayList<>(2);
 
     /**
      * Game solution
      */
-	private Suggestion mSolution;
+    private Suggestion mSolution;
 
     /**
      * Players
      */
-	private List<Player> mPlayers = new ArrayList<>(6);
-	private List<Player> mActivePlayers;
-	private ListIterator<Player> mActivePlayerIterator;
-	private Player mCurrentPlayer;
-	private Location mCurrentPlayerLocation;
+    private List<Player> mPlayers = new ArrayList<>(6);
+    private List<Player> mActivePlayers;
+    private ListIterator<Player> mActivePlayerIterator;
+    private Player mCurrentPlayer;
+    private Location mCurrentPlayerLocation;
 
     /**
      * Current abilities in turn, depending on state and location
      */
-	private boolean mTurnCanRollDice;
-	private boolean mTurnCanUsePassage;
+    private boolean mTurnCanRollDice;
+    private boolean mTurnCanUsePassage;
     private boolean mTurnCanPoseQuestion;
     private boolean mTurnCanMakeFinalAccusation;
     private boolean mTurnFinished;
-	private int mTurnRemainingMoves;
-	private boolean mTurnHasMoved;
+    private int mTurnRemainingMoves;
+    private boolean mTurnHasMoved;
 
-	private boolean mTurnMovementComplete;
+    private boolean mTurnMovementComplete;
 
     /**
      * Board
      */
-	private BoardModel mBoard = new BoardModel();
+    private BoardModel mBoard = new BoardModel();
 
     public Game() {}
 
@@ -92,11 +92,11 @@ public class Game {
      * @param player Player to add to the game.
      */
     public void addPlayer(Player player) {
-	    if (mStarted) {
-	        throw new IllegalStateException("Players cannot be added once game has started");
+        if (mStarted) {
+            throw new IllegalStateException("Players cannot be added once game has started");
         }
 
-	    mPlayers.add(player);
+        mPlayers.add(player);
     }
 
     /**
@@ -111,12 +111,12 @@ public class Game {
             throw new IllegalStateException("Not enough players to start game");
         }
 
-	    mStarted = true;
+        mStarted = true;
 
-	    mActivePlayers = new ArrayList<>(mPlayers);
-	    mActivePlayerIterator = mActivePlayers.listIterator();
+        mActivePlayers = new ArrayList<>(mPlayers);
+        mActivePlayerIterator = mActivePlayers.listIterator();
 
-	    setupCards();
+        setupCards();
     }
 
     /**
@@ -409,7 +409,7 @@ public class Game {
     }
 
     public BoardModel getBoard() {
-	    return mBoard;
+        return mBoard;
     }
 
     public Player getCurrentPlayer() {
@@ -467,6 +467,6 @@ public class Game {
     }
 
     private <C extends Card> C randomCard(List<C> list) {
-		return list.get(sRandom.nextInt(list.size()));
-	}
+        return list.get(sRandom.nextInt(list.size()));
+    }
 }
