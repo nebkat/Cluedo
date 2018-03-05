@@ -468,6 +468,7 @@ public class GameController {
         mMainFrame.add(terminal);
 
         mMainFrame.pack();
+        mMainFrame.setLocationRelativeTo(null);
         mMainFrame.setVisible(true);
     }
 
