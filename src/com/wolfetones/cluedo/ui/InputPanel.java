@@ -89,8 +89,14 @@ public class InputPanel extends JTextField implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        // Command hints
         if (e.getKeyCode() == KeyEvent.VK_TAB && mCommandHints != null) {
-            boolean foundCurrent = getText().equals(mUnhintedText);
+            // Whether a command equal to the currently typed text has been found
+            // Initially set to true if the current text is equal to the unhinted text, i.e. not currently hinted
+            boolean foundCurrent = getText().toLowerCase().equals(mUnhintedText);
+
+            // Whether a valid next command to hint has been found
+            // If not next command is found, the text is set to the unhinted text
             boolean foundNext = false;
             for (String command : mCommandHints) {
                 if (!foundCurrent) {
@@ -113,20 +119,28 @@ public class InputPanel extends JTextField implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        // Update unhinted text if modified by user (excluding arrow keys, etc)
         if (!Character.isISOControl(e.getKeyChar()) ||
                 e.getKeyCode() == KeyEvent.VK_DELETE ||
                 e.getKeyCode() == KeyEvent.VK_BACK_SPACE) {
             mUnhintedText = getText().toLowerCase();
         }
 
+        // Submit command on enter
         if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             mInputStream.append(getText() + "\n");
             System.out.println("> " + getText());
+
             clear();
+
+            // Don't create newline
             e.consume();
         }
     }
 
+    /**
+     * Buffered input stream that allows text to be appended
+     */
     private class PanelInputStream extends InputStream {
         private static final int BUFFER_SIZE = 128;
 
@@ -181,8 +195,9 @@ public class InputPanel extends JTextField implements KeyListener {
             return mCount;
         }
 
-        public synchronized void append(String text) {
+        private synchronized void append(String text) {
             char[] chars = text.toCharArray();
+
             // Check if there is enough space in the buffer
             if (mCount + chars.length > BUFFER_SIZE) {
                 throw new BufferOverflowException();
