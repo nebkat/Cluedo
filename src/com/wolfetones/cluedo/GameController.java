@@ -461,14 +461,13 @@ public class GameController {
 
         JPanel terminal = new JPanel();
         terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
+        terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
 
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
 
         JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
-        outputScrollPane.setPreferredSize(mOutputPanel.getPreferredSize());
         outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        outputScrollPane.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), Config.screenHeightPercentage(0.6f)));
 
         terminal.add(outputScrollPane);
         terminal.add(mInputPanel);
