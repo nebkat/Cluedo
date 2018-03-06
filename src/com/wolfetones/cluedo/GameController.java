@@ -47,6 +47,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameController {
+    private static final boolean DEMO_MODE = true;
+
     /**
      * Setting to enable cheat command that gives the solution.
      */
@@ -380,6 +382,15 @@ public class GameController {
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
+        if (DEMO_MODE) {
+            for (int i = 0; i < 2; i++) {
+                Suspect suspect = mGame.getBoard().getSuspect(i);
+                mGame.addPlayer(new Player(suspect, suspect.getName()));
+            }
+
+            return;
+        }
+
         List<Suspect> remainingSuspects = new ArrayList<>(mGame.getBoard().getSuspects());
 
         while (remainingSuspects.size() > 0) {
