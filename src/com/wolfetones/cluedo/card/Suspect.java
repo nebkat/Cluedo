@@ -50,4 +50,9 @@ public class Suspect extends Token {
     public boolean getMovedSinceLastTurn() {
         return mMovedSinceLastTurn;
     }
+
+    @Override
+    protected String getCardImageSuffix() {
+        return "suspect";
+    }
 }

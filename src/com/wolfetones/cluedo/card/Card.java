@@ -41,19 +41,22 @@ public abstract class Card {
     private static BufferedImage sCardHighlightOverlayImage;
     private static BufferedImage sCardSelectedOverlayImage;
 
-    Card(int id, String name, String cardImage) {
+    Card(int id, String name, String resourceName) {
         mId = id;
         mName = name;
 
-        if (cardImage != null) {
+        if (resourceName != null) {
+            String imageFile = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
             try {
-                mCardImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(cardImage));
-            } catch (IOException e) {
-                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + cardImage);
+                mCardImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(imageFile));
+            } catch (IOException | IllegalArgumentException e) {
+                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + imageFile);
                 e.printStackTrace();
             }
         }
     }
+
+    protected abstract String getCardImageSuffix();
 
     public int getId() {
         return mId;

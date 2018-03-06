@@ -25,6 +25,9 @@
 package com.wolfetones.cluedo;
 
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 public class Util {
@@ -41,15 +44,20 @@ public class Util {
         return result.toString();
     }
 
-    public static void drawCenteredString(String s, int w, int h, Graphics g) {
-        drawCenteredString(s, 0, 0, w, h, g);
-    }
-
     public static void drawCenteredString(String s, int x, int y, int w, int h, Graphics g) {
         FontMetrics fm = g.getFontMetrics();
         x += (w - fm.stringWidth(s)) / 2;
         y += (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
         g.drawString(s, x, y);
+    }
+
+    public static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
+
+        AffineTransform scaleTransform = AffineTransform.getScaleInstance((double) width / image.getWidth(), (double) height / image.getHeight());
+
+        return new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR).filter(
+                image,
+                new BufferedImage(width, height, image.getType()));
     }
 
     public static double easeInOutQuint(double t) {

@@ -24,15 +24,20 @@
 
 package com.wolfetones.cluedo.ui;
 
+import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.card.Token;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public abstract class TokenComponent extends JComponent {
     private int mTileSize;
     protected Token mToken;
 
-    private SwingTranslateAnimator mAnimator = new SwingTranslateAnimator(this, 200);
+    private SwingTranslateAnimator mTranslateAnimator = new SwingTranslateAnimator(this, 200);
+
+    private BufferedImage mTokenImage;
 
     protected TokenComponent(Token token, int tileSize) {
         mToken = token;
@@ -41,16 +46,25 @@ public abstract class TokenComponent extends JComponent {
         updateCoordinatesImmediately();
 
         token.setCoordinatesListener(this::updateCoordinates);
+
+        mTokenImage = Util.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
     }
 
     public Token getToken() {
         return mToken;
     }
 
+    @Override
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        g.drawImage(mTokenImage, 0, 0, null);
+    }
+
     private void updateCoordinates() {
-        mAnimator.translate((int) (mToken.getCoordinateX() * mTileSize),
+        mTranslateAnimator.translate((int) (mToken.getCoordinateX() * mTileSize),
                 (int) (mToken.getCoordinateY() * mTileSize));
-        mAnimator.start();
+        mTranslateAnimator.start();
     }
 
     private void updateCoordinatesImmediately() {

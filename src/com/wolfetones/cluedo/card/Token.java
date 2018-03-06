@@ -26,6 +26,10 @@ package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.Location;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
 public abstract class Token extends Card {
     private Location mLocation;
 
@@ -33,8 +37,20 @@ public abstract class Token extends Card {
     private float mCoordinateX;
     private float mCoordinateY;
 
-    Token(int id, String name, String cardImage) {
-        super(id, name, cardImage);
+    private BufferedImage mTokenImage;
+
+    Token(int id, String name, String resourceName) {
+        super(id, name, resourceName);
+
+        if (resourceName != null) {
+            String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";
+            try {
+                mTokenImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(imageFile));
+            } catch (IOException | IllegalArgumentException e) {
+                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + imageFile);
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -108,5 +124,9 @@ public abstract class Token extends Card {
      */
     public void setCoordinatesListener(Runnable listener) {
         mCoordinatesUpdateListener = listener;
+    }
+
+    public BufferedImage getTokenImage() {
+        return mTokenImage;
     }
 }

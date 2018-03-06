@@ -212,4 +212,9 @@ public class Room extends Card implements Location {
             }
         }
     }
+
+    @Override
+    protected String getCardImageSuffix() {
+        return "room";
+    }
 }

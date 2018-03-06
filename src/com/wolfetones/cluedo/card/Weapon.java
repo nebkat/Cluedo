@@ -31,4 +31,9 @@ public class Weapon extends Token {
     public Weapon(int id, String name, String cardImage) {
         super(id, name, cardImage);
     }
+
+    @Override
+    protected String getCardImageSuffix() {
+        return "weapon";
+    }
 }
