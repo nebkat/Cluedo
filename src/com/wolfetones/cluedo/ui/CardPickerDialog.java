@@ -32,7 +32,7 @@ public class CardPickerDialog extends JDialog {
 
     private boolean mSuccessful;
 
-    private CardPickerDialog(JFrame frame, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
+    private CardPickerDialog(JFrame frame, String title, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
         super(frame, true);
 
         setUndecorated(frame != null);
@@ -46,8 +46,16 @@ public class CardPickerDialog extends JDialog {
                                 Config.screenRelativeSize(10),
                                 Config.screenRelativeSize(10))));
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.TRAILING));
+        if (title != null) {
+            JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+            JLabel titleLabel = new JLabel(title);
+            titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(32)));
+
+            titlePanel.add(titleLabel);
+            add(titlePanel);
+        }
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 
         mConfirmButton = new JButton("Confirm");
         mCancelButton = new JButton("No More Players");
@@ -143,7 +151,7 @@ public class CardPickerDialog extends JDialog {
     }
 
     public static Player showPlayerPickerDialog(JFrame frame, List<Suspect> suspects) {
-        CardPickerDialog dialog =  new CardPickerDialog(frame, true, suspects, null, null, null);
+        CardPickerDialog dialog =  new CardPickerDialog(frame, "Add player", true, suspects, null, null, null);
 
         dialog.setTitle("Add Players");
         dialog.setVisible(true);
@@ -162,7 +170,7 @@ public class CardPickerDialog extends JDialog {
     }
 
     public static Suggestion showAccusationPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, false, suspects, weapons, rooms, null);
+        CardPickerDialog dialog = new CardPickerDialog(frame, "Make final accusation", false, suspects, weapons, rooms, null);
 
         dialog.setVisible(true);
 
@@ -179,7 +187,7 @@ public class CardPickerDialog extends JDialog {
     }
 
     public static Suggestion showSuggestionPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, Room room) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, false, suspects, weapons, null, null);
+        CardPickerDialog dialog = new CardPickerDialog(frame, "Make suggestion in " + room.getName(), false, suspects, weapons, null, null);
 
         dialog.setVisible(true);
 
@@ -193,7 +201,7 @@ public class CardPickerDialog extends JDialog {
     }
 
     public static Card showCardPickerDialog(JFrame frame, List<? extends Card> cards) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, false, null, null, null, cards);
+        CardPickerDialog dialog = new CardPickerDialog(frame, "Choose card to show", false, null, null, null, cards);
 
         dialog.setVisible(true);
 
