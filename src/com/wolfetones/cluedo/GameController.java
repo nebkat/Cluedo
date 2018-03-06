@@ -454,7 +454,7 @@ public class GameController {
         mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
+        mainPanel.setLayout(new BorderLayout());
         mMainFrame.setContentPane(mainPanel);
 
         setupBoard();
@@ -476,7 +476,7 @@ public class GameController {
         System.setOut(new PrintStream(mOutputPanel.getOutputStream()));
         System.setIn(mInputPanel.getInputStream());
 
-        mMainFrame.add(terminal);
+        mMainFrame.add(terminal, BorderLayout.LINE_END);
 
         mMainFrame.pack();
         mMainFrame.setLocationRelativeTo(null);
@@ -491,7 +491,7 @@ public class GameController {
         mBoardLayeredPane = new JLayeredPane();
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
         mBoardLayeredPane.setOpaque(true);
-        mMainFrame.add(mBoardLayeredPane);
+        mMainFrame.add(mBoardLayeredPane, BorderLayout.CENTER);
         mBoardLayeredPane.setPreferredSize(new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT));
 
         // Add tile panel
