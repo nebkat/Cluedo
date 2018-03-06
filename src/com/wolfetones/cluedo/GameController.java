@@ -451,7 +451,7 @@ public class GameController {
         mMainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mMainFrame.setResizable(false);
 
-        mTileSize = Config.screenHeightPercentage(0.8f) / Config.Board.HEIGHT;
+        mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.X_AXIS));
