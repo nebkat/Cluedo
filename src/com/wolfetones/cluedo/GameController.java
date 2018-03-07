@@ -424,10 +424,16 @@ public class GameController {
      * @param currentRoom Player's current room, used in the suggestion if not null.
      * @return Suggestion created by user.
      */
+    @SuppressWarnings("SuspiciousMethodCalls")
     private Suggestion createSuggestion(Room currentRoom) {
         List<Suspect> suspects = mGame.getBoard().getSuspects();
         List<Weapon> weapons = mGame.getBoard().getWeapons();
         List<Room> rooms = mGame.getBoard().getRooms();
+
+        // Can't make suggestions using the universally known cards
+        suspects.removeAll(mGame.getRemainingCards());
+        weapons.removeAll(mGame.getRemainingCards());
+        rooms.removeAll(mGame.getRemainingCards());
 
         if (currentRoom != null) {
             return CardPickerDialog.showSuggestionPickerDialog(mMainFrame, suspects, weapons, currentRoom);

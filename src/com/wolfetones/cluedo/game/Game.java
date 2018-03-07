@@ -412,6 +412,14 @@ public class Game {
         return mBoard;
     }
 
+    public List<Player> getPlayers() {
+        return mPlayers;
+    }
+
+    public int getPlayerCount() {
+        return mPlayers.size();
+    }
+
     public Player getCurrentPlayer() {
         return mCurrentPlayer;
     }
@@ -420,12 +428,12 @@ public class Game {
         return mCurrentPlayerLocation;
     }
 
-    public int getPlayerCount() {
-        return mPlayers.size();
-    }
-
     public Suggestion getSolution() {
         return mSolution;
+    }
+
+    public List<? extends Card> getRemainingCards() {
+        return mRemainingCards;
     }
 
     /**
