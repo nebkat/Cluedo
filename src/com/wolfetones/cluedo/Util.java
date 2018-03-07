@@ -60,6 +60,10 @@ public class Util {
                 new BufferedImage(width, height, image.getType()));
     }
 
+    public static Color getColorWithAlpha(Color color, int alpha) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+    }
+
     public static double easeInOutQuint(double t) {
         return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
     }

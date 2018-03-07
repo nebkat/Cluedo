@@ -61,6 +61,7 @@ public class GameController {
     private static final Integer BOARD_LAYER_TILES = 1;
     private static final Integer BOARD_LAYER_ROOM_NAMES = 2;
     private static final Integer BOARD_LAYER_TOKENS = 3;
+    private static final Integer BOARD_LAYER_DICE = 4;
 
     /**
      * Prefix placed in front of commands to hide from the list of valid commands
@@ -106,6 +107,7 @@ public class GameController {
 
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
+    private DicePanel mBoardDicePanel;
 
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
@@ -249,7 +251,9 @@ public class GameController {
             } else if (command.equalsIgnoreCase(COMMAND_DONE)) {
                 break;
             } else if (command.equalsIgnoreCase(COMMAND_ROLL)) {
-                int[] dice = new int[2];
+                int[] dice = new int[Game.NUM_DICE];
+                mBoardDicePanel.rollDice(dice);
+
                 int remainingMovements = mGame.rollDice(dice);
                 if (remainingMovements < 0) {
                     continue;
@@ -621,5 +625,11 @@ public class GameController {
                 mBoardTilePanel.add(button);
             }
         }
+
+        // Add dice panel
+        mBoardDicePanel = new DicePanel();
+        mBoardLayeredPane.add(mBoardDicePanel, BOARD_LAYER_DICE);
+        mBoardDicePanel.setBounds(mBoardTilePanel.getBounds());
+        mBoardDicePanel.initPhysics();
     }
 }

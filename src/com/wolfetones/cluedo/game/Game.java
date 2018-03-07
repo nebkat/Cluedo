@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Game {
-    private static final int NUM_DICE = 2;
+    public static final int NUM_DICE = 2;
 
     private static Random sRandom = new Random();
 
@@ -243,9 +243,12 @@ public class Game {
         if (dice.length != NUM_DICE) {
             throw new IllegalArgumentException("int[] dice must be of size " + NUM_DICE);
         }
+
         // Random dice roll
         for (int i = 0; i < NUM_DICE; i++) {
-            dice[i] = sRandom.nextInt(6) + 1;
+            if (dice[i] == 0) {
+                dice[i] = sRandom.nextInt(6) + 1;
+            }
             mTurnRemainingMoves += dice[i];
         }
 
