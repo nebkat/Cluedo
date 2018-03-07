@@ -391,7 +391,7 @@ public class GameController {
             return;
         }
 
-        List<Suspect> remainingSuspects = new ArrayList<>(mGame.getBoard().getSuspects());
+        List<Suspect> remainingSuspects = mGame.getBoard().getSuspects();
 
         while (remainingSuspects.size() > 0) {
             Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);

@@ -197,7 +197,7 @@ public class BoardModel {
      * @return a list containing all of the {@code Room} cards.
      */
     public List<Room> getRooms() {
-        return mRooms;
+        return new ArrayList<>(mRooms);
     }
 
     public Room getRoom(int id) {
@@ -205,7 +205,7 @@ public class BoardModel {
     }
 
     public List<Suspect> getSuspects() {
-        return mSuspects;
+        return new ArrayList<>(mSuspects);
     }
 
     public Suspect getSuspect(int id) {
@@ -213,7 +213,7 @@ public class BoardModel {
     }
 
     public List<Weapon> getWeapons() {
-        return mWeapons;
+        return new ArrayList<>(mWeapons);
     }
 
     public Weapon getWeapon(int id) {

@@ -29,9 +29,13 @@ import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
+import com.wolfetones.cluedo.card.Room;
+import com.wolfetones.cluedo.card.Suspect;
+import com.wolfetones.cluedo.card.Weapon;
 
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Game {
     private static final int NUM_DICE = 2;
@@ -48,7 +52,7 @@ public class Game {
      * Cards
      */
     private List<Card> mCards = new ArrayList<>(21);
-    private List<Card> mRemainingCards = new ArrayList<>(2);
+    private List<Card> mRemainingCards = new ArrayList<>(0);
 
     /**
      * Game solution
@@ -444,18 +448,27 @@ public class Game {
      * is visible to all players.
      */
     private void setupCards() {
+        List<Suspect> suspects = mBoard.getSuspects();
+        List<Weapon> weapons = mBoard.getWeapons();
+        List<Room> rooms = mBoard.getRooms();
+
         // Add all cards to the cards list
-        mCards.addAll(mBoard.getRooms());
-        mCards.addAll(mBoard.getSuspects());
-        mCards.addAll(mBoard.getWeapons());
+        mCards.addAll(suspects);
+        mCards.addAll(weapons);
+        mCards.addAll(rooms);
 
         // Create a random solution
-        mSolution = new Suggestion(randomCard(mBoard.getRooms()),
-                randomCard(mBoard.getSuspects()),
-                randomCard(mBoard.getWeapons()));
+        mSolution = new Suggestion(randomCard(rooms),
+                randomCard(suspects),
+                randomCard(weapons));
 
         // Cards to be distributed to players
         List<Card> distributeCards = new ArrayList<>(mCards);
+
+        // All playing suspects must be distributed
+        List<Card> mustDistributeCards = mPlayers.stream()
+                .map(Player::getCharacter)
+                .collect(Collectors.toList());
 
         // Remove all solution cards
         distributeCards.removeAll(mSolution.asList());
@@ -464,13 +477,17 @@ public class Game {
         Collections.shuffle(distributeCards);
 
         // Place cards that will not divide evenly into the remaining cards pile
-        for (int i = 0; i < distributeCards.size() % mPlayers.size(); i++) {
-            mRemainingCards.add(distributeCards.remove(0));
-        }
+        mRemainingCards = distributeCards.stream()
+                .filter(c -> !mustDistributeCards.contains(c))
+                .limit(distributeCards.size() % mPlayers.size())
+                .collect(Collectors.toList());
+
+        // Remove remaining cards from cards to be distributed
+        distributeCards.removeAll(mRemainingCards);
 
         // Distribute cards to players
         for (int i = 0; i < distributeCards.size(); i++) {
-            mPlayers.get(i % mPlayers.size()).addCard(distributeCards.remove(0));
+            mPlayers.get(i % mPlayers.size()).addCard(distributeCards.get(i));
         }
     }
 
