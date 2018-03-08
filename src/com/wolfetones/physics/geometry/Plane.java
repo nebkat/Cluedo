@@ -37,8 +37,8 @@ public class Plane extends Point3d {
     }
 
     public int classifyPoint(Point3d point) {
-        Vector3d delta = new Vector3d(point);
-        delta.sub(this);
+        Vector3d delta = new Vector3d();
+        delta.sub(point, this);
         delta.normalize();
 
         double d = delta.dot(normal);
