@@ -24,11 +24,7 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.card.Weapon;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class WeaponTokenComponent extends TokenComponent {
     public WeaponTokenComponent(Weapon weapon, int tileSize) {
