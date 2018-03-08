@@ -53,7 +53,7 @@ public class DicePanel extends JPanel {
 
     private final Object mDiceMovingLock = new Object();
 
-    private VerletPhysics mPhysics = new VerletPhysics(5);
+    private VerletPhysics mPhysics = new VerletPhysics(10);
 
     private Dice[] mDices = new Dice[NUM_DICE];
 
@@ -170,10 +170,10 @@ public class DicePanel extends JPanel {
 
                     // Only perform checks if movement has not been detected in previous dice
                     if (!moved) {
-                        // Dice has moved if it's center has moved by 0.05, or velocity has changed by 0.01
+                        // Dice has moved if it's center has moved by 0.5, or velocity has changed by 0.05
                         if (previousCenters[i] == null ||
-                                previousCenters[i].distance(center) > 0.05 ||
-                                Math.abs(previousAverageVelocity[i] - averageVelocity) > 0.01) {
+                                previousCenters[i].distance(center) > 0.5 ||
+                                Math.abs(previousAverageVelocity[i] - averageVelocity) > 0.05) {
                             moved = true;
                         }
                     }
@@ -187,6 +187,16 @@ public class DicePanel extends JPanel {
                     synchronized (mDiceMovingLock) {
                         mDiceMovingLock.notifyAll();
                     }
+                }
+            }
+        };
+
+        // Force finish after timeout
+        TimerTask forceFinishTask = new TimerTask() {
+            @Override
+            public void run() {
+                synchronized (mDiceMovingLock) {
+                    mDiceMovingLock.notifyAll();
                 }
             }
         };
@@ -234,8 +244,9 @@ public class DicePanel extends JPanel {
         mTimer = new Timer();
 
         mTimer.scheduleAtFixedRate(physicsTick, 0, 1000 / 60);
-        mTimer.scheduleAtFixedRate(checkDiceTick, 500, 200);
+        mTimer.scheduleAtFixedRate(checkDiceTick, 500, 250);
         mTimer.scheduleAtFixedRate(fadeInTask, 0, 1000 / 60);
+        mTimer.schedule(forceFinishTask, 5000);
 
         // Wait until dice have stopped moving
         try {
@@ -251,6 +262,7 @@ public class DicePanel extends JPanel {
         physicsTick.cancel();
         checkDiceTick.cancel();
         fadeInTask.cancel();
+        forceFinishTask.cancel();
 
         // Return values
         int totalValue = 0;
