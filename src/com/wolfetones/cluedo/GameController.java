@@ -332,6 +332,11 @@ public class GameController {
                 mGame.usePassage();
             } else if (command.equalsIgnoreCase(COMMAND_QUESTION)) {
                 Suggestion suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+
+                if (suggestion == null) {
+                    continue;
+                }
+
                 Player matchingPlayer = mGame.poseQuestion(suggestion);
 
                 if (matchingPlayer != null) {
