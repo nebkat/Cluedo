@@ -58,11 +58,6 @@ public class Cube extends RigidBody {
             }
         }
 
-        // Stabilizers
-        for (Particle[] face : faces) {
-            particles.add(new Particle(VectorUtils.average(face)));
-        }
-
         setupSticks();
     }
 
