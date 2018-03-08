@@ -225,6 +225,10 @@ public class GameController {
     private void performTurn() {
         Player player = mGame.nextTurn();
 
+        passToPlayer(player, null);
+
+        mOutputPanel.clear();
+
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
         List<String> commands = new ArrayList<>();
@@ -333,11 +337,11 @@ public class GameController {
                 if (matchingPlayer != null) {
                     List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
-                    passToPlayer(matchingPlayer);
+                    passToPlayer(matchingPlayer, "temporarily");
 
                     Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
 
-                    passToPlayer(player);
+                    passToPlayer(player, "back");
 
                     System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
                     player.addKnowledge(shownCard);
@@ -413,11 +417,54 @@ public class GameController {
      * Requests that the game be passed to a player.
      *
      * @param p Player to pass to.
+     * @param type One of "back", "temporarily", null
      */
-    private void passToPlayer(Player p) {
-        ImageIcon playerIcon = new ImageIcon(p.getCharacter().getCardImage());
+    private void passToPlayer(Player p, String type) {
 
-        JOptionPane.showMessageDialog(null, "Please pass to " + p.getName(), "Pass To " + p.getName(), JOptionPane.INFORMATION_MESSAGE, playerIcon);
+        JDialog dialog = new JDialog(mMainFrame, true);
+
+        dialog.setUndecorated(true);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        panel.setBorder(
+                BorderFactory.createCompoundBorder(
+                        BorderFactory.createDashedBorder(Color.BLACK, 4, 5, 5, true),
+                        BorderFactory.createEmptyBorder(Config.screenRelativeSize(25),
+                                Config.screenRelativeSize(25),
+                                Config.screenRelativeSize(25),
+                                Config.screenRelativeSize(25))));
+
+        panel.add(new ScaledImageComponent(p.getCharacter().getCardImage()));
+
+        panel.add(Box.createRigidArea(new Dimension(0, Config.screenRelativeSize(25))));
+
+        String text = "Pass ";
+        if (type != null) {
+            text += type + " ";
+        }
+        text += "to " + p.getName();
+
+        JLabel label = new JLabel(text);
+        label.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
+        panel.add(label);
+
+        panel.add(Box.createRigidArea(new Dimension(0, Config.screenRelativeSize(25))));
+
+        JButton button = new JButton("Done");
+        button.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        button.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(32)));
+        panel.add(button);
+
+        button.addActionListener((e) -> dialog.dispose());
+
+        dialog.setContentPane(panel);
+        dialog.pack();
+        dialog.setLocationRelativeTo(mMainFrame);
+
+        dialog.setVisible(true);
     }
 
     /**
