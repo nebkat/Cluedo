@@ -274,9 +274,6 @@ public class CardPickerDialog extends JDialog {
 
             private BufferedImage mImage;
 
-            private int mImageWidth;
-            private int mImageHeight;
-
             private boolean mMouseOver = false;
             private boolean mSelected = false;
 
@@ -287,10 +284,12 @@ public class CardPickerDialog extends JDialog {
 
                 mImage = mCard.getCardImage();
 
-                mImageWidth = Config.screenRelativeSize(100);
-                mImageHeight = mImage.getHeight() * mImageWidth / mImage.getWidth();
+                int imageWidth = Config.screenRelativeSize(150);
+                int imageHeight = mImage.getHeight() * imageWidth / mImage.getWidth();
 
-                setPreferredSize(new Dimension(mImageWidth, mImageHeight + Config.screenRelativeSize(20)));
+                mImage = Util.getScaledImage(mImage, imageWidth, imageHeight);
+
+                setPreferredSize(new Dimension(imageWidth, imageHeight + Config.screenRelativeSize(20)));
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 addMouseListener(new MouseAdapter() {
@@ -328,15 +327,19 @@ public class CardPickerDialog extends JDialog {
                 }
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
+                boolean rotate = mCard instanceof Suspect && (mSelected || mMouseOver);
+
                 // Draw base card
-                g.drawImage(mImage, 0, 0, mImageWidth, mImageHeight,
-                        0, 0, mImage.getWidth(), mImage.getHeight(), null);
+                if (rotate) g.rotate(Math.PI, mImage.getWidth() / 2, mImage.getHeight() / 2);
+                g.drawImage(mImage, 0, 0, null);
+                if (rotate) g.rotate(Math.PI, mImage.getWidth() / 2, mImage.getHeight() / 2);
+
 
                 // Draw selected/highlighted overlays
                 if (mSelected) {
-                    g.drawImage(Card.getCardSelectedOverlayImage(), 0, 0, mImageWidth, mImageHeight, null);
+                    g.drawImage(Card.getCardSelectedOverlayImage(), 0, 0, mImage.getWidth(), mImage.getHeight(), null);
                 } else if (mMouseOver) {
-                    g.drawImage(Card.getCardHighlightOverlayImage(), 0, 0, mImageWidth, mImageHeight, null);
+                    g.drawImage(Card.getCardHighlightOverlayImage(), 0, 0, mImage.getWidth(), mImage.getHeight(), null);
                 }
 
                 // Draw card name
