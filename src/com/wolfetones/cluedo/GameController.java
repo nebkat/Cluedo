@@ -382,12 +382,12 @@ public class GameController {
                 }
 
             } else if (command.equals(COMMAND_ACCUSE)) {
-                Suggestion suggestion;
-                boolean correct;
-                do {
-                    suggestion = createSuggestion(null);
-                    correct = mGame.makeFinalAccusation(suggestion);
-                } while (readCommand("Are you sure? Final accusation: " + suggestion.asHumanReadableString(), COMMAND_YES, COMMAND_NO).equalsIgnoreCase(COMMAND_NO));
+                Suggestion suggestion = createSuggestion(null);
+                if (suggestion == null) {
+                    continue;
+                }
+
+                boolean correct = mGame.makeFinalAccusation(suggestion);
 
                 if (correct) {
                     System.out.println("Congratulations! You were correct!");
