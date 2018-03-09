@@ -114,6 +114,8 @@ public class GameController {
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
 
+    private PlayersPanel mPlayersPanel;
+
     /**
      * Path Finding
      */
@@ -234,6 +236,7 @@ public class GameController {
     private void performTurn() {
         Player player = mGame.nextTurn();
 
+        mPlayersPanel.setActivePlayer(player);
         passToPlayer(player, null);
 
         mOutputPanel.clear();
@@ -357,11 +360,13 @@ public class GameController {
                 if (matchingPlayer != null) {
                     List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
+                    mPlayersPanel.setTemporarilyActivePlayer(matchingPlayer);
                     passToPlayer(matchingPlayer, "temporarily");
 
                     Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
 
                     passToPlayer(player, "back");
+                    mPlayersPanel.setTemporarilyActivePlayer(null);
 
                     System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
                     player.addKnowledge(shownCard);
@@ -381,6 +386,7 @@ public class GameController {
                     System.out.println("Congratulations! You were correct!");
                 } else {
                     System.out.println("Your guess was incorrect. You have been eliminated.");
+                    mPlayersPanel.removePlayer(player);
                 }
             } else if (command.equalsIgnoreCase(COMMAND_NOTES)) {
                 // TODO
@@ -589,6 +595,9 @@ public class GameController {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mMainFrame.setContentPane(mainPanel);
+
+        mPlayersPanel = new PlayersPanel(mGame.getPlayers());
+        mMainFrame.add(mPlayersPanel, BorderLayout.LINE_START);
 
         setupBoard();
 
