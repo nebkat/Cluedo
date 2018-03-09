@@ -62,6 +62,7 @@ public class GameController {
     private static final Integer BOARD_LAYER_ROOM_NAMES = 2;
     private static final Integer BOARD_LAYER_TOKENS = 3;
     private static final Integer BOARD_LAYER_DICE = 4;
+    private static final Integer BOARD_LAYER_CURSOR = 5;
 
     /**
      * Prefix placed in front of commands to hide from the list of valid commands
@@ -108,15 +109,16 @@ public class GameController {
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
     private DicePanel mBoardDicePanel;
+    private JPanel mBoardCursorPanel;
 
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
 
     /**
-     * TODO: Temporary pathfinding test code
+     * Path Finding
      */
-    private static Location mEndLocation = null;
-    private static Token mToken = null;
+    private boolean mPathFindingEnabled = false;
+    private List<TileComponent> mTileComponents = new ArrayList<>();
 
     /**
      * Scanner for reading stdin
@@ -198,7 +200,14 @@ public class GameController {
 
         String command;
         while (true) {
-            command = mInputScanner.nextLine().trim().toLowerCase();
+            command = mInputScanner.nextLine();
+
+            // Interrupt/end of text
+            if (command.equals("\3")) {
+                return null;
+            }
+
+            command = command.trim().toLowerCase();
 
             // Wait for text
             if (command.length() == 0) {
@@ -259,30 +268,34 @@ public class GameController {
                 mBoardDicePanel.rollDice(dice);
 
                 int remainingMovements = mGame.rollDice(dice);
-                if (remainingMovements < 0) {
-                    continue;
-                }
 
                 System.out.println("Rolled " + dice[0] + " + " + dice[1] + " = " + remainingMovements);
 
+                mPathFindingEnabled = true;
+
+                // Exit if in room
                 Location startLocation = mGame.getCurrentPlayerLocation();
                 if (startLocation.isRoom()) {
                     List<RoomTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
                     corridorTiles.sort(Comparator.comparingInt(Tile::getX));
                     String[] validCommands = new String[corridorTiles.size()];
-                    for (int i = 1; i <= corridorTiles.size(); i++) {
-                        validCommands[i - 1] = Integer.toString(i);
+                    for (int i = 0; i < corridorTiles.size(); i++) {
+                        validCommands[i] = Integer.toString(i + 1);
                     }
-                    int entranceCorridor = Integer.parseInt(readCommand("Choose room exit", validCommands)) - 1;
+                    String entranceCommand = readCommand("Choose room exit", validCommands);
+                    // If not interrupted by path finding
+                    if (entranceCommand != null) {
+                        int entranceCorridor = Integer.parseInt(entranceCommand) - 1;
 
-                    remainingMovements = mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
+                        remainingMovements = mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
+                    }
                 }
 
                 Tile moveTile = null;
                 CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
-                boolean moved = false;
-                while (remainingMovements > 0) {
-                    List<String> validCommands = new ArrayList<>(4);
+                List<String> validCommands = new ArrayList<>(5);
+                while (mGame.getTurnRemainingMoves() > 0) {
+                    validCommands.clear();
                     if (currentTile == null) {
                         throw new IllegalStateException("Current tile cannot be null");
                     }
@@ -290,10 +303,13 @@ public class GameController {
                     if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
                     if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
                     if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
-                    if (moved) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
+                    if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
 
                     String direction = readCommand("Choose direction", validCommands);
-                    if (direction.equalsIgnoreCase(COMMAND_STOP)) {
+                    if (direction == null) {
+                        continue;
+                    }
+                    if (direction.equals(COMMAND_STOP)) {
                         mGame.stopMoving();
                         break;
                     }
@@ -325,8 +341,7 @@ public class GameController {
                         currentTile = (CorridorTile) moveTile;
                     }
 
-                    remainingMovements = mGame.moveTo(currentTile);
-                    moved = true;
+                    mGame.moveTo(currentTile);
                 }
             } else if (command.equalsIgnoreCase(COMMAND_PASSAGE)) {
                 mGame.usePassage();
@@ -371,6 +386,62 @@ public class GameController {
                 // TODO
             } else if (command.equalsIgnoreCase(COMMAND_LOG)) {
                 // TODO
+            }
+        }
+    }
+
+    private void onTileClick(TileComponent tileComponent) {
+        if (!mPathFindingEnabled) return;
+
+        Tile tile = tileComponent.getTile();
+
+        Location targetLocation = Location.fromTile(tile);
+        Location currentLocation = mGame.getCurrentPlayerLocation();
+
+        List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, mGame.getTurnRemainingMoves());
+        if (path == null) {
+            return;
+        }
+
+        if (mGame.moveTo(targetLocation) == 0) {
+            mPathFindingEnabled = false;
+        }
+
+        mInputPanel.inject("\3");
+
+        for (TileComponent component : mTileComponents) {
+            component.setTemporaryColors(null, null);
+        }
+
+        mBoardCursorPanel.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void onTileHover(TileComponent tileComponent) {
+        if (!mPathFindingEnabled) return;
+
+        for (TileComponent component : mTileComponents) {
+            component.setTemporaryColors(null, null);
+        }
+
+        Tile tile = tileComponent.getTile();
+
+        Location targetLocation = Location.fromTile(tile);
+        Location currentLocation = mGame.getCurrentPlayerLocation();
+
+        List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, Integer.MAX_VALUE);
+
+        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(path != null &&
+                (path.size() - 1) <= mGame.getTurnRemainingMoves() ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
+
+        if (path == null) {
+            return;
+        }
+
+        for (int i = 0; i < path.size(); i++) {
+            if (i <= mGame.getTurnRemainingMoves()) {
+                path.get(i).getButton().setTemporaryColors(Color.GREEN, Color.GREEN.brighter());
+            } else {
+                path.get(i).getButton().setTemporaryColors(Color.RED, Color.RED.brighter());
             }
         }
     }
@@ -553,12 +624,16 @@ public class GameController {
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
         mBoardLayeredPane.setOpaque(true);
         mMainFrame.add(mBoardLayeredPane, BorderLayout.CENTER);
-        mBoardLayeredPane.setPreferredSize(new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT));
+
+        Dimension boardDimension = new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
+        mBoardLayeredPane.setPreferredSize(boardDimension);
+
+        Rectangle boardBounds = new Rectangle(0, 0, boardDimension.width, boardDimension.height);
 
         // Add tile panel
         mBoardTilePanel = new JPanel();
         mBoardTilePanel.setLayout(new GridLayout(Config.Board.HEIGHT, Config.Board.WIDTH));
-        mBoardTilePanel.setBounds(0, 0, mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
+        mBoardTilePanel.setBounds(boardBounds);
         mBoardTilePanel.setOpaque(false);
 
         mBoardLayeredPane.add(mBoardTilePanel, BOARD_LAYER_TILES);
@@ -588,69 +663,34 @@ public class GameController {
             mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
         }
 
-        // TODO: Testing pathfinder code
-        Runnable update = () -> {
-            if (mToken == null || mEndLocation == null) {
-                return;
-            }
-
-            List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(mToken.getLocation(), mEndLocation, 101);
-            if (path == null) {
-                return;
-            }
-
-            mToken.setLocation(mEndLocation);
-
-            for (int y = 0; y < Config.Board.HEIGHT; y++) {
-                for (int x = 0; x < Config.Board.WIDTH; x++) {
-                    Tile tile = mGame.getBoard().getTile(x, y);
-                    TileComponent button = (TileComponent) mBoardTilePanel.getComponent(BoardModel.tileCoordinatesToOffset(x, y));
-
-                    if (tile instanceof CorridorTile) {
-                        if (path.contains(tile)) {
-                            button.setBackgroundColors(Color.GREEN, Color.GREEN.darker());
-                        } else {
-                            if ((y + x) % 2 == 0) {
-                                button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
-                            } else {
-                                button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
         // Add tiles
         for (int y = 0; y < Config.Board.HEIGHT; y++) {
             for (int x = 0; x < Config.Board.WIDTH; x++) {
                 Tile tile = mGame.getBoard().getTile(x, y);
-                TileComponent button = new TileComponent(tile);
-                tile.setButton(button);
-                button.setPreferredSize(new Dimension(mTileSize, mTileSize));
+                TileComponent component = new TileComponent(tile);
+                tile.setButton(component);
+                component.setSize(mTileSize, mTileSize);
 
-                // Tile borders
-                char[] bc = BoardModel.getTileBordersAndCorners(x, y);
-                if (!IntStream.range(0, bc.length).mapToObj((i) -> bc[i]).allMatch((c) -> c == Config.Board.Tiles.EMPTY)) {
-                    button.setBorder(new TileBorder(bc));
-                }
+                mTileComponents.add(component);
 
-                // TODO: Testing pathfinder code
-                if (tile instanceof TokenOccupiableTile) {
-                    button.addMouseListener(new MouseAdapter() {
+                if (tile instanceof CorridorTile || tile instanceof RoomTile) {
+                    component.addMouseListener(new MouseAdapter() {
                         @Override
-                        public void mousePressed(MouseEvent e) {
-                            mToken = ((TokenOccupiableTile) tile).getToken();
-
-                            update.run();
+                        public void mouseClicked(MouseEvent e) {
+                            onTileClick(component);
                         }
 
                         @Override
                         public void mouseEntered(MouseEvent e) {
-                            mEndLocation = tile instanceof RoomTile ? ((RoomTile) tile).getRoom() : (CorridorTile) tile;
-                            update.run();
+                            onTileHover(component);
                         }
                     });
+                }
+
+                // Tile borders
+                char[] bc = BoardModel.getTileBordersAndCorners(x, y);
+                if (!IntStream.range(0, bc.length).mapToObj((i) -> bc[i]).allMatch((c) -> c == Config.Board.Tiles.EMPTY)) {
+                    component.setBorder(new TileBorder(bc));
                 }
 
                 // Add start tile background circle
@@ -660,28 +700,33 @@ public class GameController {
 
                 // Set colors
                 if (tile instanceof PassageTile) {
-                    button.setBackgroundColors(TileComponent.COLOR_PASSAGE, TileComponent.COLOR_PASSAGE.brighter());
+                    component.setColors(TileComponent.COLOR_PASSAGE, TileComponent.COLOR_PASSAGE.brighter());
                 } else if (tile instanceof RoomTile) {
-                    button.setBackgroundColors(TileComponent.COLOR_ROOM, TileComponent.COLOR_ROOM.brighter());
+                    component.setColors(TileComponent.COLOR_ROOM, TileComponent.COLOR_ROOM.brighter());
                 } else if (tile instanceof CorridorTile) {
                     if ((y + x) % 2 == 0) {
-                        button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
+                        component.setColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
                     } else {
-                        button.setBackgroundColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
+                        component.setColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
                     }
                 } else if (tile instanceof EmptyTile) {
-                    button.setEnabled(false);
-                    button.setOpaque(false);
+                    component.setOpaque(false);
                 }
 
-                mBoardTilePanel.add(button);
+                mBoardTilePanel.add(component);
             }
         }
 
         // Add dice panel
         mBoardDicePanel = new DicePanel();
         mBoardLayeredPane.add(mBoardDicePanel, BOARD_LAYER_DICE);
-        mBoardDicePanel.setBounds(mBoardTilePanel.getBounds());
+        mBoardDicePanel.setBounds(boardBounds);
         mBoardDicePanel.initPhysics();
+
+        // Add cursor panel
+        mBoardCursorPanel = new JPanel();
+        mBoardLayeredPane.add(mBoardCursorPanel, BOARD_LAYER_CURSOR);
+        mBoardCursorPanel.setOpaque(false);
+        mBoardCursorPanel.setBounds(boardBounds);
     }
 }

@@ -27,13 +27,16 @@ package com.wolfetones.cluedo.ui;
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.card.Room;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-public class TileComponent extends JComponent implements MouseListener {
+public class TileComponent extends JComponent {
     public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
     public static final Color COLOR_CORRIDOR_B = Color.decode("#e0c070");
 
@@ -43,87 +46,76 @@ public class TileComponent extends JComponent implements MouseListener {
 
     private final Tile mTile;
 
-    private Color mDefaultBackgroundColor;
-    private Color mActiveBackgroundColor;
+    private Color mDefaultColor;
+    private Color mActiveColor;
+
+    private Color mTemporaryDefaultColor;
+    private Color mTemporaryActiveColor;
 
     private boolean mMouseOver = false;
 
     public TileComponent(Tile tile) {
         super();
-        addMouseListener(this);
-        setOpaque(true);
 
         mTile = tile;
 
-        if (mTile instanceof CorridorTile || mTile instanceof RoomTile) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        }
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setMouseOver(true, true);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setMouseOver(false, true);
+            }
+        });
+
+        setOpaque(true);
     }
 
     public Tile getTile() {
         return mTile;
     }
 
-    public void setBackgroundColors(Color def, Color active) {
-        mDefaultBackgroundColor = def;
-        mActiveBackgroundColor = active;
+    public void setColors(Color def, Color active) {
+        mDefaultColor = def;
+        mActiveColor = active;
 
-        setBackground(!mMouseOver ? def : active);
+        repaint();
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
+    public void setTemporaryColors(Color def, Color active) {
+        if (def == mTemporaryDefaultColor && active == mTemporaryActiveColor) return;
 
+        mTemporaryDefaultColor = def;
+        mTemporaryActiveColor = active;
+
+        repaint();
     }
 
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        mMouseOver = true;
-
-        if (mActiveBackgroundColor != null) {
-            setBackground(mActiveBackgroundColor);
-        }
-
-        if (mTile instanceof RoomTile) {
-            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(true));
-        }
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        mMouseOver = false;
-
-        if (mActiveBackgroundColor != null) {
-            setBackground(mDefaultBackgroundColor);
-        }
-
-        if (mTile instanceof RoomTile) {
-            ((RoomTile) mTile).getRoom().getRoomTiles().forEach((tile) -> tile.getButton().setMouseOver(false));
-        }
-    }
-
-    private void setMouseOver(boolean mouseOver) {
+    private void setMouseOver(boolean mouseOver, boolean propagate) {
         mMouseOver = mouseOver;
 
-        if (mActiveBackgroundColor != null) {
-            setBackground(mMouseOver ? mActiveBackgroundColor : mDefaultBackgroundColor);
+        if (propagate && mTile instanceof RoomTile) {
+            ((RoomTile) mTile).getRoom()
+                    .getRoomTiles()
+                    .forEach((tile) -> tile.getButton().setMouseOver(mouseOver, false));
         }
+
+        repaint();
     }
 
     @Override
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
         if (isOpaque()) {
-            g.setColor(getBackground());
+            if (mTemporaryDefaultColor == null) {
+                g.setColor(!mMouseOver ? mDefaultColor : mActiveColor);
+            } else {
+                g.setColor(!mMouseOver ? mTemporaryDefaultColor : mTemporaryActiveColor);
+            }
             g.fillRect(0, 0, getWidth(), getHeight());
         }
     }

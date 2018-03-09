@@ -75,6 +75,10 @@ public class InputPanel extends JTextField implements KeyListener {
         mUnhintedText = "";
     }
 
+    public void inject(String text) {
+        mInputStream.append(text + "\n");
+    }
+
     public InputStream getInputStream() {
         return mInputStream;
     }

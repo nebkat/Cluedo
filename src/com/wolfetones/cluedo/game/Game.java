@@ -194,6 +194,8 @@ public class Game {
         return mTurnCanMakeFinalAccusation;
     }
 
+    public boolean canStopMoving() { return mTurnHasMoved; }
+
     public boolean isTurnFinished() {
         return mTurnFinished;
     }
@@ -433,6 +435,10 @@ public class Game {
 
     public Location getCurrentPlayerLocation() {
         return mCurrentPlayerLocation;
+    }
+
+    public int getTurnRemainingMoves() {
+        return mTurnRemainingMoves;
     }
 
     public Suggestion getSolution() {

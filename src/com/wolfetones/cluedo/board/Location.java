@@ -25,6 +25,8 @@
 package com.wolfetones.cluedo.board;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
+import com.wolfetones.cluedo.board.tiles.RoomTile;
+import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.card.Room;
 
 /**
@@ -65,6 +67,16 @@ public interface Location {
             return (CorridorTile) this;
         } else {
             throw new IllegalStateException("Location is not a CorridorTile");
+        }
+    }
+
+    static Location fromTile(Tile tile) {
+        if (tile instanceof CorridorTile) {
+            return (CorridorTile) tile;
+        } else if (tile instanceof RoomTile) {
+            return ((RoomTile) tile).getRoom();
+        } else {
+            throw new IllegalArgumentException("Tile is not a Location");
         }
     }
 }

@@ -137,7 +137,7 @@ public class TileBorder implements Border {
 
     @Override
     public Insets getBorderInsets(Component c) {
-        return new Insets(Config.screenRelativeSize(2), Config.screenRelativeSize(2), Config.screenRelativeSize(2), Config.screenRelativeSize(2));
+        return null;
     }
 
     @Override
