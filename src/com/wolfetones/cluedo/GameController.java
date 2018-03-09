@@ -254,22 +254,29 @@ public class GameController {
             if (mGame.canPoseQuestion()) commands.add(COMMAND_QUESTION);
             if (mGame.canMakeFinalAccusation()) commands.add(COMMAND_ACCUSE);
             if (mGame.isTurnFinished()) commands.add(COMMAND_DONE);
+
+            // Notes and log are always available
+            commands.add(COMMAND_NOTES);
+            commands.add(COMMAND_LOG);
+
+            // Cheat and quit are always available but hidden
             if (CHEAT_ENABLED) commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_CHEAT);
             commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_QUIT);
 
             String command = readCommand("Choose action", commands);
 
-            if (command.equalsIgnoreCase(COMMAND_QUIT)) {
+            if (command.equals(COMMAND_QUIT)) {
                 System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
                 System.exit(0);
-            } else if (command.equalsIgnoreCase(COMMAND_CHEAT)) {
+            } else if (command.equals(COMMAND_CHEAT)) {
                 System.out.println("The solution is: " + mGame.getSolution().asHumanReadableString());
-            } else if (command.equalsIgnoreCase(COMMAND_DONE)) {
+            } else if (command.equals(COMMAND_DONE)) {
                 break;
-            } else if (command.equalsIgnoreCase(COMMAND_ROLL)) {
+            } else if (command.equals(COMMAND_ROLL)) {
                 int[] dice = new int[Game.NUM_DICE];
                 mBoardDicePanel.rollDice(dice);
 
+                // Game will read dice values from dice array if they are not 0
                 int remainingMovements = mGame.rollDice(dice);
 
                 System.out.println("Rolled " + dice[0] + " + " + dice[1] + " = " + remainingMovements);
@@ -346,9 +353,9 @@ public class GameController {
 
                     mGame.moveTo(currentTile);
                 }
-            } else if (command.equalsIgnoreCase(COMMAND_PASSAGE)) {
+            } else if (command.equals(COMMAND_PASSAGE)) {
                 mGame.usePassage();
-            } else if (command.equalsIgnoreCase(COMMAND_QUESTION)) {
+            } else if (command.equals(COMMAND_QUESTION)) {
                 Suggestion suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
 
                 if (suggestion == null) {
@@ -374,7 +381,7 @@ public class GameController {
                     System.out.println("No players have any of the suggested cards");
                 }
 
-            } else if (command.equalsIgnoreCase(COMMAND_ACCUSE)) {
+            } else if (command.equals(COMMAND_ACCUSE)) {
                 Suggestion suggestion;
                 boolean correct;
                 do {
@@ -388,9 +395,9 @@ public class GameController {
                     System.out.println("Your guess was incorrect. You have been eliminated.");
                     mPlayersPanel.removePlayer(player);
                 }
-            } else if (command.equalsIgnoreCase(COMMAND_NOTES)) {
+            } else if (command.equals(COMMAND_NOTES)) {
                 // TODO
-            } else if (command.equalsIgnoreCase(COMMAND_LOG)) {
+            } else if (command.equals(COMMAND_LOG)) {
                 // TODO
             }
         }
