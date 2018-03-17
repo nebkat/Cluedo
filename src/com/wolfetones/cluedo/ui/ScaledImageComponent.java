@@ -45,6 +45,7 @@ public class ScaledImageComponent extends JComponent {
         mImage = Util.getScaledImage(image, width, height);
 
         setPreferredSize(new Dimension(width, height));
+        setSize(getPreferredSize());
         setMaximumSize(getPreferredSize());
         setMinimumSize(getPreferredSize());
     }

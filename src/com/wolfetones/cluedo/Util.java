@@ -24,10 +24,13 @@
 
 package com.wolfetones.cluedo;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Collection;
 
 public class Util {
@@ -62,6 +65,14 @@ public class Util {
 
     public static Color getColorWithAlpha(Color color, int alpha) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+    }
+
+    public static BufferedImage loadImage(String image) {
+        try {
+            return ImageIO.read(Util.class.getClassLoader().getResourceAsStream(image));
+        } catch (IOException | IllegalArgumentException e) {
+            throw new IllegalArgumentException("Could not load image '" + image + "'");
+        }
     }
 
     public static double easeInOutQuint(double t) {

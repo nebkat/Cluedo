@@ -24,7 +24,6 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
 
 import javax.swing.*;
@@ -39,21 +38,50 @@ import java.util.Map;
 public class PlayersPanel extends JPanel {
     private Map<Player, PlayerIconComponent> mIcons = new HashMap<>();
 
-    public PlayersPanel(List<Player> players) {
+    public PlayersPanel(List<Player> players, int iconWidth) {
         super();
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setOpaque(false);
 
-        setBackground(TileComponent.COLOR_EMPTY);
+        setLayout(new GridBagLayout());
 
-        for (Player player : players) {
-            PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(),
-                    Config.screenRelativeSize(72),
-                    Config.screenRelativeSize(72));
+        GridBagConstraints c = new GridBagConstraints();
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            @SuppressWarnings("SuspiciousNameCombination")
+            PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(), iconWidth, iconWidth);
 
             mIcons.put(player, icon);
-            add(icon);
+
+            c.gridy++;
+            c.gridx = 0;
+            add(icon, c);
+
+            TextBubble bubble = new TextBubble(icon.getHeight());
+
+            if (i == 0) {
+                bubble.setText("I suggest... Professor Plum in the Trophy Room with the Revolver");
+            } else if (i == 5) {
+                bubble.setText("I have a card");
+                bubble.setButton("Choose", null);
+            } else if (i == 4) {
+                bubble.setText("I was moved to this room, I can make a suggestion");
+            } else {
+                bubble.setText("I don't have any card!");
+            }
+
+            c.gridx = 1;
+            add(bubble, c);
         }
+
+        // Push everything to bottom and ensure text bubble column width
+        c = new GridBagConstraints();
+        c.gridy = 10;
+        c.weighty = 1;
+        add(Box.createHorizontalStrut(iconWidth), c);
+        c.gridx = 1;
+        c.weightx = 1;
+        add(Box.createHorizontalStrut(0), c);
     }
 
     public void setActivePlayer(Player player) {
@@ -68,13 +96,14 @@ public class PlayersPanel extends JPanel {
         mIcons.values().forEach((i) -> i.setHalfSelected(i == activeIcon));
     }
 
-    public void removePlayer(Player player) {
-        remove(mIcons.remove(player));
+    public void setPlayerEliminated(Player player) {
+        mIcons.get(player).setEliminated();
     }
 
-    private class PlayerIconComponent extends ScaledImageComponent {
+    private static class PlayerIconComponent extends ScaledImageComponent {
         private boolean mSelected = false;
         private boolean mHalfSelected = false;
+        private boolean mEliminated = false;
 
         private BufferedImage mFilteredImage;
 
@@ -99,8 +128,19 @@ public class PlayersPanel extends JPanel {
             repaint();
         }
 
+        private void setEliminated() {
+            mEliminated = true;
+            repaint();
+        }
+
         @Override
-        public void paintComponent(Graphics g) {
+        public void paintComponent(Graphics gg) {
+            Graphics2D g = (Graphics2D) gg;
+
+            if (mEliminated) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+            }
+
             if (mHalfSelected) {
                 int divisions = 9;
                 for (int i = 0; i < divisions; i++) {

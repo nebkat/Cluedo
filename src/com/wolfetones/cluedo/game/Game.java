@@ -474,11 +474,6 @@ public class Game {
         // Cards to be distributed to players
         List<Card> distributeCards = new ArrayList<>(mCards);
 
-        // All playing suspects must be distributed
-        List<Card> mustDistributeCards = mPlayers.stream()
-                .map(Player::getCharacter)
-                .collect(Collectors.toList());
-
         // Remove all solution cards
         distributeCards.removeAll(mSolution.asList());
 
@@ -487,7 +482,6 @@ public class Game {
 
         // Place cards that will not divide evenly into the remaining cards pile
         mRemainingCards = distributeCards.stream()
-                .filter(c -> !mustDistributeCards.contains(c))
                 .limit(distributeCards.size() % mPlayers.size())
                 .collect(Collectors.toList());
 

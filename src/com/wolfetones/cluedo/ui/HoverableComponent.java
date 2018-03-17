@@ -24,12 +24,26 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.card.Suspect;
-
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
-public class SuspectTokenComponent extends TokenComponent {
-    public SuspectTokenComponent(Suspect suspect, int tileSize) {
-        super(suspect, tileSize);
+public interface HoverableComponent {
+    void setMouseOver(boolean mouseOver);
+    
+    default void addHoverListener() {
+        Component self = (Component) this;
+        
+        self.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                setMouseOver(true);
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                setMouseOver(false);
+            }
+        });
     }
 }

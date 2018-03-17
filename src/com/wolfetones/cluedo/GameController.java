@@ -62,7 +62,9 @@ public class GameController {
     private static final Integer BOARD_LAYER_ROOM_NAMES = 2;
     private static final Integer BOARD_LAYER_TOKENS = 3;
     private static final Integer BOARD_LAYER_DICE = 4;
-    private static final Integer BOARD_LAYER_CURSOR = 5;
+    private static final Integer BOARD_LAYER_PLAYERS = 5;
+    private static final Integer BOARD_LAYER_ACTIONS = 6;
+    private static final Integer BOARD_LAYER_CURSOR = 7;
 
     /**
      * Prefix placed in front of commands to hide from the list of valid commands
@@ -75,15 +77,15 @@ public class GameController {
     /**
      * Commands that can be executed by the user
      */
-    private static final String COMMAND_ROLL = "roll";
-    private static final String COMMAND_PASSAGE = "passage";
-    private static final String COMMAND_DONE = "done";
-    private static final String COMMAND_QUIT = "quit";
-    private static final String COMMAND_QUESTION = "question";
-    private static final String COMMAND_ACCUSE = "accuse";
-    private static final String COMMAND_NOTES = "notes";
-    private static final String COMMAND_LOG = "log";
-    private static final String COMMAND_CHEAT = "cheat";
+    public static final String COMMAND_ROLL = "roll";
+    public static final String COMMAND_PASSAGE = "passage";
+    public static final String COMMAND_DONE = "done";
+    public static final String COMMAND_QUIT = "quit";
+    public static final String COMMAND_QUESTION = "question";
+    public static final String COMMAND_ACCUSE = "accuse";
+    public static final String COMMAND_NOTES = "notes";
+    public static final String COMMAND_LOG = "log";
+    public static final String COMMAND_CHEAT = "cheat";
 
     private static final String COMMAND_LEFT = "l";
     private static final String COMMAND_UP = "u";
@@ -115,6 +117,7 @@ public class GameController {
     private InputPanel mInputPanel;
 
     private PlayersPanel mPlayersPanel;
+    private ActionPanel mActionPanel;
 
     /**
      * Path Finding
@@ -263,9 +266,11 @@ public class GameController {
             if (CHEAT_ENABLED) commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_CHEAT);
             commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_QUIT);
 
+            mActionPanel.updateStatus(mGame);
             String command = readCommand("Choose action", commands);
-
-            if (command.equals(COMMAND_QUIT)) {
+            if (command == null) {
+                // Ignore and continue
+            } else if (command.equals(COMMAND_QUIT)) {
                 System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
                 System.exit(0);
             } else if (command.equals(COMMAND_CHEAT)) {
@@ -278,6 +283,8 @@ public class GameController {
 
                 // Game will read dice values from dice array if they are not 0
                 int remainingMovements = mGame.rollDice(dice);
+
+                mActionPanel.updateStatus(mGame);
 
                 System.out.println("Rolled " + dice[0] + " + " + dice[1] + " = " + remainingMovements);
 
@@ -292,13 +299,18 @@ public class GameController {
                     for (int i = 0; i < corridorTiles.size(); i++) {
                         validCommands[i] = Integer.toString(i + 1);
                     }
-                    String entranceCommand = readCommand("Choose room exit", validCommands);
-                    // If not interrupted by path finding
+                    String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands);
+                    // If not interrupted by path finding/UI
                     if (entranceCommand != null) {
                         int entranceCorridor = Integer.parseInt(entranceCommand) - 1;
 
-                        remainingMovements = mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
+                        mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
                     }
+                }
+
+                // May have moved directly to another move using path finding/UI
+                if (mGame.getTurnRemainingMoves() == 0) {
+                    continue;
                 }
 
                 Tile moveTile = null;
@@ -315,7 +327,7 @@ public class GameController {
                     if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
                     if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
 
-                    String direction = readCommand("Choose direction", validCommands);
+                    String direction = readCommand("Choose direction (or use board tiles)", validCommands);
                     if (direction == null) {
                         continue;
                     }
@@ -353,6 +365,8 @@ public class GameController {
 
                     mGame.moveTo(currentTile);
                 }
+
+                mPathFindingEnabled = false;
             } else if (command.equals(COMMAND_PASSAGE)) {
                 mGame.usePassage();
             } else if (command.equals(COMMAND_QUESTION)) {
@@ -393,7 +407,7 @@ public class GameController {
                     System.out.println("Congratulations! You were correct!");
                 } else {
                     System.out.println("Your guess was incorrect. You have been eliminated.");
-                    mPlayersPanel.removePlayer(player);
+                    mPlayersPanel.setPlayerEliminated(player);
                 }
             } else if (command.equals(COMMAND_NOTES)) {
                 // TODO
@@ -426,7 +440,7 @@ public class GameController {
             component.setTemporaryColors(null, null);
         }
 
-        mBoardCursorPanel.setCursor(Cursor.getDefaultCursor());
+        mBoardCursorPanel.setVisible(false);
     }
 
     private void onTileHover(TileComponent tileComponent) {
@@ -438,17 +452,23 @@ public class GameController {
 
         Tile tile = tileComponent.getTile();
 
+        if (!(tile instanceof CorridorTile || tile instanceof RoomTile)) {
+            mBoardCursorPanel.setVisible(false);
+            return;
+        }
+
         Location targetLocation = Location.fromTile(tile);
         Location currentLocation = mGame.getCurrentPlayerLocation();
 
         List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, Integer.MAX_VALUE);
-
-        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(path != null &&
-                (path.size() - 1) <= mGame.getTurnRemainingMoves() ? Cursor.HAND_CURSOR : Cursor.DEFAULT_CURSOR));
-
         if (path == null) {
+            mBoardCursorPanel.setVisible(false);
             return;
         }
+
+        boolean canMove = (path.size() - 1) <= mGame.getTurnRemainingMoves();
+        mBoardCursorPanel.setVisible(true);
+        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(canMove ? Cursor.HAND_CURSOR : Cursor.CROSSHAIR_CURSOR));
 
         for (int i = 0; i < path.size(); i++) {
             if (i <= mGame.getTurnRemainingMoves()) {
@@ -480,7 +500,7 @@ public class GameController {
      */
     private void setupPlayers() {
         if (DEMO_MODE) {
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 6; i++) {
                 Suspect suspect = mGame.getBoard().getSuspect(i);
                 mGame.addPlayer(new Player(suspect, suspect.getName()));
             }
@@ -603,11 +623,6 @@ public class GameController {
         mainPanel.setLayout(new BorderLayout());
         mMainFrame.setContentPane(mainPanel);
 
-        mPlayersPanel = new PlayersPanel(mGame.getPlayers());
-        mMainFrame.add(mPlayersPanel, BorderLayout.LINE_START);
-
-        setupBoard();
-
         JPanel terminal = new JPanel();
         terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
         terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
@@ -625,6 +640,8 @@ public class GameController {
         System.setIn(mInputPanel.getInputStream());
 
         mMainFrame.add(terminal, BorderLayout.LINE_END);
+
+        setupBoard();
 
         mMainFrame.pack();
         mMainFrame.setLocationRelativeTo(null);
@@ -689,19 +706,17 @@ public class GameController {
 
                 mTileComponents.add(component);
 
-                if (tile instanceof CorridorTile || tile instanceof RoomTile) {
-                    component.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            onTileClick(component);
-                        }
+                component.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        onTileClick(component);
+                    }
 
-                        @Override
-                        public void mouseEntered(MouseEvent e) {
-                            onTileHover(component);
-                        }
-                    });
-                }
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        onTileHover(component);
+                    }
+                });
 
                 // Tile borders
                 char[] bc = BoardModel.getTileBordersAndCorners(x, y);
@@ -742,7 +757,19 @@ public class GameController {
         // Add cursor panel
         mBoardCursorPanel = new JPanel();
         mBoardLayeredPane.add(mBoardCursorPanel, BOARD_LAYER_CURSOR);
-        mBoardCursorPanel.setOpaque(false);
         mBoardCursorPanel.setBounds(boardBounds);
+        mBoardCursorPanel.setOpaque(false);
+        mBoardCursorPanel.setVisible(false);
+
+        // Add players panel
+        mPlayersPanel = new PlayersPanel(mGame.getPlayers(), (int) (1.9 * mTileSize));
+        mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
+        mPlayersPanel.setBounds(boardBounds);
+
+        // Add action panel
+        mActionPanel = new ActionPanel(mInputPanel::append, (int) (1.9 * mTileSize));
+        mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
+        mActionPanel.setBounds(boardBounds);
+        mActionPanel.updateStatus(mGame);
     }
 }

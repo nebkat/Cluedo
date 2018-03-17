@@ -31,38 +31,63 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.function.Function;
 
-public class SwingTranslateAnimator implements ActionListener {
+public class Animator implements ActionListener {
     private static final int FRAMES_PER_SECOND = 60;
 
-    private JComponent mComponent;
+    private Object mComponent;
     private Timer mTimer = new Timer(1000 / FRAMES_PER_SECOND, this);
 
     private Function<Double, Double> mInterpolator = Util::easeInOutQuint;
 
+    private boolean mTranslating;
     private int mInitialX;
     private int mInitialY;
-
     private int mTargetX;
     private int mTargetY;
+
+    private boolean mScaling;
+    private double mInitialScale;
+    private double mTargetScale;
 
     private int mTotalFrames;
     private int mRemainingFrames;
 
-    public SwingTranslateAnimator(JComponent component) {
+    public Animator(Object component) {
         mComponent = component;
     }
 
-    public SwingTranslateAnimator(JComponent component, int defaultDuration) {
+    public Animator(Object component, int defaultDuration) {
         this(component);
         setDuration(defaultDuration);
     }
 
     public void translate(int x, int y) {
-        mInitialX = mComponent.getX();
-        mInitialY = mComponent.getY();
+        if (!(mComponent instanceof Translatable)) {
+            throw new IllegalArgumentException("Component does not implement Translatable interface");
+        }
+
+        mTranslating = true;
+
+        Translatable component = (Translatable) mComponent;
+
+        mInitialX = component.getX();
+        mInitialY = component.getY();
 
         mTargetX = x;
         mTargetY = y;
+    }
+
+    public void scale(double scale) {
+        if (!(mComponent instanceof Scalable)) {
+            throw new IllegalArgumentException("Component does not implement Scalable interface");
+        }
+
+        mScaling = true;
+
+        Scalable component = (Scalable) mComponent;
+
+        mInitialScale = component.getScale();
+        mTargetScale = scale;
     }
 
     public void start() {
@@ -71,24 +96,52 @@ public class SwingTranslateAnimator implements ActionListener {
         mTimer.restart();
     }
 
+    public void stop() {
+        mTranslating = false;
+        mScaling = false;
+
+        mTimer.stop();
+    }
+
     public void setDuration(int duration) {
         mTotalFrames = duration * FRAMES_PER_SECOND / 1000;
+    }
+
+    public void setDelay(int delay) {
+        mTimer.setInitialDelay(delay);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (--mRemainingFrames == 0) {
-            mTimer.stop();
+            stop();
         }
 
         double progress = 1.0 - ((double) mRemainingFrames / (double) mTotalFrames);
         double interpolation = mInterpolator.apply(progress);
 
-        int x = mInitialX + (int) ((mTargetX - mInitialX) * interpolation);
-        int y = mInitialY + (int) ((mTargetY - mInitialY) * interpolation);
+        if (mTranslating) {
+            int x = mInitialX + (int) ((mTargetX - mInitialX) * interpolation);
+            int y = mInitialY + (int) ((mTargetY - mInitialY) * interpolation);
 
-        mComponent.setLocation(x, y);
+            ((Translatable) mComponent).setLocation(x, y);
+        }
+
+        if (mScaling) {
+            double scale = mInitialScale + (mTargetScale - mInitialScale) * interpolation;
+
+            ((Scalable) mComponent).setScale(scale);
+        }
     }
 
+    public interface Translatable {
+        int getX();
+        int getY();
+        void setLocation(int x, int y);
+    }
 
+    public interface Scalable {
+        double getScale();
+        void setScale(double scale);
+    }
 }

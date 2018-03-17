@@ -24,9 +24,9 @@
 
 package com.wolfetones.cluedo.card;
 
+import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.board.Location;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -44,12 +44,7 @@ public abstract class Token extends Card {
 
         if (resourceName != null) {
             String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";
-            try {
-                mTokenImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(imageFile));
-            } catch (IOException | IllegalArgumentException e) {
-                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + imageFile);
-                e.printStackTrace();
-            }
+            mTokenImage = Util.loadImage(imageFile);
         }
     }
 

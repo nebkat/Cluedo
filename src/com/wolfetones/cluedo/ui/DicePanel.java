@@ -116,6 +116,7 @@ public class DicePanel extends JPanel {
 
         // Translation of previous dice
         Vector3d previousTranslate = null;
+        Vector3d previousTranslateDistance = new Vector3d();
         for (Dice dice : mDices) {
             // Reset dice position
             dice.reset();
@@ -126,14 +127,18 @@ public class DicePanel extends JPanel {
             // Rotate by random amount with velocity
             dice.transform(randomRotationMatrix());
 
-            // Apply force in random direction, ensuring at least 10 degrees of separation between two dice, or sufficient magnitude difference
+            // Apply force in random direction, ensuring sufficient distance between translate vectors of the two dice
             Vector3d translate;
             do {
                 translate = new Vector3d((Math.random() - 0.5) * Config.screenRelativeSize(15),
                         (Math.random() - 0.5) * Config.screenRelativeSize(15), 0);
-            } while (previousTranslate != null &&
-                    previousTranslate.angle(translate) < (5.0 / 180.0 * Math.PI) &&
-                    Math.abs(translate.length() - previousTranslate.length()) < Config.screenRelativeSize(10));
+
+                if (previousTranslate == null) {
+                    break;
+                }
+
+                previousTranslateDistance.sub(translate, previousTranslate);
+            } while (previousTranslateDistance.length() < Config.screenRelativeSize(5));
 
             // Store translation for angle calculations
             previousTranslate = translate;

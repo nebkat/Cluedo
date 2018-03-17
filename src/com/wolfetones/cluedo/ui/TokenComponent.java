@@ -31,11 +31,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public abstract class TokenComponent extends JComponent {
+public abstract class TokenComponent extends JComponent implements Animator.Translatable {
     private int mTileSize;
     protected Token mToken;
 
-    private SwingTranslateAnimator mTranslateAnimator = new SwingTranslateAnimator(this, 200);
+    private Animator mAnimator = new Animator(this, 200);
 
     private BufferedImage mTokenImage;
 
@@ -62,9 +62,9 @@ public abstract class TokenComponent extends JComponent {
     }
 
     private void updateCoordinates() {
-        mTranslateAnimator.translate((int) (mToken.getCoordinateX() * mTileSize),
+        mAnimator.translate((int) (mToken.getCoordinateX() * mTileSize),
                 (int) (mToken.getCoordinateY() * mTileSize));
-        mTranslateAnimator.start();
+        mAnimator.start();
     }
 
     private void updateCoordinatesImmediately() {

@@ -24,9 +24,9 @@
 
 package com.wolfetones.cluedo.card;
 
-import javax.imageio.ImageIO;
+import com.wolfetones.cluedo.Util;
+
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 
 /**
@@ -47,12 +47,7 @@ public abstract class Card {
 
         if (resourceName != null) {
             String imageFile = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
-            try {
-                mCardImage = ImageIO.read(getClass().getClassLoader().getResourceAsStream(imageFile));
-            } catch (IOException | IllegalArgumentException e) {
-                System.err.println("Couldn't load card image for " + getClass().getSimpleName() + " " + getName() + " at resources/" + imageFile);
-                e.printStackTrace();
-            }
+            mCardImage = Util.loadImage(imageFile);
         }
     }
 
@@ -79,10 +74,7 @@ public abstract class Card {
             return sCardHighlightOverlayImage;
         }
 
-        try {
-            sCardHighlightOverlayImage = ImageIO.read(Card.class.getClassLoader().getResourceAsStream("card-highlight-overlay.png"));
-        } catch (IOException e) {
-        }
+        sCardHighlightOverlayImage = Util.loadImage("card-highlight-overlay.png");
 
         return sCardHighlightOverlayImage;
     }
@@ -92,10 +84,7 @@ public abstract class Card {
             return sCardSelectedOverlayImage;
         }
 
-        try {
-            sCardSelectedOverlayImage = ImageIO.read(Card.class.getClassLoader().getResourceAsStream("card-selected-overlay.png"));
-        } catch (IOException e) {
-        }
+        sCardSelectedOverlayImage = Util.loadImage("card-selected-overlay.png");
 
         return sCardSelectedOverlayImage;
     }
