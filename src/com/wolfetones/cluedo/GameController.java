@@ -93,6 +93,8 @@ public class GameController {
     private static final String COMMAND_DOWN = "d";
     private static final String COMMAND_STOP = "stop";
 
+    private static final String COMMAND_SHOW = "show";
+
     private static final String COMMAND_YES = "y";
     private static final String COMMAND_NO = "n";
 
@@ -240,6 +242,7 @@ public class GameController {
         Player player = mGame.nextTurn();
 
         mPlayersPanel.setActivePlayer(player);
+        mPlayersPanel.hideQuestionResponses();
         passToPlayer(player, null);
 
         mOutputPanel.clear();
@@ -381,20 +384,25 @@ public class GameController {
                 if (matchingPlayer != null) {
                     List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
-                    mPlayersPanel.setTemporarilyActivePlayer(matchingPlayer);
+                    mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
+                    readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
+
                     passToPlayer(matchingPlayer, "temporarily");
 
                     Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
+                    player.addKnowledge(shownCard);
 
                     passToPlayer(player, "back");
-                    mPlayersPanel.setTemporarilyActivePlayer(null);
 
+                    CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
                     System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
-                    player.addKnowledge(shownCard);
+
+                    mPlayersPanel.hideQuestionResponses();
                 } else {
+                    mPlayersPanel.showQuestionResponses(player, suggestion, null, null);
+
                     System.out.println("No players have any of the suggested cards");
                 }
-
             } else if (command.equals(COMMAND_ACCUSE)) {
                 Suggestion suggestion = createSuggestion(null);
                 if (suggestion == null) {

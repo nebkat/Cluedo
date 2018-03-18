@@ -25,6 +25,7 @@
 package com.wolfetones.cluedo.ui;
 
 import com.wolfetones.cluedo.game.Player;
+import com.wolfetones.cluedo.game.Suggestion;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,25 +34,31 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 public class PlayersPanel extends JPanel {
-    private Map<Player, PlayerIconComponent> mIcons = new HashMap<>();
+    private List<Player> mPlayers;
+
+    private Map<Player, PlayerIconComponent> mPlayerIcons = new HashMap<>();
+    private Map<Player, TextBubble> mTextBubbles = new HashMap<>();
 
     public PlayersPanel(List<Player> players, int iconWidth) {
         super();
+
+        mPlayers = players;
 
         setOpaque(false);
 
         setLayout(new GridBagLayout());
 
         GridBagConstraints c = new GridBagConstraints();
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
+        c.anchor = GridBagConstraints.LINE_START;
+        for (Player player : players) {
             @SuppressWarnings("SuspiciousNameCombination")
             PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(), iconWidth, iconWidth);
 
-            mIcons.put(player, icon);
+            mPlayerIcons.put(player, icon);
 
             c.gridy++;
             c.gridx = 0;
@@ -59,16 +66,7 @@ public class PlayersPanel extends JPanel {
 
             TextBubble bubble = new TextBubble(icon.getHeight());
 
-            if (i == 0) {
-                bubble.setText("I suggest... Professor Plum in the Trophy Room with the Revolver");
-            } else if (i == 5) {
-                bubble.setText("I have a card");
-                bubble.setButton("Choose", null);
-            } else if (i == 4) {
-                bubble.setText("I was moved to this room, I can make a suggestion");
-            } else {
-                bubble.setText("I don't have any card!");
-            }
+            mTextBubbles.put(player, bubble);
 
             c.gridx = 1;
             add(bubble, c);
@@ -85,24 +83,58 @@ public class PlayersPanel extends JPanel {
     }
 
     public void setActivePlayer(Player player) {
-        PlayerIconComponent activeIcon = mIcons.get(player);
+        PlayerIconComponent activeIcon = mPlayerIcons.get(player);
 
-        mIcons.values().forEach((i) -> i.setSelected(i == activeIcon));
-    }
-
-    public void setTemporarilyActivePlayer(Player player) {
-        PlayerIconComponent activeIcon = mIcons.get(player);
-
-        mIcons.values().forEach((i) -> i.setHalfSelected(i == activeIcon));
+        mPlayerIcons.values().forEach((i) -> i.setSelected(i == activeIcon));
     }
 
     public void setPlayerEliminated(Player player) {
-        mIcons.get(player).setEliminated();
+        mPlayerIcons.get(player).setEliminated();
+    }
+
+    public void hideQuestionResponses() {
+        mTextBubbles.values().forEach(TextBubble::resetBubble);
+    }
+
+    public void showQuestionResponses(Player poser, Suggestion suggestion, Player cardPlayer, Runnable cardPlayerAction) {
+        TextBubble poserBubble = mTextBubbles.get(poser);
+        poserBubble.setText("I suggest... " + suggestion.asHumanReadableString());
+        poserBubble.setButton(null, null);
+
+        poserBubble.showBubble();
+
+        int delayCounter = 1;
+
+        ListIterator<Player> iterator = mPlayers.listIterator((mPlayers.indexOf(poser) + 1) % mPlayers.size());
+        Player checkPlayer;
+        while ((checkPlayer = iterator.next()) != (cardPlayer == null ? poser : cardPlayer)) {
+            TextBubble noCardPlayerBubble = mTextBubbles.get(checkPlayer);
+
+            noCardPlayerBubble.setText("I have no cards!");
+            noCardPlayerBubble.setButton(null, null);
+
+            noCardPlayerBubble.setDelay(delayCounter++ * 500);
+            noCardPlayerBubble.showBubble();
+
+            // Loop around to first player
+            if (!iterator.hasNext()) {
+                iterator = mPlayers.listIterator();
+            }
+        }
+
+        if (cardPlayer != null) {
+            TextBubble cardPlayerBubble = mTextBubbles.get(cardPlayer);
+
+            cardPlayerBubble.setText("I have a card... ");
+            cardPlayerBubble.setButton("Show card", cardPlayerAction);
+
+            cardPlayerBubble.setDelay(delayCounter * 500);
+            cardPlayerBubble.showBubble();
+        }
     }
 
     private static class PlayerIconComponent extends ScaledImageComponent {
         private boolean mSelected = false;
-        private boolean mHalfSelected = false;
         private boolean mEliminated = false;
 
         private BufferedImage mFilteredImage;
@@ -123,11 +155,6 @@ public class PlayersPanel extends JPanel {
             repaint();
         }
 
-        private void setHalfSelected(boolean selected) {
-            mHalfSelected = selected;
-            repaint();
-        }
-
         private void setEliminated() {
             mEliminated = true;
             repaint();
@@ -141,21 +168,7 @@ public class PlayersPanel extends JPanel {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
             }
 
-            if (mHalfSelected) {
-                int divisions = 9;
-                for (int i = 0; i < divisions; i++) {
-                    BufferedImage image = i % 2 == 0 ? mImage : mFilteredImage;
-
-                    int x1 = 0;
-                    int x2 = getWidth();
-                    int y1 = image.getHeight() * i / divisions;
-                    int y2 = image.getHeight() * (i + 1) / divisions;
-
-                    g.drawImage(image, x1, y1, x2, y2, x1, y1, x2, y2, null);
-                }
-            } else {
-                g.drawImage(mSelected ? mImage : mFilteredImage, 0, 0, null);
-            }
+            g.drawImage(mSelected ? mImage : mFilteredImage, 0, 0, null);
         }
     }
 }

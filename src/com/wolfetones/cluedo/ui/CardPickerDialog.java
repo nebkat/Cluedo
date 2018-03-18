@@ -210,6 +210,10 @@ public class CardPickerDialog extends JDialog {
         return dialog.getCardResult();
     }
 
+    public static void showCardResponseDialog(JFrame frame, Player player, Card card) {
+        new CardPickerDialog(frame, player.getName() + " showed", false, null, null, null, List.of(card)).setVisible(true);
+    }
+
     private class CardPickerPanel<T extends Card> extends JPanel {
         private List<CardPickerCardComponent> mComponents = new ArrayList<>();
 

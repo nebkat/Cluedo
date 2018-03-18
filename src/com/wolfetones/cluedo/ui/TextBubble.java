@@ -45,19 +45,23 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     public TextBubble(int height) {
         super();
 
-        setLayout(new FlowLayout(FlowLayout.LEFT, Config.screenRelativeSize(10), 0));
+        setLayout(new FlowLayout(FlowLayout.LEFT, Config.screenRelativeSize(5), 0));
 
         int fontHeight = (int) (height * FONT_PERCENTAGE);
 
         mLabel = new JLabel();
         mButton = new JButton();
 
-        Font font = new Font(Font.SANS_SERIF, Font.BOLD, fontHeight);
-        mLabel.setFont(font);
-        mButton.setFont(font);
+        mLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontHeight));
+        mButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontHeight));
 
         mLabel.setText(" ");
+        mButton.setText(" ");
 
+        mButton.setMargin(new Insets(Config.screenRelativeSize(-2),
+                Config.screenRelativeSize(7),
+                Config.screenRelativeSize(-2),
+                Config.screenRelativeSize(7)));
         mButton.setVisible(false);
         mButton.addActionListener(e -> mButtonAction.run());
 
@@ -119,7 +123,12 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     public void resetBubble() {
         setVisible(false);
         mAnimator.stop();
+        mAnimator.setDelay(0);
         mScale = 0.0;
+    }
+
+    public void setDelay(int delay) {
+        mAnimator.setDelay(delay);
     }
 
     @Override
