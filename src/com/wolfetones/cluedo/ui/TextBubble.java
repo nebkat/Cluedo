@@ -137,12 +137,12 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
         Graphics2D g = (Graphics2D) gg;
 
-        if (mScale > 0) {
+        if (mScale == 0) {
+            return;
+        } else if (mScale != 1) {
             g.translate(0, getHeight() / 2);
             g.scale(mScale, mScale);
             g.translate(0, -getHeight() / 2);
-        } else {
-            return;
         }
 
         int backgroundPadding = (int) (getHeight() * BACKGROUND_PADDING_PERCENTAGE);

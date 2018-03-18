@@ -125,7 +125,7 @@ public class ActionPanel extends JPanel {
         mButtons.get(BUTTON_DONE).setActive(game.isTurnFinished());
     }
 
-    private static class ActionButton extends ScaledImageComponent implements HoverableComponent, Animator.Scalable {
+    private static class ActionButton extends ScaledImageComponent implements Animator.Scalable {
         private boolean mEnabled = true;
 
         private double mScale = 0.75;
@@ -138,12 +138,20 @@ public class ActionPanel extends JPanel {
 
             mTextBubble = bubble;
 
-            addHoverListener();
-
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     setVisible(false);
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    setMouseOver(true);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    setMouseOver(false);
                 }
             });
 
@@ -154,7 +162,9 @@ public class ActionPanel extends JPanel {
         public void paintComponent(Graphics gg) {
             Graphics2D g = (Graphics2D) gg;
 
-            if (mScale < 1) {
+            if (mScale == 0) {
+                return;
+            } else if (mScale != 1) {
                 g.translate(getWidth() / 2, getHeight() / 2);
                 g.scale(mScale, mScale);
                 g.translate(-getWidth() / 2, -getHeight() / 2);
@@ -202,8 +212,7 @@ public class ActionPanel extends JPanel {
             repaint();
         }
 
-        @Override
-        public void setMouseOver(boolean mouseOver) {
+        private void setMouseOver(boolean mouseOver) {
             mAnimator.scale(mouseOver ? 1.0 : 0.75);
             mAnimator.start();
         }
