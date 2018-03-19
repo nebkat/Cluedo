@@ -26,16 +26,20 @@ package com.wolfetones.physics.body;
 
 import com.wolfetones.physics.Particle;
 import com.wolfetones.physics.RenderUtils;
-import com.wolfetones.physics.body.Cube;
+import com.wolfetones.physics.VectorUtils;
 
 import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import java.awt.*;
-import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.stream.IntStream;
 
 public class Dice extends Cube {
+    private static final int[] FACE_VALUES = {1, 6, 3, 4, 2, 5};
+
     private Color faceColor = Color.WHITE;
     private Color borderColor = Color.BLACK;
     private Color dotColor = Color.BLACK;
@@ -65,7 +69,7 @@ public class Dice extends Cube {
         super(center, sideLength);
     }
 
-    public int getValue() {
+    public int getHighestZFace() {
         int highestFace = -1;
         double highestTotalZ = 0;
 
@@ -82,7 +86,11 @@ public class Dice extends Cube {
             }
         }
 
-        return highestFace + 1;
+        return highestFace;
+    }
+
+    public int getValue() {
+        return FACE_VALUES[getHighestZFace()];
     }
 
     public void draw(Graphics2D g) {
@@ -131,10 +139,11 @@ public class Dice extends Cube {
             a.scale(0.125, width);
             b.scale(0.125, height);
 
-            for (int d = 0; d <= f; d++) {
+            int value = FACE_VALUES[f];
+            for (int d = 0; d < value; d++) {
                 polygon.reset();
 
-                Point2d dotCoordinates = DICE_DOTS[f][d];
+                Point2d dotCoordinates = DICE_DOTS[value - 1][d];
                 Point3d xO = new Point3d();
                 Point3d yO = new Point3d();
 

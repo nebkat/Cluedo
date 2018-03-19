@@ -28,9 +28,9 @@ import com.wolfetones.physics.Particle;
 import com.wolfetones.physics.RenderUtils;
 
 import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
 
 public class Cube extends RigidBody {
-    private static final int[] FACE_INDEX = {0, 5, 2, 3, 1, 4};
     private static final int[] FACE_PARTICLE_INDEX = {0, 1, 3, 2};
 
     protected Particle[][] faces = new Particle[6][4];
@@ -51,14 +51,18 @@ public class Cube extends RigidBody {
 
                     particles.add(p);
 
-                    faces[FACE_INDEX[zO]][faceParticleIndex(zO, xO, yO)] = p;
-                    faces[FACE_INDEX[2 + yO]][faceParticleIndex(yO, zO, xO)] = p;
-                    faces[FACE_INDEX[4 + xO]][faceParticleIndex(xO, yO, zO)] = p;
+                    faces[zO][faceParticleIndex(zO, xO, yO)] = p;
+                    faces[2 + yO][faceParticleIndex(yO, zO, xO)] = p;
+                    faces[4 + xO][faceParticleIndex(xO, yO, zO)] = p;
                 }
             }
         }
 
         setupSticks();
+    }
+
+    public Point3d[] getFace(int face) {
+        return faces[face];
     }
 
     private static int faceParticleIndex(int front, int a, int b) {

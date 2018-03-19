@@ -27,24 +27,25 @@ package com.wolfetones.cluedo.ui;
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
+import com.wolfetones.physics.VectorUtils;
 import com.wolfetones.physics.body.Dice;
 import com.wolfetones.physics.Particle;
 import com.wolfetones.physics.RenderUtils;
 import com.wolfetones.physics.VerletPhysics;
 import com.wolfetones.physics.behavior.GravityBehavior;
 import com.wolfetones.physics.constraint.PlaneConstraint;
+import com.wolfetones.physics.geometry.Axis;
 import com.wolfetones.physics.geometry.Plane;
 
 import javax.swing.*;
-import javax.vecmath.Matrix3d;
-import javax.vecmath.Point2d;
-import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
+import javax.vecmath.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class DicePanel extends JPanel {
+    private static final int FRAMES_PER_SECOND = 60;
     private static final int NUM_DICE = Game.NUM_DICE;
 
     private static final double GRAVITY = (double) Config.screenRelativeSize(10) / 20;
@@ -58,6 +59,12 @@ public class DicePanel extends JPanel {
     private Dice[] mDices = new Dice[NUM_DICE];
 
     private Timer mTimer;
+
+    private float mAlpha = 0f;
+
+    private int mTotalValue;
+    private float mTotalTextAlpha = 0f;
+    private Font mTextFont = new Font(Font.SANS_SERIF, Font.BOLD, CUBE_SIZE);
 
     public DicePanel() {
         super();
@@ -113,6 +120,10 @@ public class DicePanel extends JPanel {
     public int rollDice(int[] diceValues) {
         // Show panel
         setVisible(true);
+
+        // Reset status
+        mAlpha = 0;
+        mTotalTextAlpha = 0;
 
         // Translation of previous dice
         Vector3d previousTranslate = null;
@@ -207,37 +218,23 @@ public class DicePanel extends JPanel {
         };
 
         // Fade dice in task
-        TimerTask fadeInTask = new TimerTask() {
-            double progress = 0;
-
+        TimerTask fadeInTask = new FixedCountTimerTask(400, FRAMES_PER_SECOND) {
             @Override
-            public void run() {
-                progress += 1.0 / 20.0;
-
-                if (progress >= 1) {
-                    progress = 1;
-                    cancel();
-                }
-
-                setDiceAlpha((int) (255 * progress));
+            protected void progress(double progress) {
+                mAlpha = (float) (progress);
+                repaint();
             }
         };
 
         // Fade dice out task
-        TimerTask fadeOutTask = new TimerTask() {
-            double progress = 0;
-
+        TimerTask fadeOutTask = new FixedCountTimerTask(400, FRAMES_PER_SECOND) {
             @Override
-            public void run() {
-                progress += 1.0 / 20.0;
-
-                if (progress >= 1) {
-                    progress = 1;
-                    cancel();
+            protected void progress(double progress) {
+                if (progress == 1) {
                     setVisible(false);
                 }
 
-                setDiceAlpha(255 - (int) (255 * progress));
+                mAlpha = (float) (1 - progress);
                 repaint();
             }
         };
@@ -248,9 +245,9 @@ public class DicePanel extends JPanel {
         }
         mTimer = new Timer();
 
-        mTimer.scheduleAtFixedRate(physicsTick, 0, 1000 / 60);
+        mTimer.scheduleAtFixedRate(physicsTick, 0, 1000 / FRAMES_PER_SECOND);
         mTimer.scheduleAtFixedRate(checkDiceTick, 500, 250);
-        mTimer.scheduleAtFixedRate(fadeInTask, 0, 1000 / 60);
+        mTimer.scheduleAtFixedRate(fadeInTask, 0, 1000 / FRAMES_PER_SECOND);
         mTimer.schedule(forceFinishTask, 5000);
 
         // Wait until dice have stopped moving
@@ -262,35 +259,92 @@ public class DicePanel extends JPanel {
             // Ignore
         }
 
-        mTimer.scheduleAtFixedRate(fadeOutTask, 5000, 1000 / 60);
-
         physicsTick.cancel();
         checkDiceTick.cancel();
         fadeInTask.cancel();
         forceFinishTask.cancel();
 
         // Return values
-        int totalValue = 0;
+        mTotalValue = 0;
         for (int i = 0; i < NUM_DICE; i++) {
             diceValues[i] = mDices[i].getValue();
-            totalValue += diceValues[i];
+            mTotalValue += diceValues[i];
         }
 
-        return totalValue;
-    }
+        Vector3d[] moveToCenterTranslateDeltas = new Vector3d[NUM_DICE];
+        AxisAngle4d[] moveToCenterTransformDeltas = new AxisAngle4d[NUM_DICE];
 
-    private void setDiceAlpha(int alpha) {
-        for (Dice dice : mDices) {
-            if (alpha < 255) {
-                dice.setColors(
-                        Util.getColorWithAlpha(Color.WHITE, alpha),
-                        Util.getColorWithAlpha(Color.BLACK, alpha),
-                        Util.getColorWithAlpha(Color.BLACK, alpha)
-                );
-            } else {
-                dice.setColors(Color.WHITE, Color.BLACK, Color.BLACK);
+        boolean reverseOrder = mDices[1].getCenter().x < mDices[0].getCenter().x;
+
+        for (int i = 0; i < NUM_DICE; i++) {
+            Dice dice = mDices[i];
+
+            Point3d[] face = dice.getFace(dice.getHighestZFace());
+
+            int positioningIndex = !reverseOrder ? i : (NUM_DICE - i - 1);
+
+            Point3d center = VectorUtils.average(face);
+            Point3d target = new Point3d((2 * positioningIndex - NUM_DICE + 1) * CUBE_SIZE, 0, 0);
+
+            Vector3d translate = new Vector3d();
+            translate.sub(target, center);
+
+            moveToCenterTranslateDeltas[i] = translate;
+
+            Vector3d x = new Vector3d();
+            x.sub(face[1], face[0]);
+            x.normalize();
+
+            Vector3d rotationNormal = new Vector3d();
+            rotationNormal.cross(x, Axis.X);
+
+            // Rotate to closest axis (x/y)
+            double rotationAngle = x.angle(Axis.X) % (Math.PI / 2);
+            if (rotationAngle > Math.PI / 4) {
+                rotationAngle -= Math.PI / 2;
             }
+
+            AxisAngle4d transform = new AxisAngle4d(rotationNormal.x, rotationNormal.y, rotationNormal.z, rotationAngle);
+
+            moveToCenterTransformDeltas[i] = transform;
         }
+
+        TimerTask moveDiceToCenterTask = new FixedCountTimerTask(1500, FRAMES_PER_SECOND) {
+            double previousInterpolation = 0;
+
+            Vector3d translation = new Vector3d();
+            AxisAngle4d rotation = new AxisAngle4d();
+            Matrix3d transform = new Matrix3d();
+
+            @Override
+            protected void progress(double progress) {
+                double interpolation = Util.easeInOutQuint(progress);
+
+                mTotalTextAlpha = (float) interpolation;
+
+                double scale = interpolation - previousInterpolation;
+
+                previousInterpolation = interpolation;
+
+                for (int i = 0; i < NUM_DICE; i++) {
+                    translation.scale(scale, moveToCenterTranslateDeltas[i]);
+                    rotation.set(moveToCenterTransformDeltas[i]);
+                    rotation.angle *= scale;
+
+                    transform.set(rotation);
+
+                    mDices[i].translate(translation, true);
+                    mDices[i].transform(transform, true);
+                }
+
+                repaint();
+            }
+        };
+
+        mTimer.scheduleAtFixedRate(moveDiceToCenterTask, 500, 1000 / FRAMES_PER_SECOND);
+        mTimer.scheduleAtFixedRate(fadeOutTask, 4000, 1000 / FRAMES_PER_SECOND);
+
+        return mTotalValue;
     }
 
     @Override
@@ -304,9 +358,46 @@ public class DicePanel extends JPanel {
         // Translate rendering to screen center so world based elements don't have to
         g.translate(getWidth() / 2, getHeight() / 2);
 
+        // Fade in/out
+        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mAlpha));
+
         // Draw dice
         for (Dice dice : mDices) {
             dice.draw(g);
         }
+
+        // Draw + = text
+        if (mTotalTextAlpha > 0) {
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mTotalTextAlpha * mAlpha));
+
+            g.setFont(mTextFont);
+            g.setColor(Color.BLACK);
+
+            Util.drawCenteredString("+", 0, 0, 0, 0, g);
+            Util.drawCenteredString("=", 2 * CUBE_SIZE, 0, 0, 0, g);
+            Util.drawCenteredString(Integer.toString(mTotalValue), (int) (2.5 * CUBE_SIZE), 0, -1, 0, g);
+        }
+    }
+
+    private abstract class FixedCountTimerTask extends TimerTask {
+        private int mTotalFrames;
+        private int mCurrentFrame = 0;
+
+        private FixedCountTimerTask(int duration, int fps) {
+            mTotalFrames = duration * fps / 1000;
+        }
+
+        @Override
+        public void run() {
+            double progress = (double) mCurrentFrame / mTotalFrames;
+            mCurrentFrame++;
+            if (progress >= 1) {
+                cancel();
+            }
+
+            progress(progress);
+        }
+
+        protected abstract void progress(double progress);
     }
 }
