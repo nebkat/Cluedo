@@ -177,16 +177,25 @@ public class Animator implements ActionListener {
         }
 
         public Animation translate(int x, int y) {
-            if (!(target instanceof Translatable)) {
+            if (!(target instanceof Translatable || target instanceof Component)) {
                 throw new IllegalArgumentException("Component does not implement Translatable interface");
             }
 
-            Translatable component = (Translatable) target;
-            int initialX = component.getX();
-            int initialY = component.getY();
-            animate(0.0, 1.0,
-                    progress -> component.setLocation((int) interpolate(initialX, x, progress),
-                            (int) interpolate(initialY, y, progress)));
+            if (target instanceof Translatable) {
+                Translatable component = (Translatable) target;
+                int initialX = component.getX();
+                int initialY = component.getY();
+                animate(0.0, 1.0,
+                        progress -> component.setLocation((int) interpolate(initialX, x, progress),
+                                (int) interpolate(initialY, y, progress)));
+            } else {
+                Component component = (Component) target;
+                int initialX = component.getX();
+                int initialY = component.getY();
+                animate(0.0, 1.0,
+                        progress -> component.setLocation((int) interpolate(initialX, x, progress),
+                                (int) interpolate(initialY, y, progress)));
+            }
 
             return this;
         }
@@ -254,28 +263,5 @@ public class Animator implements ActionListener {
     public interface Fadable {
         double getAlpha();
         void setAlpha(double alpha);
-    }
-
-    public static class TranslatableComponentAdapter implements Translatable {
-        private JComponent mComponent;
-
-        public TranslatableComponentAdapter(JComponent component) {
-            mComponent = component;
-        }
-
-        @Override
-        public int getX() {
-            return mComponent.getX();
-        }
-
-        @Override
-        public int getY() {
-            return mComponent.getY();
-        }
-
-        @Override
-        public void setLocation(int x, int y) {
-            mComponent.setLocation(x, y);
-        }
     }
 }

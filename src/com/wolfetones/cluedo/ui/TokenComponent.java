@@ -31,7 +31,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public abstract class TokenComponent extends JComponent implements Animator.Translatable {
+public abstract class TokenComponent extends JComponent {
     private int mTileSize;
     protected Token mToken;
 

@@ -89,7 +89,7 @@ public class PlayersPanel extends JPanel {
 
             JPanel panel = mPlayerComponents.get(player).panel;
 
-            Animator.getInstance().animateAndInterruptAll(new Animator.TranslatableComponentAdapter(panel))
+            Animator.getInstance().animateAndInterruptAll(panel)
                     .translate(0, i * panel.getHeight())
                     .setDuration(1500)
                     .start();
