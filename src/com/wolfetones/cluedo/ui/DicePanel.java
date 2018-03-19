@@ -333,7 +333,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                 })
                 .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
                 .setDuration(1500)
-                .after(() -> Animator.getInstance().animate(this)
+                .after(Animator.getInstance().animate(this)
                         .fade(0.0)
                         .after(() -> {
                             setVisible(false);
@@ -344,8 +344,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                             }
                         })
                         .setDuration(400)
-                        .setDelay(1000)
-                        .start())
+                        .setDelay(1000))
                 .start();
 
         // Wait for dice to fade out

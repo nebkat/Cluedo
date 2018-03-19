@@ -234,6 +234,12 @@ public class Animator implements ActionListener {
             return this;
         }
 
+        public Animation after(Animation animation) {
+            postRunnable = animation::start;
+
+            return this;
+        }
+
         private void progress(double progress) {
             for (int i = 0; i < count; i++) {
                 double initial = initialValues.get(i);
