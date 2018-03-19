@@ -33,7 +33,6 @@ import java.io.IOException;
  * Base card class, representing a game card.
  */
 public abstract class Card {
-    private int mId;
     private String mName;
 
     private BufferedImage mCardImage;
@@ -41,8 +40,7 @@ public abstract class Card {
     private static BufferedImage sCardHighlightOverlayImage;
     private static BufferedImage sCardSelectedOverlayImage;
 
-    Card(int id, String name, String resourceName) {
-        mId = id;
+    Card(String name, String resourceName) {
         mName = name;
 
         if (resourceName != null) {
@@ -52,10 +50,6 @@ public abstract class Card {
     }
 
     protected abstract String getCardImageSuffix();
-
-    public int getId() {
-        return mId;
-    }
 
     public String getName() {
         return mName;

@@ -33,7 +33,7 @@ import java.util.List;
  * Tile that can hold a {@link Token}.
  */
 public abstract class TokenOccupiableTile extends Tile {
-    protected Token mToken;
+    private Token mToken;
 
     protected List<TokenOccupiableTile> mTokenTraversableNeighbours = new ArrayList<>();
 

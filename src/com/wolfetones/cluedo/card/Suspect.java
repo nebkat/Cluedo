@@ -33,8 +33,8 @@ public class Suspect extends Token {
     private Color mColor;
     private boolean mMovedSinceLastTurn = false;
 
-    public Suspect(int id, String name, String cardImage, Color color) {
-        super(id, name, cardImage);
+    public Suspect(String name, String cardImage, Color color) {
+        super(name, cardImage);
 
         mColor = color;
     }

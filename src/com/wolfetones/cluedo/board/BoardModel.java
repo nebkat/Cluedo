@@ -33,7 +33,6 @@ import com.wolfetones.cluedo.config.Config;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -58,21 +57,21 @@ public class BoardModel {
         for (int i = 0; i < Config.Cards.ROOMS.length; i++) {
             Config.Cards.Room configRoom = Config.Cards.ROOMS[i];
 
-            mRooms.add(new Room(i, configRoom.name, configRoom.resource, configRoom.guess));
+            mRooms.add(new Room(configRoom.name, configRoom.resource, configRoom.guess));
         }
 
         // Initialize suspects
         for (int i = 0; i < Config.Cards.SUSPECTS.length; i++) {
             Config.Cards.Suspect configSuspect = Config.Cards.SUSPECTS[i];
 
-            mSuspects.add(new Suspect(i, configSuspect.name, configSuspect.resource, configSuspect.color));
+            mSuspects.add(new Suspect(configSuspect.name, configSuspect.resource, configSuspect.color));
         }
 
         // Initialize weapons
         for (int i = 0; i < Config.Cards.WEAPONS.length; i++) {
             Config.Cards.Weapon configWeapon = Config.Cards.WEAPONS[i];
 
-            mWeapons.add(new Weapon(i, configWeapon.name, configWeapon.resource));
+            mWeapons.add(new Weapon(configWeapon.name, configWeapon.resource));
         }
 
         // Initialize tiles
@@ -88,9 +87,9 @@ public class BoardModel {
                     mTiles[y][x] = new RoomTile(x, y, mRooms.get(r));
                 } else if (Config.Board.Tiles.PASSAGES.containsKey(c)) {
                     // Passage
-                    int[] passage = Config.Board.Tiles.PASSAGES.get(c);
+                    int room = Config.Board.Tiles.PASSAGES.get(c)[0];
 
-                    mTiles[y][x] = new PassageTile(x, y, mRooms.get(passage[0]), mRooms.get(passage[1]));
+                    mTiles[y][x] = new PassageTile(x, y, mRooms.get(room));
                 } else {
                     // Other tile
                     switch (c) {

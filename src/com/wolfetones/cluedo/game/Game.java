@@ -475,10 +475,6 @@ public class Game {
         return mPlayers.size();
     }
 
-    public Player getCurrentPlayer() {
-        return mCurrentPlayer;
-    }
-
     public Location getCurrentPlayerLocation() {
         return mCurrentPlayerLocation;
     }

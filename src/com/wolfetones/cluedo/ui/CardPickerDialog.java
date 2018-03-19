@@ -28,7 +28,6 @@ public class CardPickerDialog extends JDialog {
     private CardPickerPanel<? extends Card> mUserCardPicker;
 
     private JButton mConfirmButton;
-    private JButton mCancelButton;
 
     private boolean mSuccessful;
 
@@ -58,15 +57,15 @@ public class CardPickerDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 
         mConfirmButton = new JButton("Confirm");
-        mCancelButton = new JButton("Cancel");
+        JButton cancelButton = new JButton("Cancel");
 
         mConfirmButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
-        mCancelButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
+        cancelButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
 
-        buttonPanel.add(mCancelButton);
+        buttonPanel.add(cancelButton);
         buttonPanel.add(mConfirmButton);
         mConfirmButton.addActionListener(this::onButtonClicked);
-        mCancelButton.addActionListener(this::onButtonClicked);
+        cancelButton.addActionListener(this::onButtonClicked);
 
         if (showName) {
             mNameTextField = new JTextField();
@@ -86,9 +85,9 @@ public class CardPickerDialog extends JDialog {
 
             // At least two players must be added
             if (suspects.size() > 4) {
-                mCancelButton.setVisible(false);
+                cancelButton.setVisible(false);
             } else {
-                mCancelButton.setText("No more players");
+                cancelButton.setText("No more players");
             }
         }
 
@@ -115,7 +114,7 @@ public class CardPickerDialog extends JDialog {
 
             add(mUserCardPicker);
 
-            mCancelButton.setVisible(false);
+            cancelButton.setVisible(false);
         }
 
         add(buttonPanel);

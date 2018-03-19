@@ -26,8 +26,6 @@ package com.wolfetones.cluedo.ui;
 
 import com.wolfetones.cluedo.card.Suspect;
 
-import java.awt.*;
-
 public class SuspectTokenComponent extends TokenComponent {
     public SuspectTokenComponent(Suspect suspect, int tileSize) {
         super(suspect, tileSize);

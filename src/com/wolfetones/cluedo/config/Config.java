@@ -26,7 +26,6 @@ package com.wolfetones.cluedo.config;
 
 
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +133,7 @@ public class Config {
                     0
             };
 
-            public static final Map<Character, int[]> PASSAGES = new HashMap<Character, int[]>() {{
+            public static final Map<Character, int[]> PASSAGES = new HashMap<>() {{
                 put('A', new int[]{1, 9});
                 put('B', new int[]{9, 1});
                 put('C', new int[]{3, 7});
@@ -215,7 +214,6 @@ public class Config {
     }
 
     private static final int DEFAULT_SCREEN_WIDTH = 1920;
-    private static final int DEFAULT_SCREEN_HEIGHT = 1080;
 
     private static int sScreenWidth = -1;
     private static int sScreenHeight = -1;

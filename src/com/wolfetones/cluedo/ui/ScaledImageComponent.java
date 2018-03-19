@@ -26,7 +26,6 @@ package com.wolfetones.cluedo.ui;
 
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.config.Config;
-import javafx.scene.transform.Scale;
 
 import javax.swing.*;
 import java.awt.*;

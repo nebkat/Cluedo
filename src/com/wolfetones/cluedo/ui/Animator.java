@@ -27,6 +27,7 @@ package com.wolfetones.cluedo.ui;
 import com.wolfetones.cluedo.Util;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;

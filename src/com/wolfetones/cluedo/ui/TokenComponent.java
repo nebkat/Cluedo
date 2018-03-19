@@ -48,10 +48,6 @@ public abstract class TokenComponent extends JComponent implements Animator.Tran
         mTokenImage = Util.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
     }
 
-    public Token getToken() {
-        return mToken;
-    }
-
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);

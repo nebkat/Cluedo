@@ -28,7 +28,6 @@ import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.board.Location;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 public abstract class Token extends Card {
     private Location mLocation;
@@ -39,8 +38,8 @@ public abstract class Token extends Card {
 
     private BufferedImage mTokenImage;
 
-    Token(int id, String name, String resourceName) {
-        super(id, name, resourceName);
+    Token(String name, String resourceName) {
+        super(name, resourceName);
 
         if (resourceName != null) {
             String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";

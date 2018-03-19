@@ -43,7 +43,7 @@ public class PathFinder {
      * @param b Tile B
      * @return The Manhattan distance between the two tiles
      */
-    public static int tileManhattanDistance(Tile a, Tile b) {
+    private static int tileManhattanDistance(Tile a, Tile b) {
         return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
     }
 
