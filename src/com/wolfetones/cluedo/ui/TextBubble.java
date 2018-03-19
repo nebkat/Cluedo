@@ -40,7 +40,7 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     private Runnable mButtonAction;
 
     private Animator mAnimator = new Animator(this, 250);
-    private double mScale = 1.0;
+    private double mScale = 0.0;
 
     public TextBubble(int height) {
         super();
@@ -79,7 +79,7 @@ public class TextBubble extends JComponent implements Animator.Scalable {
                 textMargin
         ));
 
-        setScale(0.0);
+        setVisible(false);
 
         setBackground(Util.getColorWithAlpha(Color.WHITE, 200));
 
