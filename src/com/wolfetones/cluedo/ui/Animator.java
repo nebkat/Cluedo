@@ -110,20 +110,12 @@ public class Animator implements ActionListener {
         }
     }
 
-    private void completeAnimation(Animation animation) {
-        animation.progress(1.0);
-
-        stopAnimation(animation);
-    }
-
     public void interruptAllAnimations(Object target) {
-        mAnimations.stream().filter(animation -> animation.target == target || target == null)
-                .forEach(this::stopAnimation);
-    }
-
-    public void completeAllAnimations(Object target) {
-        mAnimations.stream().filter(animation -> animation.target == target || target == null)
-                .forEach(this::completeAnimation);
+        for (Animation animation : mAnimations) {
+            if (target == null || animation.target == target) {
+                stopAnimation(animation);
+            }
+        }
     }
 
     public Animation animateAndInterruptAll(Object target) {
@@ -160,10 +152,6 @@ public class Animator implements ActionListener {
 
         public void start() {
             startAnimation(this);
-        }
-
-        public void stop() {
-            stopAnimation(this);
         }
 
         public Animation setDuration(int duration) {
