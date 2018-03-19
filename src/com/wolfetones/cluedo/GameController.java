@@ -442,7 +442,11 @@ public class GameController {
     private void onTileClick(TileComponent tileComponent) {
         if (!mPathFindingEnabled) return;
 
+        // Only perform path finding on valid tiles
         Tile tile = tileComponent.getTile();
+        if (!(tile instanceof CorridorTile || tile instanceof RoomTile)) {
+            return;
+        }
 
         Location targetLocation = Location.fromTile(tile);
         Location currentLocation = mGame.getCurrentPlayerLocation();
