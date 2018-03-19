@@ -34,10 +34,10 @@ import java.io.IOException;
 import java.util.Collection;
 
 public class Util {
-    public static String implode(Collection<String> items, String join) {
+    public static String implode(Collection<? extends Object> items, String join) {
         StringBuilder result = new StringBuilder();
         int i = 0;
-        for (String s : items) {
+        for (Object s : items) {
             result.append(s);
             if (i < items.size() - 1) {
                 result.append(join);

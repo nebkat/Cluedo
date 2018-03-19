@@ -289,7 +289,7 @@ public class GameController {
 
                 mActionPanel.updateStatus(mGame);
 
-                System.out.println("Rolled " + dice[0] + " + " + dice[1] + " = " + remainingMovements);
+                System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMovements);
 
                 mPathFindingEnabled = true;
 
