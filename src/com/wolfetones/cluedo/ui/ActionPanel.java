@@ -125,6 +125,10 @@ public class ActionPanel extends JPanel {
         mButtons.get(BUTTON_DONE).setActive(game.isTurnFinished());
     }
 
+    public void hideAllExceptDone() {
+        mButtons.forEach(b -> b.setVisible(b == mButtons.get(BUTTON_DONE)));
+    }
+
     private static class ActionButton extends ScaledImageComponent implements Animator.Scalable {
         private boolean mEnabled = true;
 
@@ -138,11 +142,6 @@ public class ActionPanel extends JPanel {
             mTextBubble = bubble;
 
             addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    setVisible(false);
-                }
-
                 @Override
                 public void mouseEntered(MouseEvent e) {
                     setMouseOver(true);

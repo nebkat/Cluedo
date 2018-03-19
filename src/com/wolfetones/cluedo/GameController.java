@@ -276,6 +276,7 @@ public class GameController {
 
             mActionPanel.updateStatus(mGame);
             String command = readCommand("Choose action", commands);
+            mActionPanel.hideAllExceptDone();
             if (command == null) {
                 // Ignore and continue
             } else if (command.equals(COMMAND_QUIT)) {
