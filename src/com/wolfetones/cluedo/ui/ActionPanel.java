@@ -195,7 +195,9 @@ public class ActionPanel extends JPanel {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    runnable.run();
+                    if (mEnabled) {
+                        runnable.run();
+                    }
                 }
             });
         }
