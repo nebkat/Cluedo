@@ -425,7 +425,42 @@ public class GameController {
             } else if (command.equals(COMMAND_NOTES)) {
                 // TODO
             } else if (command.equals(COMMAND_LOG)) {
-                // TODO
+                List<Game.LogEntry> log = mGame.getLog();
+
+                if (log.isEmpty()) {
+                    System.out.println("No entries in log");
+                }
+
+                for (int i = 0; i < log.size(); i++) {
+                    Game.LogEntry entry = log.get(i);
+                    String text = (i + 1) + ". ";
+                    if (entry.player == player) {
+                        text += "You";
+                    }
+                    if (entry.type == Game.LogEntry.Type.Question) {
+                        text += " suggested " + entry.suggestion.asHumanReadableString() + ", ";
+                        if (entry.responder != null) {
+                            if (entry.responder == player) {
+                                text += "you";
+                            } else {
+                                text += entry.responder.getName();
+                            }
+                            text += " showed a card";
+                        } else {
+                            text += "nobody had any card";
+                        }
+                    } else if (entry.type == Game.LogEntry.Type.FinalAccusation) {
+                        text += " made a final accusation of " + entry.suggestion.asHumanReadableString() + " ";
+                        String was = entry.player == player ? "were" : "was";
+                        if (entry.correct) {
+                            text += "and " + was + " correct";
+                        } else {
+                            text += "but" + was + " incorrect";
+                        }
+                    }
+
+                    System.out.println(text);
+                }
             }
         }
     }

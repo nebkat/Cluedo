@@ -43,6 +43,46 @@ public class Game {
     private static Random sRandom = new Random();
 
     /**
+     * Log
+     */
+    private List<LogEntry> mLog = new ArrayList<>();
+
+    public static class LogEntry {
+        public enum Type {
+            Question, FinalAccusation
+        }
+
+        public Type type;
+
+        public Player player;
+        public Suggestion suggestion;
+
+        public Player responder;
+
+        public boolean correct;
+
+        private static LogEntry newQuestionEntry(Player player, Suggestion suggestion, Player responder) {
+            LogEntry entry = new LogEntry();
+            entry.type = Type.Question;
+            entry.player = player;
+            entry.suggestion = suggestion;
+            entry.responder = responder;
+
+            return entry;
+        }
+
+        private static LogEntry newFinalAccusationEntry(Player player, Suggestion suggestion, boolean correct) {
+            LogEntry entry = new LogEntry();
+            entry.type = Type.FinalAccusation;
+            entry.player = player;
+            entry.suggestion = suggestion;
+            entry.correct = correct;
+
+            return entry;
+        }
+    }
+
+    /**
      * State
      */
     private boolean mStarted = false;
@@ -357,6 +397,9 @@ public class Game {
         // Can no longer make final accusation
         mTurnCanMakeFinalAccusation = false;
 
+        // Insert log entry
+        mLog.add(LogEntry.newFinalAccusationEntry(mCurrentPlayer, suggestion, mSolution.equals(suggestion)));
+
         // Check whether accusation is correct
         if (mSolution.equals(suggestion)) {
             mFinished = true;
@@ -401,10 +444,12 @@ public class Game {
         // Loop through players
         ListIterator<Player> iterator = mPlayers.listIterator((mPlayers.indexOf(mCurrentPlayer) + 1) % mPlayers.size());
         Player checkPlayer;
+        Player matchingPlayer = null;
         while ((checkPlayer = iterator.next()) != mCurrentPlayer) {
             // Return first player that has one of the suggestion's cards
             if (checkPlayer.hasAnySuggestionCards(suggestion)) {
-                return checkPlayer;
+                matchingPlayer = checkPlayer;
+                break;
             }
 
             // Loop around to first player
@@ -413,8 +458,11 @@ public class Game {
             }
         }
 
-        // No matches found, either correct final accusation or player posing questions has cards
-        return null;
+        // Insert log entry
+        mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, suggestion, matchingPlayer));
+
+        // If no matches found, either correct final accusation or player posing question has cards
+        return matchingPlayer;
     }
 
     public BoardModel getBoard() {
@@ -447,6 +495,10 @@ public class Game {
 
     public List<? extends Card> getRemainingCards() {
         return mRemainingCards;
+    }
+
+    public List<LogEntry> getLog() {
+        return mLog;
     }
 
     /**
