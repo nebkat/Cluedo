@@ -494,7 +494,7 @@ public class Game {
         }
     }
 
-    private <C extends Card> C randomCard(List<C> list) {
+    private static <C extends Card> C randomCard(List<C> list) {
         return list.get(sRandom.nextInt(list.size()));
     }
 }
