@@ -835,6 +835,10 @@ public class GameController {
     }
 
     private void throwDiceForOrder() {
+        if (DEMO_MODE) {
+            return;
+        }
+
         System.out.println("Rolling dice to decide player order...");
         System.out.println("Click on board to skip");
 
