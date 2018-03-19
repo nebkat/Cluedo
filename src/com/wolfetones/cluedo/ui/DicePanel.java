@@ -40,11 +40,11 @@ import com.wolfetones.physics.geometry.Plane;
 import javax.swing.*;
 import javax.vecmath.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Consumer;
 
-public class DicePanel extends JPanel {
+public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int FRAMES_PER_SECOND = 60;
     private static final int NUM_DICE = Game.NUM_DICE;
 
@@ -62,10 +62,10 @@ public class DicePanel extends JPanel {
     private Timer mTimer;
     private boolean mForceFinish;
 
-    private float mAlpha = 0f;
+    private float mAlpha = 0;
 
     private int mTotalValue;
-    private float mTotalTextAlpha = 0f;
+    private float mTotalTextAlpha = 0;
     private Font mTextFont = new Font(Font.SANS_SERIF, Font.BOLD, CUBE_SIZE);
 
     public DicePanel() {
@@ -220,33 +220,6 @@ public class DicePanel extends JPanel {
             }
         };
 
-        // Fade dice in task
-        TimerTask fadeInTask = new FixedCountTimerTask(400, FRAMES_PER_SECOND) {
-            @Override
-            protected void progress(double progress) {
-                mAlpha = (float) (progress);
-                repaint();
-            }
-        };
-
-        // Fade dice out task
-        TimerTask fadeOutTask = new FixedCountTimerTask(400, FRAMES_PER_SECOND) {
-            @Override
-            protected void progress(double progress) {
-                if (progress == 1) {
-                    setVisible(false);
-                    if (waitForAnimation) {
-                        synchronized (mWaitForAnimationLock) {
-                            mWaitForAnimationLock.notifyAll();
-                        }
-                    }
-                }
-
-                mAlpha = (float) (1 - progress);
-                repaint();
-            }
-        };
-
         // Reset timer
         if (mTimer != null) {
             mTimer.cancel();
@@ -255,8 +228,12 @@ public class DicePanel extends JPanel {
 
         mTimer.scheduleAtFixedRate(physicsTick, 0, 1000 / FRAMES_PER_SECOND);
         mTimer.scheduleAtFixedRate(checkDiceTick, 500, 250);
-        mTimer.scheduleAtFixedRate(fadeInTask, 0, 1000 / FRAMES_PER_SECOND);
         mTimer.schedule(forceFinishTask, 5000);
+
+        Animator.getInstance().animate(this)
+                .fade(1.0)
+                .setDuration(400)
+                .start();
 
         // Wait until dice have stopped moving
         try {
@@ -269,7 +246,6 @@ public class DicePanel extends JPanel {
 
         physicsTick.cancel();
         checkDiceTick.cancel();
-        fadeInTask.cancel();
         forceFinishTask.cancel();
 
         // Return values
@@ -327,40 +303,52 @@ public class DicePanel extends JPanel {
             moveToCenterTransformDeltas[i] = transform;
         }
 
-        TimerTask moveDiceToCenterTask = new FixedCountTimerTask(1500, FRAMES_PER_SECOND) {
-            double previousInterpolation = 0;
+        Animator.getInstance().animate(this)
+                .animate(0.0, 1.0, new Consumer<>() {
+                    double previousInterpolation = 0;
 
-            Vector3d translation = new Vector3d();
-            AxisAngle4d rotation = new AxisAngle4d();
-            Matrix3d transform = new Matrix3d();
+                    Vector3d translation = new Vector3d();
+                    AxisAngle4d rotation = new AxisAngle4d();
+                    Matrix3d transform = new Matrix3d();
 
-            @Override
-            protected void progress(double progress) {
-                double interpolation = Util.easeInOutQuint(progress);
+                    @Override
+                    public void accept(Double interpolation) {
+                        double scale = interpolation - previousInterpolation;
 
-                mTotalTextAlpha = (float) interpolation;
+                        previousInterpolation = interpolation;
 
-                double scale = interpolation - previousInterpolation;
+                        for (int i = 0; i < NUM_DICE; i++) {
+                            translation.scale(scale, moveToCenterTranslateDeltas[i]);
+                            rotation.set(moveToCenterTransformDeltas[i]);
+                            rotation.angle *= scale;
 
-                previousInterpolation = interpolation;
+                            transform.set(rotation);
 
-                for (int i = 0; i < NUM_DICE; i++) {
-                    translation.scale(scale, moveToCenterTranslateDeltas[i]);
-                    rotation.set(moveToCenterTransformDeltas[i]);
-                    rotation.angle *= scale;
+                            mDices[i].translate(translation, true);
+                            mDices[i].transform(transform, true);
+                        }
 
-                    transform.set(rotation);
+                        repaint();
+                    }
+                })
+                .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
+                .setDuration(1500)
+                .setDelay(100)
+                .start();
 
-                    mDices[i].translate(translation, true);
-                    mDices[i].transform(transform, true);
-                }
-
-                repaint();
-            }
-        };
-
-        mTimer.scheduleAtFixedRate(moveDiceToCenterTask, 100, 1000 / FRAMES_PER_SECOND);
-        mTimer.scheduleAtFixedRate(fadeOutTask, 2000, 1000 / FRAMES_PER_SECOND);
+        Animator.getInstance().animate(this)
+                .fade(0.0)
+                .after(() -> {
+                    setVisible(false);
+                    if (waitForAnimation) {
+                        synchronized (mWaitForAnimationLock) {
+                            mWaitForAnimationLock.notifyAll();
+                        }
+                    }
+                })
+                .setDuration(400)
+                .setDelay(2000)
+                .start();
 
         // Wait for dice to fade out
         if (waitForAnimation) {
@@ -385,6 +373,7 @@ public class DicePanel extends JPanel {
         mForceFinish = true;
 
         mTimer.cancel();
+        Animator.getInstance().interruptAllAnimations(this);
 
         for (int i = 0; i < 100; i++) {
             mPhysics.update();
@@ -433,25 +422,14 @@ public class DicePanel extends JPanel {
         }
     }
 
-    private abstract class FixedCountTimerTask extends TimerTask {
-        private int mTotalFrames;
-        private int mCurrentFrame = 0;
+    @Override
+    public double getAlpha() {
+        return mAlpha;
+    }
 
-        private FixedCountTimerTask(int duration, int fps) {
-            mTotalFrames = duration * fps / 1000;
-        }
-
-        @Override
-        public void run() {
-            double progress = (double) mCurrentFrame / mTotalFrames;
-            mCurrentFrame++;
-            if (progress >= 1) {
-                cancel();
-            }
-
-            progress(progress);
-        }
-
-        protected abstract void progress(double progress);
+    @Override
+    public void setAlpha(double alpha) {
+        mAlpha = (float) alpha;
+        repaint();
     }
 }

@@ -35,8 +35,6 @@ public abstract class TokenComponent extends JComponent implements Animator.Tran
     private int mTileSize;
     protected Token mToken;
 
-    private Animator mAnimator = new Animator(this, 200);
-
     private BufferedImage mTokenImage;
 
     protected TokenComponent(Token token, int tileSize) {
@@ -62,9 +60,11 @@ public abstract class TokenComponent extends JComponent implements Animator.Tran
     }
 
     private void updateCoordinates() {
-        mAnimator.translate((int) (mToken.getCoordinateX() * mTileSize),
-                (int) (mToken.getCoordinateY() * mTileSize));
-        mAnimator.start();
+        Animator.getInstance().animateAndInterruptAll(this)
+                .translate((int) (mToken.getCoordinateX() * mTileSize),
+                        (int) (mToken.getCoordinateY() * mTileSize))
+                .setDuration(200)
+                .start();
     }
 
     private void updateCoordinatesImmediately() {

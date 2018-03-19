@@ -129,7 +129,6 @@ public class ActionPanel extends JPanel {
         private boolean mEnabled = true;
 
         private double mScale = 0.75;
-        private Animator mAnimator = new Animator(this, 200);
 
         private TextBubble mTextBubble;
 
@@ -215,8 +214,10 @@ public class ActionPanel extends JPanel {
         }
 
         private void setMouseOver(boolean mouseOver) {
-            mAnimator.scale(mouseOver ? 1.0 : 0.75);
-            mAnimator.start();
+            Animator.getInstance().animateAndInterruptAll(this)
+                    .scale(mouseOver ? 1.0 : 0.75)
+                    .setDuration(200)
+                    .start();
         }
     }
 }

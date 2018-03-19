@@ -89,9 +89,10 @@ public class PlayersPanel extends JPanel {
 
             JPanel panel = mPlayerComponents.get(player).panel;
 
-            Animator animator = new Animator(new Animator.TranslatableComponentAdapter(panel), 1500);
-            animator.translate(0, i * panel.getHeight());
-            animator.start();
+            Animator.getInstance().animateAndInterruptAll(new Animator.TranslatableComponentAdapter(panel))
+                    .translate(0, i * panel.getHeight())
+                    .setDuration(1500)
+                    .start();
         }
     }
 
@@ -135,8 +136,7 @@ public class PlayersPanel extends JPanel {
             noCardPlayerBubble.setText("I have no cards!");
             noCardPlayerBubble.setButton(null, null);
 
-            noCardPlayerBubble.setDelay(delayCounter++ * 500);
-            noCardPlayerBubble.showBubble();
+            noCardPlayerBubble.showBubble(delayCounter++ * 500);
 
             // Loop around to first player
             if (!iterator.hasNext()) {
@@ -150,8 +150,7 @@ public class PlayersPanel extends JPanel {
             cardPlayerBubble.setText("I have a card... ");
             cardPlayerBubble.setButton("Show card", cardPlayerAction);
 
-            cardPlayerBubble.setDelay(delayCounter * 500);
-            cardPlayerBubble.showBubble();
+            cardPlayerBubble.showBubble(delayCounter * 500);
         }
     }
 

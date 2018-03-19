@@ -39,7 +39,6 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     private JButton mButton;
     private Runnable mButtonAction;
 
-    private Animator mAnimator = new Animator(this, 250);
     private double mScale = 0.0;
 
     public TextBubble(int height) {
@@ -111,24 +110,30 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     }
 
     public void showBubble() {
-        mAnimator.scale(1.0);
-        mAnimator.start();
+        showBubble(0);
+    }
+
+    public void showBubble(int delay) {
+        Animator.getInstance().animateAndInterruptAll(this)
+                .setDuration(250)
+                .scale(1.0)
+                .setDelay(delay)
+                .before(() -> setVisible(true))
+                .start();
     }
 
     public void hideBubble() {
-        mAnimator.scale(0.0);
-        mAnimator.start();
+        Animator.getInstance().animateAndInterruptAll(this)
+                .setDuration(250)
+                .scale(0.0)
+                .after(() -> setVisible(false))
+                .start();
     }
 
     public void resetBubble() {
+        Animator.getInstance().interruptAllAnimations(this);
         setVisible(false);
-        mAnimator.stop();
-        mAnimator.setDelay(0);
         mScale = 0.0;
-    }
-
-    public void setDelay(int delay) {
-        mAnimator.setDelay(delay);
     }
 
     @Override
@@ -138,7 +143,7 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         Graphics2D g = (Graphics2D) gg;
 
         if (mScale == 0) {
-            return;
+            g.translate(-Integer.MAX_VALUE, -Integer.MAX_VALUE);
         } else if (mScale != 1) {
             g.translate(0, getHeight() / 2);
             g.scale(mScale, mScale);
@@ -171,8 +176,6 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     @Override
     public void setScale(double scale) {
         mScale = scale;
-
-        setVisible(scale > 0);
 
         repaint();
     }

@@ -465,12 +465,10 @@ public class Game {
         return matchingPlayer;
     }
 
+
+
     public BoardModel getBoard() {
         return mBoard;
-    }
-
-    public List<Player> getPlayers() {
-        return mPlayers;
     }
 
     public int getPlayerCount() {

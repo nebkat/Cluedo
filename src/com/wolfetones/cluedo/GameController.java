@@ -871,6 +871,11 @@ public class GameController {
 
                 // Roll dice
                 int roll = mBoardDicePanel.rollDice(null, true);
+
+                if (Math.random() > 0.5 && highestRoll > 0) {
+                    roll = highestRoll;
+                }
+
                 results.put(player, roll);
 
                 if (roll > highestRoll) {
