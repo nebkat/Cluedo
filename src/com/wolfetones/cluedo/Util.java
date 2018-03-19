@@ -49,8 +49,12 @@ public class Util {
 
     public static void drawCenteredString(String s, int x, int y, int w, int h, Graphics g) {
         FontMetrics fm = g.getFontMetrics();
-        x += (w - fm.stringWidth(s)) / 2;
-        y += (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+        if (w >= 0) {
+            x += (w - fm.stringWidth(s)) / 2;
+        }
+        if (h >= 0) {
+            y += (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+        }
         g.drawString(s, x, y);
     }
 
