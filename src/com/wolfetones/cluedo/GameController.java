@@ -291,7 +291,7 @@ public class GameController {
 
                 System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMovements);
 
-                mPathFindingEnabled = true;
+                setPathFindingEnabled(true);
 
                 // Exit if in room
                 Location startLocation = mGame.getCurrentPlayerLocation();
@@ -369,7 +369,7 @@ public class GameController {
                     mGame.moveTo(currentTile);
                 }
 
-                mPathFindingEnabled = false;
+                setPathFindingEnabled(false);
             } else if (command.equals(COMMAND_PASSAGE)) {
                 mGame.usePassage();
             } else if (command.equals(COMMAND_QUESTION)) {
@@ -425,6 +425,20 @@ public class GameController {
         }
     }
 
+    private void setPathFindingEnabled(boolean enabled) {
+        mPathFindingEnabled = enabled;
+
+        resetPathFindingTemporaryState();
+    }
+
+    private void resetPathFindingTemporaryState() {
+        for (TileComponent component : mTileComponents) {
+            component.setTemporaryColors(null, null);
+        }
+
+        mBoardCursorPanel.setVisible(false);
+    }
+
     private void onTileClick(TileComponent tileComponent) {
         if (!mPathFindingEnabled) return;
 
@@ -439,29 +453,23 @@ public class GameController {
         }
 
         if (mGame.moveTo(targetLocation) == 0) {
-            mPathFindingEnabled = false;
+            setPathFindingEnabled(false);
         }
 
+        resetPathFindingTemporaryState();
+
+        // Interrupt text input
         mInputPanel.inject("\3");
-
-        for (TileComponent component : mTileComponents) {
-            component.setTemporaryColors(null, null);
-        }
-
-        mBoardCursorPanel.setVisible(false);
     }
 
     private void onTileHover(TileComponent tileComponent) {
         if (!mPathFindingEnabled) return;
 
-        for (TileComponent component : mTileComponents) {
-            component.setTemporaryColors(null, null);
-        }
+        resetPathFindingTemporaryState();
 
+        // Only perform path finding on valid tiles
         Tile tile = tileComponent.getTile();
-
         if (!(tile instanceof CorridorTile || tile instanceof RoomTile)) {
-            mBoardCursorPanel.setVisible(false);
             return;
         }
 
@@ -470,7 +478,6 @@ public class GameController {
 
         List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, Integer.MAX_VALUE);
         if (path == null) {
-            mBoardCursorPanel.setVisible(false);
             return;
         }
 
@@ -479,6 +486,7 @@ public class GameController {
         mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(canMove ? Cursor.HAND_CURSOR : Cursor.CROSSHAIR_CURSOR));
 
         for (int i = 0; i < path.size(); i++) {
+            // Colour valid tiles in path green, invalid tiles in red
             if (i <= mGame.getTurnRemainingMoves()) {
                 path.get(i).getButton().setTemporaryColors(Color.GREEN, Color.GREEN.brighter());
             } else {
