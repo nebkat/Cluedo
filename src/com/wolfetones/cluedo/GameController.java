@@ -474,7 +474,7 @@ public class GameController {
 
     private void resetPathFindingTemporaryState() {
         for (TileComponent component : mTileComponents) {
-            component.setTemporaryColors(null, null);
+            component.setTemporaryBackground(null);
         }
 
         mBoardCursorPanel.setVisible(false);
@@ -533,9 +533,9 @@ public class GameController {
         for (int i = 0; i < path.size(); i++) {
             // Colour valid tiles in path green, invalid tiles in red
             if (i <= mGame.getTurnRemainingMoves()) {
-                path.get(i).getButton().setTemporaryColors(Color.GREEN, Color.GREEN.brighter());
+                path.get(i).getButton().setTemporaryBackground(i < (path.size() - 1) ? Color.GREEN.darker() : Color.GREEN);
             } else {
-                path.get(i).getButton().setTemporaryColors(Color.RED, Color.RED.brighter());
+                path.get(i).getButton().setTemporaryBackground(i < (path.size() - 1) ? Color.RED.darker() : Color.RED);
             }
         }
     }
@@ -792,14 +792,14 @@ public class GameController {
 
                 // Set colors
                 if (tile instanceof PassageTile) {
-                    component.setColors(TileComponent.COLOR_PASSAGE, TileComponent.COLOR_PASSAGE.brighter());
+                    component.setBackground(TileComponent.COLOR_PASSAGE);
                 } else if (tile instanceof RoomTile) {
-                    component.setColors(TileComponent.COLOR_ROOM, TileComponent.COLOR_ROOM.brighter());
+                    component.setBackground(TileComponent.COLOR_ROOM);
                 } else if (tile instanceof CorridorTile) {
                     if ((y + x) % 2 == 0) {
-                        component.setColors(TileComponent.COLOR_CORRIDOR_A, TileComponent.COLOR_CORRIDOR_A.brighter());
+                        component.setBackground(TileComponent.COLOR_CORRIDOR_A);
                     } else {
-                        component.setColors(TileComponent.COLOR_CORRIDOR_B, TileComponent.COLOR_CORRIDOR_B.brighter());
+                        component.setBackground(TileComponent.COLOR_CORRIDOR_B);
                     }
                 } else if (tile instanceof EmptyTile) {
                     component.setOpaque(false);

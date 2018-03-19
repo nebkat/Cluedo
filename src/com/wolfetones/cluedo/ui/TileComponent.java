@@ -24,17 +24,11 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.board.tiles.CorridorTile;
-import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
-import com.wolfetones.cluedo.card.Room;
 
 import javax.swing.*;
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.Graphics;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 
 public class TileComponent extends JComponent {
     public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
@@ -46,30 +40,13 @@ public class TileComponent extends JComponent {
 
     private final Tile mTile;
 
-    private Color mDefaultColor;
-    private Color mActiveColor;
 
-    private Color mTemporaryDefaultColor;
-    private Color mTemporaryActiveColor;
-
-    private boolean mMouseOver = false;
+    private Color mTemporaryBackground;
 
     public TileComponent(Tile tile) {
         super();
 
         mTile = tile;
-
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                setMouseOver(true, true);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                setMouseOver(false, true);
-            }
-        });
 
         setOpaque(true);
     }
@@ -78,30 +55,8 @@ public class TileComponent extends JComponent {
         return mTile;
     }
 
-    public void setColors(Color def, Color active) {
-        mDefaultColor = def;
-        mActiveColor = active;
-
-        repaint();
-    }
-
-    public void setTemporaryColors(Color def, Color active) {
-        if (def == mTemporaryDefaultColor && active == mTemporaryActiveColor) return;
-
-        mTemporaryDefaultColor = def;
-        mTemporaryActiveColor = active;
-
-        repaint();
-    }
-
-    private void setMouseOver(boolean mouseOver, boolean propagate) {
-        mMouseOver = mouseOver;
-
-        if (propagate && mTile instanceof RoomTile) {
-            ((RoomTile) mTile).getRoom()
-                    .getRoomTiles()
-                    .forEach((tile) -> tile.getButton().setMouseOver(mouseOver, false));
-        }
+    public void setTemporaryBackground(Color color) {
+        mTemporaryBackground = color;
 
         repaint();
     }
@@ -111,10 +66,10 @@ public class TileComponent extends JComponent {
         super.paintComponent(g);
 
         if (isOpaque()) {
-            if (mTemporaryDefaultColor == null) {
-                g.setColor(!mMouseOver ? mDefaultColor : mActiveColor);
+            if (mTemporaryBackground == null) {
+                g.setColor(getBackground());
             } else {
-                g.setColor(!mMouseOver ? mTemporaryDefaultColor : mTemporaryActiveColor);
+                g.setColor(mTemporaryBackground);
             }
             g.fillRect(0, 0, getWidth(), getHeight());
         }
