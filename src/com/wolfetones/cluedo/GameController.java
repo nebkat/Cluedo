@@ -834,6 +834,9 @@ public class GameController {
     }
 
     private void throwDiceForOrder() {
+        System.out.println("Rolling dice to decide player order...");
+        System.out.println("Click on board to skip");
+
         // Show cursor panel to allow force finishing dice roll
         mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         mBoardCursorPanel.setVisible(true);
@@ -871,12 +874,9 @@ public class GameController {
 
                 // Roll dice
                 int roll = mBoardDicePanel.rollDice(null, true);
-
-                if (Math.random() > 0.5 && highestRoll > 0) {
-                    roll = highestRoll;
-                }
-
                 results.put(player, roll);
+
+                System.out.println(player.getName() + " rolled " + roll);
 
                 if (roll > highestRoll) {
                     // New highest roll
@@ -907,6 +907,12 @@ public class GameController {
                 if (!currentRoundPlayers.contains(player)) {
                     results.put(player, 0);
                 }
+            }
+
+            if (highestRollPlayers.size() > 1) {
+                String names = Util.implode(highestRollPlayers.stream().map(Player::getName).collect(Collectors.toList()), ", ", " and ");
+
+                System.out.println(names + " " + (highestRollPlayers.size() > 2 ? "all" : "both") + " rolled " + highestRoll + ", they must now roll again!");
             }
 
             // Next round players are those that rolled the highest number

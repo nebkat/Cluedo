@@ -111,7 +111,7 @@ public class PlayersPanel extends JPanel {
     public void showDiceRollResult(Player player, int roll) {
         TextBubble bubble = mPlayerComponents.get(player).bubble;
 
-        bubble.setText("I rolled a " + roll);
+        bubble.setText("I rolled " + roll);
         bubble.showBubble();
     }
 
