@@ -377,6 +377,11 @@ public class DicePanel extends JPanel {
     }
 
     public void forceFinish() {
+        // Already force finished
+        if (mForceFinish) {
+            return;
+        }
+
         mForceFinish = true;
 
         mTimer.cancel();
