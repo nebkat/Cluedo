@@ -144,4 +144,27 @@ public class Animator implements ActionListener {
         double getScale();
         void setScale(double scale);
     }
+
+    public static class TranslatableComponentAdapter implements Translatable {
+        private JComponent mComponent;
+
+        public TranslatableComponentAdapter(JComponent component) {
+            mComponent = component;
+        }
+
+        @Override
+        public int getX() {
+            return mComponent.getX();
+        }
+
+        @Override
+        public int getY() {
+            return mComponent.getY();
+        }
+
+        @Override
+        public void setLocation(int x, int y) {
+            mComponent.setLocation(x, y);
+        }
+    }
 }

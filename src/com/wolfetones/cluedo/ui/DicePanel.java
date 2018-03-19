@@ -53,12 +53,14 @@ public class DicePanel extends JPanel {
     private static final int CUBE_SIZE = Config.screenRelativeSize(75);
 
     private final Object mDiceMovingLock = new Object();
+    private final Object mWaitForAnimationLock = new Object();
 
     private VerletPhysics mPhysics = new VerletPhysics(10);
 
     private Dice[] mDices = new Dice[NUM_DICE];
 
     private Timer mTimer;
+    private boolean mForceFinish;
 
     private float mAlpha = 0f;
 
@@ -117,11 +119,12 @@ public class DicePanel extends JPanel {
         return transform;
     }
 
-    public int rollDice(int[] diceValues) {
+    public int rollDice(int[] diceValues, boolean waitForAnimation) {
         // Show panel
         setVisible(true);
 
         // Reset status
+        mForceFinish = false;
         mAlpha = 0;
         mTotalTextAlpha = 0;
 
@@ -232,6 +235,11 @@ public class DicePanel extends JPanel {
             protected void progress(double progress) {
                 if (progress == 1) {
                     setVisible(false);
+                    if (waitForAnimation) {
+                        synchronized (mWaitForAnimationLock) {
+                            mWaitForAnimationLock.notifyAll();
+                        }
+                    }
                 }
 
                 mAlpha = (float) (1 - progress);
@@ -267,15 +275,24 @@ public class DicePanel extends JPanel {
         // Return values
         mTotalValue = 0;
         for (int i = 0; i < NUM_DICE; i++) {
-            diceValues[i] = mDices[i].getValue();
-            mTotalValue += diceValues[i];
+            int value = mDices[i].getValue();
+            if (diceValues != null) {
+                diceValues[i] = value;
+            }
+            mTotalValue += value;
         }
 
+        // Force finish
+        if (mForceFinish) {
+            return mTotalValue;
+        }
+
+        // Translations and transformations to move each dice to the front of the screen
         Vector3d[] moveToCenterTranslateDeltas = new Vector3d[NUM_DICE];
         AxisAngle4d[] moveToCenterTransformDeltas = new AxisAngle4d[NUM_DICE];
 
+        // Whether to put first dice on left or right
         boolean reverseOrder = mDices[1].getCenter().x < mDices[0].getCenter().x;
-
         for (int i = 0; i < NUM_DICE; i++) {
             Dice dice = mDices[i];
 
@@ -288,13 +305,14 @@ public class DicePanel extends JPanel {
 
             Vector3d translate = new Vector3d();
             translate.sub(target, center);
-
             moveToCenterTranslateDeltas[i] = translate;
 
+            // Vector along one edge of the top face
             Vector3d x = new Vector3d();
             x.sub(face[1], face[0]);
             x.normalize();
 
+            // Axis around which to rotate
             Vector3d rotationNormal = new Vector3d();
             rotationNormal.cross(x, Axis.X);
 
@@ -304,8 +322,8 @@ public class DicePanel extends JPanel {
                 rotationAngle -= Math.PI / 2;
             }
 
+            // Axis angle rotation to align dice with an axis
             AxisAngle4d transform = new AxisAngle4d(rotationNormal.x, rotationNormal.y, rotationNormal.z, rotationAngle);
-
             moveToCenterTransformDeltas[i] = transform;
         }
 
@@ -341,10 +359,41 @@ public class DicePanel extends JPanel {
             }
         };
 
-        mTimer.scheduleAtFixedRate(moveDiceToCenterTask, 500, 1000 / FRAMES_PER_SECOND);
-        mTimer.scheduleAtFixedRate(fadeOutTask, 4000, 1000 / FRAMES_PER_SECOND);
+        mTimer.scheduleAtFixedRate(moveDiceToCenterTask, 100, 1000 / FRAMES_PER_SECOND);
+        mTimer.scheduleAtFixedRate(fadeOutTask, 2000, 1000 / FRAMES_PER_SECOND);
+
+        // Wait for dice to fade out
+        if (waitForAnimation) {
+            try {
+                synchronized (mWaitForAnimationLock) {
+                    mWaitForAnimationLock.wait();
+                }
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }
 
         return mTotalValue;
+    }
+
+    public void forceFinish() {
+        mForceFinish = true;
+
+        mTimer.cancel();
+
+        for (int i = 0; i < 100; i++) {
+            mPhysics.update();
+        }
+
+        synchronized (mDiceMovingLock) {
+            mDiceMovingLock.notifyAll();
+        }
+
+        synchronized (mWaitForAnimationLock) {
+            mWaitForAnimationLock.notifyAll();
+        }
+
+        setVisible(false);
     }
 
     @Override

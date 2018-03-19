@@ -32,72 +32,94 @@ import java.awt.*;
 import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 
 public class PlayersPanel extends JPanel {
     private List<Player> mPlayers;
 
-    private Map<Player, PlayerIconComponent> mPlayerIcons = new HashMap<>();
-    private Map<Player, TextBubble> mTextBubbles = new HashMap<>();
+    private Map<Player, PlayerComponents> mPlayerComponents = new HashMap<>();
 
-    public PlayersPanel(List<Player> players, int iconWidth) {
+    private class PlayerComponents {
+        private JPanel panel;
+        private PlayerIconComponent icon;
+        private TextBubble bubble;
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    public PlayersPanel(List<Player> players, int iconWidth, int panelWidth) {
         super();
 
         mPlayers = players;
 
         setOpaque(false);
 
-        setLayout(new GridBagLayout());
+        setLayout(null);
 
-        GridBagConstraints c = new GridBagConstraints();
-        c.anchor = GridBagConstraints.LINE_START;
-        for (Player player : players) {
-            @SuppressWarnings("SuspiciousNameCombination")
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+
+            PlayerComponents components = new PlayerComponents();
+
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            components.panel = panel;
+            panel.setOpaque(false);
+
             PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(), iconWidth, iconWidth);
-
-            mPlayerIcons.put(player, icon);
-
-            c.gridy++;
-            c.gridx = 0;
-            add(icon, c);
+            components.icon = icon;
+            panel.add(icon);
 
             TextBubble bubble = new TextBubble(icon.getHeight());
+            components.bubble = bubble;
+            panel.add(bubble);
 
-            mTextBubbles.put(player, bubble);
+            panel.setLocation(0, i * iconWidth);
+            panel.setSize(panelWidth, iconWidth);
+            add(panel);
 
-            c.gridx = 1;
-            add(bubble, c);
+            mPlayerComponents.put(player, components);
         }
+    }
 
-        // Push everything to bottom and ensure text bubble column width
-        c = new GridBagConstraints();
-        c.gridy = 10;
-        c.weighty = 1;
-        add(Box.createHorizontalStrut(iconWidth), c);
-        c.gridx = 1;
-        c.weightx = 1;
-        add(Box.createHorizontalStrut(0), c);
+    public void rearrangePlayers(List<Player> players) {
+        mPlayers = players;
+
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+
+            JPanel panel = mPlayerComponents.get(player).panel;
+
+            Animator animator = new Animator(new Animator.TranslatableComponentAdapter(panel), 1500);
+            animator.translate(0, i * panel.getHeight());
+            animator.start();
+        }
+    }
+
+    public void setActivePlayers(List<Player> players) {
+        mPlayerComponents.forEach((key, value) -> value.icon.setSelected(players.contains(key)));
     }
 
     public void setActivePlayer(Player player) {
-        PlayerIconComponent activeIcon = mPlayerIcons.get(player);
-
-        mPlayerIcons.values().forEach((i) -> i.setSelected(i == activeIcon));
+        mPlayerComponents.forEach((key, value) -> value.icon.setSelected(player == null || key == player));
     }
 
-    public void setPlayerEliminated(Player player) {
-        mPlayerIcons.get(player).setEliminated();
+    public void setPlayerEliminated(Player player, boolean eliminated) {
+        mPlayerComponents.get(player).icon.setEliminated(eliminated);
     }
 
-    public void hideQuestionResponses() {
-        mTextBubbles.values().forEach(TextBubble::resetBubble);
+    public void showDiceRollResult(Player player, int roll) {
+        TextBubble bubble = mPlayerComponents.get(player).bubble;
+
+        bubble.setText("I rolled a " + roll);
+        bubble.showBubble();
+    }
+
+    public void hideBubbles() {
+        mPlayerComponents.forEach((key, value) -> value.bubble.hideBubble());
     }
 
     public void showQuestionResponses(Player poser, Suggestion suggestion, Player cardPlayer, Runnable cardPlayerAction) {
-        TextBubble poserBubble = mTextBubbles.get(poser);
+        TextBubble poserBubble = mPlayerComponents.get(poser).bubble;
         poserBubble.setText("I suggest... " + suggestion.asHumanReadableString());
         poserBubble.setButton(null, null);
 
@@ -108,7 +130,7 @@ public class PlayersPanel extends JPanel {
         ListIterator<Player> iterator = mPlayers.listIterator((mPlayers.indexOf(poser) + 1) % mPlayers.size());
         Player checkPlayer;
         while ((checkPlayer = iterator.next()) != (cardPlayer == null ? poser : cardPlayer)) {
-            TextBubble noCardPlayerBubble = mTextBubbles.get(checkPlayer);
+            TextBubble noCardPlayerBubble = mPlayerComponents.get(checkPlayer).bubble;
 
             noCardPlayerBubble.setText("I have no cards!");
             noCardPlayerBubble.setButton(null, null);
@@ -123,7 +145,7 @@ public class PlayersPanel extends JPanel {
         }
 
         if (cardPlayer != null) {
-            TextBubble cardPlayerBubble = mTextBubbles.get(cardPlayer);
+            TextBubble cardPlayerBubble = mPlayerComponents.get(cardPlayer).bubble;
 
             cardPlayerBubble.setText("I have a card... ");
             cardPlayerBubble.setButton("Show card", cardPlayerAction);
@@ -155,8 +177,8 @@ public class PlayersPanel extends JPanel {
             repaint();
         }
 
-        private void setEliminated() {
-            mEliminated = true;
+        private void setEliminated(boolean eliminated) {
+            mEliminated = eliminated;
             repaint();
         }
 

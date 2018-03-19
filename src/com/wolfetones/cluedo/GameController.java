@@ -103,6 +103,8 @@ public class GameController {
      */
     private Game mGame = new Game();
 
+    private List<Player> mPlayers = new ArrayList<>();
+
     private int mTileSize;
 
     /**
@@ -152,8 +154,11 @@ public class GameController {
         setupPlayers();
         setupFrame();
 
+        throwDiceForOrder();
+
         mInputScanner = new Scanner(System.in);
 
+        mPlayers.forEach(mGame::addPlayer);
         mGame.start();
 
         // Keep performing new turns until the game is over
@@ -242,7 +247,7 @@ public class GameController {
         Player player = mGame.nextTurn();
 
         mPlayersPanel.setActivePlayer(player);
-        mPlayersPanel.hideQuestionResponses();
+        mPlayersPanel.hideBubbles();
         passToPlayer(player, null);
 
         mOutputPanel.clear();
@@ -282,7 +287,7 @@ public class GameController {
                 break;
             } else if (command.equals(COMMAND_ROLL)) {
                 int[] dice = new int[Game.NUM_DICE];
-                mBoardDicePanel.rollDice(dice);
+                mBoardDicePanel.rollDice(dice, false);
 
                 // Game will read dice values from dice array if they are not 0
                 int remainingMovements = mGame.rollDice(dice);
@@ -397,7 +402,7 @@ public class GameController {
                     CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
                     System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
 
-                    mPlayersPanel.hideQuestionResponses();
+                    mPlayersPanel.hideBubbles();
                 } else {
                     mPlayersPanel.showQuestionResponses(player, suggestion, null, null);
 
@@ -415,7 +420,7 @@ public class GameController {
                     System.out.println("Congratulations! You were correct!");
                 } else {
                     System.out.println("Your guess was incorrect. You have been eliminated.");
-                    mPlayersPanel.setPlayerEliminated(player);
+                    mPlayersPanel.setPlayerEliminated(player, true);
                 }
             } else if (command.equals(COMMAND_NOTES)) {
                 // TODO
@@ -522,7 +527,7 @@ public class GameController {
         if (DEMO_MODE) {
             for (int i = 0; i < 6; i++) {
                 Suspect suspect = mGame.getBoard().getSuspect(i);
-                mGame.addPlayer(new Player(suspect, suspect.getName()));
+                mPlayers.add(new Player(suspect, suspect.getName()));
             }
 
             return;
@@ -533,7 +538,7 @@ public class GameController {
         while (remainingSuspects.size() > 0) {
             Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
             if (player != null) {
-                mGame.addPlayer(player);
+                mPlayers.add(player);
                 remainingSuspects.remove(player.getCharacter());
             } else if (mGame.getPlayerCount() >= 2) {
                 // Must have at least 2 players to play
@@ -782,7 +787,7 @@ public class GameController {
         mBoardCursorPanel.setVisible(false);
 
         // Add players panel
-        mPlayersPanel = new PlayersPanel(mGame.getPlayers(), (int) (1.9 * mTileSize));
+        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), (int) (1.9 * mTileSize), boardDimension.width);
         mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
         mPlayersPanel.setBounds(boardBounds);
 
@@ -791,5 +796,111 @@ public class GameController {
         mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
         mActionPanel.setBounds(boardBounds);
         mActionPanel.updateStatus(mGame);
+    }
+
+    private void throwDiceForOrder() {
+        // Show cursor panel to allow force finishing dice roll
+        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        mBoardCursorPanel.setVisible(true);
+        MouseAdapter interruptDiceClickListener = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                mBoardDicePanel.forceFinish();
+            }
+        };
+        mBoardCursorPanel.addMouseListener(interruptDiceClickListener);
+
+        // Store list of players that are in the current round (highest rollers or all players initially)
+        List<Player> currentRoundPlayers = new ArrayList<>(mPlayers);
+        while (currentRoundPlayers.size() > 1) {
+            // Players not in current round are eliminated
+            for (Player player : mPlayers) {
+                if (!currentRoundPlayers.contains(player)) {
+                    mPlayersPanel.setPlayerEliminated(player, true);
+                }
+            }
+
+            // Current highest roll
+            int highestRoll = 0;
+
+            // List of players that have rolled the highest number
+            List<Player> highestRollPlayers = new ArrayList<>();
+
+            // Player dice roll results for sorting
+            Map<Player, Integer> results = new HashMap<>();
+
+            // Each player in current round rolls
+            for (Player player : currentRoundPlayers) {
+                // Current rolling player is highlighted
+                mPlayersPanel.setActivePlayer(player);
+
+                // Roll dice
+                int roll = mBoardDicePanel.rollDice(null, true);
+                results.put(player, roll);
+
+                if (roll > highestRoll) {
+                    // New highest roll
+                    highestRoll = roll;
+                    highestRollPlayers.clear();
+                    highestRollPlayers.add(player);
+                } else if (roll == highestRoll) {
+                    // Matching highest roll
+                    highestRollPlayers.add(player);
+                }
+
+                // Show result bubble
+                mPlayersPanel.showDiceRollResult(player, roll);
+            }
+
+            // Wait for last player's bubble to show fully
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+
+            // No longer highlighting any players
+            mPlayersPanel.setActivePlayers(currentRoundPlayers);
+
+            // For sorting purposes, any player not in this round rolled a 0
+            for (Player player : mPlayers) {
+                if (!currentRoundPlayers.contains(player)) {
+                    results.put(player, 0);
+                }
+            }
+
+            // Next round players are those that rolled the highest number
+            currentRoundPlayers = highestRollPlayers;
+
+            // Sort and rearrange players by their result
+            mPlayers.sort(Comparator.comparingInt(results::get).reversed());
+            mPlayersPanel.rearrangePlayers(Collections.unmodifiableList(mPlayers));
+
+            // Wait for rearrangement to complete
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+
+            // Hide bubbles for next round
+            mPlayersPanel.hideBubbles();
+
+            // Wait for bubbles to hide
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }
+
+        // Players are not eliminated to start game
+        for (Player player : mPlayers) {
+            mPlayersPanel.setPlayerEliminated(player, false);
+        }
+
+        // Hide cursor panel
+        mBoardCursorPanel.setVisible(false);
+        mBoardCursorPanel.removeMouseListener(interruptDiceClickListener);
     }
 }
