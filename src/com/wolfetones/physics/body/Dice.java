@@ -184,10 +184,4 @@ public class Dice extends Cube {
             }
         }
     }
-
-    public void setColors(Color faceColor, Color borderColor, Color dotColor) {
-        this.faceColor = faceColor;
-        this.borderColor = borderColor;
-        this.dotColor = dotColor;
-    }
 }
