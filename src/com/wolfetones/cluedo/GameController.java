@@ -927,7 +927,7 @@ public class GameController {
             currentRoundPlayers = highestRollPlayers;
 
             // Sort and rearrange players by their result
-            mPlayers.sort(Comparator.comparingInt(results::get).reversed());
+            mPlayers.sort(Collections.reverseOrder(Comparator.comparingInt(results::get)));
             mPlayersPanel.rearrangePlayers(Collections.unmodifiableList(mPlayers));
 
             // Wait for rearrangement to complete
