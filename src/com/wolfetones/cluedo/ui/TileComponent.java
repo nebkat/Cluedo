@@ -40,7 +40,6 @@ public class TileComponent extends JComponent {
 
     private final Tile mTile;
 
-
     private Color mTemporaryBackground;
 
     public TileComponent(Tile tile) {
