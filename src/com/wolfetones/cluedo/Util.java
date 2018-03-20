@@ -65,7 +65,7 @@ public class Util {
 
         AffineTransform scaleTransform = AffineTransform.getScaleInstance((double) width / image.getWidth(), (double) height / image.getHeight());
 
-        return new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BILINEAR).filter(
+        return new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BICUBIC).filter(
                 image,
                 new BufferedImage(width, height, image.getType()));
     }
