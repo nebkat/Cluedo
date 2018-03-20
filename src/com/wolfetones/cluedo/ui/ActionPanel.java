@@ -42,13 +42,15 @@ public class ActionPanel extends JPanel {
     private static final int BUTTON_PASSAGE = BUTTON_ROLL + 1;
     private static final int BUTTON_SUGGEST = BUTTON_PASSAGE + 1;
     private static final int BUTTON_ACCUSE = BUTTON_SUGGEST + 1;
-    private static final int BUTTON_DONE = BUTTON_ACCUSE + 1;
+    private static final int BUTTON_STOP = BUTTON_ACCUSE + 1;
+    private static final int BUTTON_DONE = BUTTON_STOP + 1;
 
     private static final ButtonDescription[] BUTTON_DESCRIPTIONS = {
             new ButtonDescription("icons/roll.png", "Roll dice", GameController.COMMAND_ROLL),
             new ButtonDescription("icons/passage.png", "Use secret passage", GameController.COMMAND_PASSAGE),
             new ButtonDescription("icons/suggest.png", "Pose question", GameController.COMMAND_QUESTION),
             new ButtonDescription("icons/accuse.png", "Make final accusation", GameController.COMMAND_ACCUSE),
+            new ButtonDescription("icons/stop.png", "Stop moving", GameController.COMMAND_STOP),
             new ButtonDescription("icons/done.png", "Finish turn", GameController.COMMAND_DONE)
     };
 
@@ -121,6 +123,7 @@ public class ActionPanel extends JPanel {
         mButtons.get(BUTTON_PASSAGE).setVisible(game.canUsePassage());
         mButtons.get(BUTTON_SUGGEST).setVisible(game.canPoseQuestion());
         mButtons.get(BUTTON_ACCUSE).setVisible(game.canMakeFinalAccusation());
+        mButtons.get(BUTTON_STOP).setVisible(game.canStopMoving());
         mButtons.get(BUTTON_DONE).setVisible(true);
         mButtons.get(BUTTON_DONE).setActive(game.isTurnFinished());
     }

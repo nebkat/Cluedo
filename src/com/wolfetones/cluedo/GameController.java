@@ -87,11 +87,11 @@ public class GameController {
     public static final String COMMAND_LOG = "log";
     public static final String COMMAND_CHEAT = "cheat";
 
-    private static final String COMMAND_LEFT = "l";
-    private static final String COMMAND_UP = "u";
-    private static final String COMMAND_RIGHT = "r";
-    private static final String COMMAND_DOWN = "d";
-    private static final String COMMAND_STOP = "stop";
+    public static final String COMMAND_LEFT = "l";
+    public static final String COMMAND_UP = "u";
+    public static final String COMMAND_RIGHT = "r";
+    public static final String COMMAND_DOWN = "d";
+    public static final String COMMAND_STOP = "stop";
 
     private static final String COMMAND_SHOW = "show";
 
@@ -335,6 +335,8 @@ public class GameController {
                     if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
                     if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
                     if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
+
+                    mActionPanel.updateStatus(mGame);
 
                     String direction = readCommand("Choose direction (or use board tiles)", validCommands);
                     if (direction == null) {

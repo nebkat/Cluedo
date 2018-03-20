@@ -234,7 +234,7 @@ public class Game {
         return mTurnCanMakeFinalAccusation;
     }
 
-    public boolean canStopMoving() { return mTurnHasMoved; }
+    public boolean canStopMoving() { return mTurnHasMoved && mTurnRemainingMoves > 0; }
 
     public boolean isTurnFinished() {
         return mTurnFinished;
