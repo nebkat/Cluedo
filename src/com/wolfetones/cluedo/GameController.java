@@ -279,6 +279,7 @@ public class GameController {
             mActionPanel.hideAllExceptDone();
             if (command == null) {
                 // Ignore and continue
+                System.err.println("Unexpected interrupt");
             } else if (command.equals(COMMAND_QUIT)) {
                 System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
                 System.exit(0);
