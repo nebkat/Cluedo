@@ -472,10 +472,6 @@ public class Game {
         return mBoard;
     }
 
-    public int getPlayerCount() {
-        return mPlayers.size();
-    }
-
     public Location getCurrentPlayerLocation() {
         return mCurrentPlayerLocation;
     }

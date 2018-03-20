@@ -578,7 +578,7 @@ public class GameController {
             if (player != null) {
                 mPlayers.add(player);
                 remainingSuspects.remove(player.getCharacter());
-            } else if (mGame.getPlayerCount() >= 2) {
+            } else if (mPlayers.size() >= 2) {
                 // Must have at least 2 players to play
                 break;
             }
