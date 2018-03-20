@@ -24,26 +24,19 @@
 
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.Util;
-
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class Animator implements ActionListener {
+public class Animator {
     private static final int FRAMES_PER_SECOND = 60;
-    private static final Function<Double, Double> DEFAULT_INTERPOLATOR = Util::easeInOutQuint;
+    private static final Function<Double, Double> DEFAULT_INTERPOLATOR = Animator::easeInOutQuintInterpolator;
 
     private static Animator sInstance;
 
-    private Timer mTimer = new Timer(1000 / FRAMES_PER_SECOND, this);
+    private Timer mTimer = new Timer();
 
     private Set<Animation> mAnimations = new HashSet<>();
 
@@ -54,41 +47,8 @@ public class Animator implements ActionListener {
         return sInstance;
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        for (Animation animation : mAnimations) {
-            if (animation.stopped) {
-                continue;
-            }
-
-            animation.remainingFrames--;
-
-            double progress = 1.0 - ((double) animation.remainingFrames / animation.totalFrames);
-            animation.progress(animation.interpolator.apply(progress));
-
-            if (animation.remainingFrames == 0) {
-                stopAnimation(animation);
-            }
-        }
-
-        mAnimations.removeIf(animation -> animation.stopped);
-        if (mAnimations.isEmpty()) mTimer.stop();
-    }
-
     private void startAnimation(Animation animation) {
         // Animation delays
-        if (animation.delay > 0) {
-            Timer delayTimer = new Timer(animation.delay, null);
-            delayTimer.addActionListener(e -> {
-                animation.delay = 0;
-                startAnimation(animation);
-
-                delayTimer.stop();
-            });
-            delayTimer.start();
-            return;
-        }
-
         animation.totalFrames = animation.duration * FRAMES_PER_SECOND / 1000;
         animation.remainingFrames = animation.totalFrames;
 
@@ -96,25 +56,27 @@ public class Animator implements ActionListener {
             animation.preRunnable.run();
         }
 
-        if (mAnimations.isEmpty()) {
-            mTimer.start();
-        }
-
+        mTimer.scheduleAtFixedRate(animation, animation.delay, 1000 / FRAMES_PER_SECOND);
         mAnimations.add(animation);
     }
 
     private void stopAnimation(Animation animation) {
-        animation.stopped = true;
+        animation.cancel();
 
         if (animation.postRunnable != null) {
             animation.postRunnable.run();
         }
+
+        mAnimations.remove(animation);
     }
 
     public void interruptAllAnimations(Object target) {
-        for (Animation animation : mAnimations) {
+        Iterator<Animation> iterator = mAnimations.iterator();
+        while (iterator.hasNext()) {
+            Animation animation = iterator.next();
             if (target == null || animation.target == target) {
-                stopAnimation(animation);
+                animation.cancel();
+                iterator.remove();
             }
         }
     }
@@ -128,9 +90,8 @@ public class Animator implements ActionListener {
         return new Animation(target);
     }
 
-    public class Animation {
+    public class Animation extends TimerTask {
         private Object target;
-        private boolean stopped = false;
 
         private int totalFrames;
         private int remainingFrames;
@@ -163,6 +124,12 @@ public class Animator implements ActionListener {
 
         public Animation setDelay(int delay) {
             this.delay = delay;
+
+            return this;
+        }
+
+        public Animation setInterpolator(Function<Double, Double> interpolator) {
+            this.interpolator = interpolator;
 
             return this;
         }
@@ -253,6 +220,18 @@ public class Animator implements ActionListener {
         private double interpolate(double initial, double target, double progress) {
             return initial + (target - initial) * progress;
         }
+
+        @Override
+        public void run() {
+            remainingFrames--;
+
+            double progress = 1.0 - ((double) remainingFrames / totalFrames);
+            progress(interpolator != null ? interpolator.apply(progress) : progress);
+
+            if (remainingFrames == 0) {
+                stopAnimation(this);
+            }
+        }
     }
 
     public interface Translatable {
@@ -269,5 +248,17 @@ public class Animator implements ActionListener {
     public interface Fadable {
         double getAlpha();
         void setAlpha(double alpha);
+    }
+
+    public static double easeInCubic(double t) {
+        return t * t * t;
+    }
+
+    public static double easeOutCubic(double t) {
+        return (--t) * t * t + 1;
+    }
+
+    public static double easeInOutQuintInterpolator(double t) {
+        return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
     }
 }

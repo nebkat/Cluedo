@@ -233,6 +233,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         Animator.getInstance().animate(this)
                 .fade(1.0)
                 .setDuration(400)
+                .setInterpolator(Animator::easeInCubic)
                 .start();
 
         // Wait until dice have stopped moving
@@ -343,8 +344,10 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                                 }
                             }
                         })
-                        .setDuration(400)
-                        .setDelay(1000))
+                        .setDuration(500)
+                        .setDelay(1000)
+                        .setInterpolator(Animator::easeOutCubic)
+                )
                 .start();
 
         // Wait for dice to fade out

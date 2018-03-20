@@ -81,8 +81,4 @@ public class Util {
             throw new IllegalArgumentException("Could not load image '" + image + "'");
         }
     }
-
-    public static double easeInOutQuint(double t) {
-        return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
-    }
 }
