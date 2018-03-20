@@ -195,6 +195,7 @@ public class Game {
             mTurnCanRollDice = mCurrentPlayerLocation.asRoom()
                     .getEntranceCorridors()
                     .stream()
+                    .map(RoomTile::getDoorTile)
                     .anyMatch(TokenOccupiableTile::isFree);
         } else {
             mTurnCanUsePassage = false;
