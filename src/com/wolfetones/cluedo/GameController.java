@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class GameController {
-    private static final boolean DEMO_MODE = true;
+    private static final boolean DEMO_MODE = Boolean.parseBoolean(System.getProperty("debug"));
 
     /**
      * Setting to enable cheat command that gives the solution.
