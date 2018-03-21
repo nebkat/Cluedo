@@ -214,33 +214,22 @@ public class Config {
     }
 
     private static final int DEFAULT_SCREEN_WIDTH = 1920;
-
-    private static int sScreenWidth = -1;
-    private static int sScreenHeight = -1;
-
-    private static void loadScreenSize() {
-        if (sScreenWidth == -1 || sScreenHeight == -1) {
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            sScreenWidth = screenSize.width;
-            sScreenHeight = screenSize.height;
-        }
-    }
+    private static Dimension sScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static double sScreenRelativeSize = sScreenSize.width / DEFAULT_SCREEN_WIDTH;
 
     public static int screenRelativeSize(int size) {
-        loadScreenSize();
+        return (int) Math.ceil(size * sScreenRelativeSize);
+    }
 
-        return (int) Math.ceil(size * sScreenWidth / (double) DEFAULT_SCREEN_WIDTH);
+    public static double screenRelativeSize(double size) {
+        return size * sScreenRelativeSize;
     }
 
     public static int screenWidthPercentage(float percentage) {
-        loadScreenSize();
-
-        return (int) (sScreenWidth * percentage);
+        return (int) (sScreenSize.width * percentage);
     }
 
     public static int screenHeightPercentage(float percentage) {
-        loadScreenSize();
-
-        return (int) (sScreenHeight * percentage);
+        return (int) (sScreenSize.height * percentage);
     }
 }
