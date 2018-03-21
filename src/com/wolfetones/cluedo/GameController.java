@@ -835,6 +835,8 @@ public class GameController {
             }
         }
 
+        int sidePanelWidth = (int) (1.8 * mTileSize);
+
         // Add dice panel
         mBoardDicePanel = new DicePanel();
         mBoardLayeredPane.add(mBoardDicePanel, BOARD_LAYER_DICE);
@@ -847,12 +849,12 @@ public class GameController {
         mBoardCursorPanel.setOpaque(false);
 
         // Add players panel
-        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), (int) (1.9 * mTileSize), boardDimension.width);
+        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), sidePanelWidth, boardDimension.width);
         mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
         mPlayersPanel.setBounds(boardBounds);
 
         // Add action panel
-        mActionPanel = new ActionPanel(mInputPanel::append, (int) (1.9 * mTileSize));
+        mActionPanel = new ActionPanel(mInputPanel::append, sidePanelWidth);
         mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
         mActionPanel.setBounds(boardBounds);
         mActionPanel.updateStatus(mGame);
