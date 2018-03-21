@@ -219,20 +219,17 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                 })
                 .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
                 .setDuration(1500)
-                .after(Animator.getInstance().animate(this)
-                        .fadeOut()
-                        .after(() -> {
-                            setVisible(false);
-                            if (waitForAnimation) {
-                                synchronized (mWaitForAnimationLock) {
-                                    mWaitForAnimationLock.notifyAll();
-                                }
-                            }
-                        })
-                        .setDuration(500)
-                        .setDelay(1000)
-                        .setInterpolator(Animator::easeOutCubic)
-                )
+            .chain()
+                .fadeOut()
+                .after(() -> {
+                    synchronized (mWaitForAnimationLock) {
+                        mWaitForAnimationLock.notifyAll();
+                    }
+                    repaint();
+                })
+                .setDuration(500)
+                .setDelay(1000)
+                .setInterpolator(Animator::easeOutCubic)
                 .start();
 
         // Wait for dice to fade out

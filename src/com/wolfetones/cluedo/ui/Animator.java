@@ -67,6 +67,11 @@ public class Animator {
             animation.postRunnable.run();
         }
 
+        if (animation.chain != null) {
+            animation.chain.parent = null;
+            animation.chain.start();
+        }
+
         mAnimations.remove(animation);
     }
 
@@ -103,6 +108,9 @@ public class Animator {
         private Runnable preRunnable;
         private Runnable postRunnable;
 
+        private Animation parent;
+        private Animation chain;
+
         private int count = 0;
         private List<Double> initialValues = new ArrayList<>(1);
         private List<Double> targetValues = new ArrayList<>(1);
@@ -113,7 +121,11 @@ public class Animator {
         }
 
         public void start() {
-            startAnimation(this);
+            if (parent != null) {
+                parent.start();
+            } else {
+                startAnimation(this);
+            }
         }
 
         public Animation setDuration(int duration) {
@@ -209,10 +221,11 @@ public class Animator {
             return this;
         }
 
-        public Animation after(Animation animation) {
-            postRunnable = animation::start;
+        public Animation chain() {
+            chain = new Animation(target);
+            chain.parent = this;
 
-            return this;
+            return chain;
         }
 
         private void progress(double progress) {
