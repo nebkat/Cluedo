@@ -27,6 +27,7 @@ package com.wolfetones.physics.body;
 import com.wolfetones.physics.Particle;
 import com.wolfetones.physics.RenderUtils;
 
+import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
@@ -72,10 +73,14 @@ public class Cube extends RigidBody {
     }
 
     protected static boolean isFrontFace(Particle[] face) {
-        double v1x = RenderUtils.screenDistance(face[0].x, face[0].z) - RenderUtils.screenDistance(face[1].x, face[1].z);
-        double v1y = RenderUtils.screenDistance(face[0].y, face[0].z) - RenderUtils.screenDistance(face[1].y, face[1].z);
-        double v2x = RenderUtils.screenDistance(face[2].x, face[2].z) - RenderUtils.screenDistance(face[1].x, face[1].z);
-        double v2y = RenderUtils.screenDistance(face[2].y, face[2].z) - RenderUtils.screenDistance(face[1].y, face[1].z);
+        Point2d p0 = RenderUtils.projectToScreen(face[0]);
+        Point2d p1 = RenderUtils.projectToScreen(face[1]);
+        Point2d p2 = RenderUtils.projectToScreen(face[2]);
+
+        double v1x = p0.x - p1.x;
+        double v1y = p0.y - p1.y;
+        double v2x = p2.x - p1.x;
+        double v2y = p2.y - p1.y;
         double cross = v1x * v2y - v1y * v2x;
 
         return cross < 0;

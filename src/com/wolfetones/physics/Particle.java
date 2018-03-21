@@ -28,6 +28,7 @@ import com.wolfetones.physics.behavior.Behavior;
 import com.wolfetones.physics.constraint.Constraint;
 
 import javax.vecmath.Matrix3d;
+import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 import java.awt.*;
@@ -137,10 +138,9 @@ public class Particle extends Point3d {
     }
 
     public void draw(Graphics2D g) {
-        double px = RenderUtils.screenDistance(x, z);
-        double py = RenderUtils.screenDistance(y, z);
+        Point2d p = RenderUtils.projectToScreen(this);
 
         g.setColor(Color.RED);
-        g.fillOval((int) (px - 3), (int) (py - 3), 6, 6);
+        g.fillOval((int) (p.x - 3), (int) (p.y - 3), 6, 6);
     }
 }

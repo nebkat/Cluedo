@@ -27,6 +27,7 @@ package com.wolfetones.physics.spring;
 import com.wolfetones.physics.Particle;
 import com.wolfetones.physics.RenderUtils;
 
+import javax.vecmath.Point2d;
 import javax.vecmath.Vector3d;
 import java.awt.*;
 import java.awt.geom.Line2D;
@@ -84,14 +85,12 @@ public class Spring {
     }
 
     public void draw(Graphics2D g) {
-        double ax = RenderUtils.screenDistance(a.x, a.z);
-        double ay = RenderUtils.screenDistance(a.y, a.z);
-        double bx = RenderUtils.screenDistance(b.x, b.z);
-        double by = RenderUtils.screenDistance(b.y, b.z);
+        Point2d pa = RenderUtils.projectToScreen(a);
+        Point2d pb = RenderUtils.projectToScreen(b);
 
         g.setColor(Color.BLUE);
 
-        Line2D.Double line = new Line2D.Double(ax, ay, bx, by);
+        Line2D.Double line = new Line2D.Double(pa.x, pa.y, pb.x, pb.y);
         g.draw(line);
     }
 }

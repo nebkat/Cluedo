@@ -48,9 +48,10 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int FRAMES_PER_SECOND = 60;
     private static final int NUM_DICE = Game.NUM_DICE;
 
-    private static final double GRAVITY = (double) Config.screenRelativeSize(10) / 20;
-    private static final int FLOOR_DEPTH = -Config.screenRelativeSize(1000);
-    private static final int CUBE_SIZE = Config.screenRelativeSize(75);
+    private static final double GRAVITY = 0.5;
+    private static final int FLOOR_DEPTH = -1000;
+    private static final int CUBE_SIZE = 75;
+    private static final int SCREEN_CUBE_SIZE = Config.screenRelativeSize(CUBE_SIZE);
 
     private final Object mDiceMovingLock = new Object();
     private final Object mWaitForAnimationLock = new Object();
@@ -66,7 +67,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
 
     private int mTotalValue;
     private float mTotalTextAlpha = 0;
-    private Font mTextFont = new Font(Font.SANS_SERIF, Font.BOLD, CUBE_SIZE);
+    private Font mTextFont = new Font(Font.SANS_SERIF, Font.BOLD, SCREEN_CUBE_SIZE);
 
     public DicePanel() {
         super();
@@ -92,31 +93,16 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                         new Vector3d(0, 0, -1)), 1, 1));
 
         // Walls
-        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(getWidth() / 2, 0)), 1.0, 1.0));
-        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(-getWidth() / 2, 0)), 1.0, 1.0));
-        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(0, getHeight() / 2)), 1.0, 1.0));
-        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(0, -getHeight() / 2)), 1.0, 1.0));
+        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(getWidth() / Config.screenRelativeSize(2.0), 0)), 1.0, 1.0));
+        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(-getWidth() / Config.screenRelativeSize(2.0), 0)), 1.0, 1.0));
+        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(0, getHeight() / Config.screenRelativeSize(2.0))), 1.0, 1.0));
+        mPhysics.addConstraint(new PlaneConstraint(RenderUtils.getPlaneFromCameraToPoint(new Point2d(0, -getHeight() / Config.screenRelativeSize(2.0))), 1.0, 1.0));
 
         // Dice
         for (int i = 0; i < NUM_DICE; i++) {
             mDices[i] = new Dice(new Point3d(0, 0, 0), CUBE_SIZE);
             mPhysics.addBody(mDices[i]);
         }
-    }
-
-    private Matrix3d randomRotationMatrix() {
-        Matrix3d transform = new Matrix3d();
-        transform.setIdentity();
-
-        Matrix3d rotate = new Matrix3d();
-        rotate.rotX(Math.random() * 2 * Math.PI);
-        transform.mul(rotate);
-        rotate.rotY(Math.random() * 2 * Math.PI);
-        transform.mul(rotate);
-        rotate.rotZ(Math.random() * 2 * Math.PI);
-        transform.mul(rotate);
-
-        return transform;
     }
 
     public int rollDice(int[] diceValues, boolean waitForAnimation) {
@@ -128,87 +114,19 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         mAlpha = 0;
         mTotalTextAlpha = 0;
 
-        // Translation of previous dice
-        Vector3d previousTranslate = null;
-        Vector3d previousTranslateDistance = new Vector3d();
-        for (Dice dice : mDices) {
-            // Reset dice position
-            dice.reset();
-
-            // Rotate by random amount without velocity
-            dice.transform(randomRotationMatrix(), true);
-
-            // Rotate by random amount with velocity
-            dice.transform(randomRotationMatrix());
-
-            // Apply force in random direction, ensuring sufficient distance between translate vectors of the two dice
-            Vector3d translate;
-            do {
-                translate = new Vector3d((Math.random() - 0.5) * Config.screenRelativeSize(15),
-                        (Math.random() - 0.5) * Config.screenRelativeSize(15), 0);
-
-                if (previousTranslate == null) {
-                    break;
-                }
-
-                previousTranslateDistance.sub(translate, previousTranslate);
-            } while (previousTranslateDistance.length() < Config.screenRelativeSize(5));
-
-            // Store translation for angle calculations
-            previousTranslate = translate;
-
-            // Apply force
-            dice.translate(translate);
-        }
+        throwDice();
 
         // Physics update task
         TimerTask physicsTick = new TimerTask() {
             @Override
             public void run() {
                 mPhysics.update();
-                repaint();
+                repaintDice();
             }
         };
 
         // Check for dice movement task
-        TimerTask checkDiceTick = new TimerTask() {
-            private double[] previousAverageVelocity = new double[NUM_DICE];
-            private Point3d[] previousCenters = new Point3d[NUM_DICE];
-
-            @Override
-            public void run() {
-                boolean moved = false;
-                for (int i = 0; i < NUM_DICE; i++) {
-                    Dice dice = mDices[i];
-
-                    double averageVelocity = 0;
-                    Point3d center = dice.getCenter();
-                    for (Particle particle : dice.getParticles()) {
-                        averageVelocity += particle.distance(particle.previousPosition);
-                    }
-
-                    // Only perform checks if movement has not been detected in previous dice
-                    if (!moved) {
-                        // Dice has moved if it's center has moved by 0.5, or velocity has changed by 0.05
-                        if (previousCenters[i] == null ||
-                                previousCenters[i].distance(center) > 0.5 ||
-                                Math.abs(previousAverageVelocity[i] - averageVelocity) > 0.05) {
-                            moved = true;
-                        }
-                    }
-
-                    previousAverageVelocity[i] = averageVelocity;
-                    previousCenters[i] = center;
-                }
-
-                if (!moved) {
-                    // If dices have not moved release lock
-                    synchronized (mDiceMovingLock) {
-                        mDiceMovingLock.notifyAll();
-                    }
-                }
-            }
-        };
+        TimerTask checkDiceTick = new CheckDiceTask();
 
         // Force finish after timeout
         TimerTask forceFinishTask = new TimerTask() {
@@ -230,8 +148,9 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         mTimer.scheduleAtFixedRate(checkDiceTick, 500, 250);
         mTimer.schedule(forceFinishTask, 5000);
 
+        // Fade in
         Animator.getInstance().animate(this)
-                .fade(1.0)
+                .fadeIn()
                 .setDuration(400)
                 .setInterpolator(Animator::easeInCubic)
                 .start();
@@ -268,6 +187,104 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         Vector3d[] moveToCenterTranslateDeltas = new Vector3d[NUM_DICE];
         AxisAngle4d[] moveToCenterTransformDeltas = new AxisAngle4d[NUM_DICE];
 
+        getMoveToCenterTransformations(moveToCenterTranslateDeltas, moveToCenterTransformDeltas);
+
+        Animator.getInstance().animate(this)
+                .animate(0.0, 1.0, new Consumer<>() {
+                    double previousInterpolation = 0;
+
+                    Vector3d translation = new Vector3d();
+                    AxisAngle4d rotation = new AxisAngle4d();
+                    Matrix3d transform = new Matrix3d();
+
+                    @Override
+                    public void accept(Double interpolation) {
+                        double scale = interpolation - previousInterpolation;
+
+                        previousInterpolation = interpolation;
+
+                        for (int i = 0; i < NUM_DICE; i++) {
+                            translation.scale(scale, moveToCenterTranslateDeltas[i]);
+                            rotation.set(moveToCenterTransformDeltas[i]);
+                            rotation.angle *= scale;
+
+                            transform.set(rotation);
+
+                            mDices[i].translate(translation, true);
+                            mDices[i].transform(transform, true);
+                        }
+
+                        repaintDice();
+                    }
+                })
+                .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
+                .setDuration(1500)
+                .after(Animator.getInstance().animate(this)
+                        .fadeOut()
+                        .after(() -> {
+                            setVisible(false);
+                            if (waitForAnimation) {
+                                synchronized (mWaitForAnimationLock) {
+                                    mWaitForAnimationLock.notifyAll();
+                                }
+                            }
+                        })
+                        .setDuration(500)
+                        .setDelay(1000)
+                        .setInterpolator(Animator::easeOutCubic)
+                )
+                .start();
+
+        // Wait for dice to fade out
+        if (waitForAnimation) {
+            try {
+                synchronized (mWaitForAnimationLock) {
+                    mWaitForAnimationLock.wait();
+                }
+            } catch (InterruptedException e) {
+                // Ignore
+            }
+        }
+
+        return mTotalValue;
+    }
+
+    private void throwDice() {
+        // Translation of previous dice
+        Vector3d previousTranslate = null;
+        Vector3d previousTranslateDistance = new Vector3d();
+        for (Dice dice : mDices) {
+            // Reset dice position
+            dice.reset();
+
+            // Rotate by random amount without velocity
+            dice.transform(randomRotationMatrix(), true);
+
+            // Rotate by random amount with velocity
+            dice.transform(randomRotationMatrix());
+
+            // Apply force in random direction, ensuring sufficient distance between translate vectors of the two dice
+            Vector3d translate;
+            do {
+                translate = new Vector3d((Math.random() - 0.5) * 15,
+                        (Math.random() - 0.5) * 15, 0);
+
+                if (previousTranslate == null) {
+                    break;
+                }
+
+                previousTranslateDistance.sub(translate, previousTranslate);
+            } while (previousTranslateDistance.length() < 5);
+
+            // Store translation for angle calculations
+            previousTranslate = translate;
+
+            // Apply force
+            dice.translate(translate);
+        }
+    }
+
+    private void getMoveToCenterTransformations(Vector3d[] moveToCenterTranslateDeltas, AxisAngle4d[] moveToCenterTransformDeltas) {
         // Whether to put first dice on left or right
         boolean reverseOrder = mDices[1].getCenter().x < mDices[0].getCenter().x;
         for (int i = 0; i < NUM_DICE; i++) {
@@ -303,65 +320,6 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             AxisAngle4d transform = new AxisAngle4d(rotationNormal.x, rotationNormal.y, rotationNormal.z, rotationAngle);
             moveToCenterTransformDeltas[i] = transform;
         }
-
-        Animator.getInstance().animate(this)
-                .animate(0.0, 1.0, new Consumer<>() {
-                    double previousInterpolation = 0;
-
-                    Vector3d translation = new Vector3d();
-                    AxisAngle4d rotation = new AxisAngle4d();
-                    Matrix3d transform = new Matrix3d();
-
-                    @Override
-                    public void accept(Double interpolation) {
-                        double scale = interpolation - previousInterpolation;
-
-                        previousInterpolation = interpolation;
-
-                        for (int i = 0; i < NUM_DICE; i++) {
-                            translation.scale(scale, moveToCenterTranslateDeltas[i]);
-                            rotation.set(moveToCenterTransformDeltas[i]);
-                            rotation.angle *= scale;
-
-                            transform.set(rotation);
-
-                            mDices[i].translate(translation, true);
-                            mDices[i].transform(transform, true);
-                        }
-
-                        repaint();
-                    }
-                })
-                .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
-                .setDuration(1500)
-                .after(Animator.getInstance().animate(this)
-                        .fade(0.0)
-                        .after(() -> {
-                            setVisible(false);
-                            if (waitForAnimation) {
-                                synchronized (mWaitForAnimationLock) {
-                                    mWaitForAnimationLock.notifyAll();
-                                }
-                            }
-                        })
-                        .setDuration(500)
-                        .setDelay(1000)
-                        .setInterpolator(Animator::easeOutCubic)
-                )
-                .start();
-
-        // Wait for dice to fade out
-        if (waitForAnimation) {
-            try {
-                synchronized (mWaitForAnimationLock) {
-                    mWaitForAnimationLock.wait();
-                }
-            } catch (InterruptedException e) {
-                // Ignore
-            }
-        }
-
-        return mTotalValue;
     }
 
     public void forceFinish() {
@@ -390,10 +348,30 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         setVisible(false);
     }
 
+    private void repaintDice() {
+        for (Dice dice : mDices) {
+            Point2d p = RenderUtils.projectToScreen(dice.getCenter());
+
+            repaint((int) p.x + getWidth() / 2 - SCREEN_CUBE_SIZE,
+                    (int) p.y + getHeight() / 2 - SCREEN_CUBE_SIZE,
+                    SCREEN_CUBE_SIZE * 2,
+                    SCREEN_CUBE_SIZE * 2);
+        }
+
+        if (mTotalTextAlpha > 0) {
+            repaint(getWidth() / 2 - SCREEN_CUBE_SIZE / 2,
+                    getHeight() / 2 - SCREEN_CUBE_SIZE / 2,
+                    SCREEN_CUBE_SIZE * 5, SCREEN_CUBE_SIZE);
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics gg) {
         super.paintComponent(gg);
         Graphics2D g = (Graphics2D) gg;
+
+        //g.setColor(Math.random() > 0.5 ? Color.DARK_GRAY : Color.LIGHT_GRAY);
+        //g.fillRect(0, 0, getWidth(), getHeight());
 
         // Enable anti-aliasing
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -402,7 +380,9 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         g.translate(getWidth() / 2, getHeight() / 2);
 
         // Fade in/out
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mAlpha));
+        if (mAlpha < 1) {
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mAlpha));
+        }
 
         // Draw dice
         for (Dice dice : mDices) {
@@ -417,8 +397,8 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             g.setColor(Color.BLACK);
 
             Util.drawCenteredString("+", 0, 0, 0, 0, g);
-            Util.drawCenteredString("=", 2 * CUBE_SIZE, 0, 0, 0, g);
-            Util.drawCenteredString(Integer.toString(mTotalValue), (int) (2.5 * CUBE_SIZE), 0, -1, 0, g);
+            Util.drawCenteredString("=", 2 * SCREEN_CUBE_SIZE, 0, 0, 0, g);
+            Util.drawCenteredString(Integer.toString(mTotalValue), (int) (2.5 * SCREEN_CUBE_SIZE), 0, -1, 0, g);
         }
     }
 
@@ -430,6 +410,61 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     @Override
     public void setAlpha(double alpha) {
         mAlpha = (float) alpha;
-        repaint();
+
+        repaintDice();
+    }
+
+    private Matrix3d randomRotationMatrix() {
+        Matrix3d transform = new Matrix3d();
+        transform.setIdentity();
+
+        Matrix3d rotate = new Matrix3d();
+        rotate.rotX(Math.random() * 2 * Math.PI);
+        transform.mul(rotate);
+        rotate.rotY(Math.random() * 2 * Math.PI);
+        transform.mul(rotate);
+        rotate.rotZ(Math.random() * 2 * Math.PI);
+        transform.mul(rotate);
+
+        return transform;
+    }
+
+    private class CheckDiceTask extends TimerTask {
+        private double[] previousAverageVelocity = new double[NUM_DICE];
+        private Point3d[] previousCenters = new Point3d[NUM_DICE];
+
+        @Override
+        public void run() {
+            boolean moved = false;
+            for (int i = 0; i < NUM_DICE; i++) {
+                Dice dice = mDices[i];
+
+                double averageVelocity = 0;
+                Point3d center = dice.getCenter();
+                for (Particle particle : dice.getParticles()) {
+                    averageVelocity += particle.distance(particle.previousPosition);
+                }
+
+                // Only perform checks if movement has not been detected in previous dice
+                if (!moved) {
+                    // Dice has moved if it's center has moved by 0.5, or velocity has changed by 0.05
+                    if (previousCenters[i] == null ||
+                            previousCenters[i].distance(center) > 0.5 ||
+                            Math.abs(previousAverageVelocity[i] - averageVelocity) > 0.05) {
+                        moved = true;
+                    }
+                }
+
+                previousAverageVelocity[i] = averageVelocity;
+                previousCenters[i] = center;
+            }
+
+            if (!moved) {
+                // If dices have not moved release lock
+                synchronized (mDiceMovingLock) {
+                    mDiceMovingLock.notifyAll();
+                }
+            }
+        }
     }
 }

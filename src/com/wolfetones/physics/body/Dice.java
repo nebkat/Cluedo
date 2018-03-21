@@ -107,13 +107,12 @@ public class Dice extends Cube {
              */
             polygon.reset();
             for (Particle particle : face) {
-                double px = RenderUtils.screenDistance(particle.x, particle.z);
-                double py = RenderUtils.screenDistance(particle.y, particle.z);
+                Point2d p = RenderUtils.projectToScreen(particle);
 
                 if (polygon.getCurrentPoint() == null) {
-                    polygon.moveTo(px, py);
+                    polygon.moveTo(p.x, p.y);
                 } else {
-                    polygon.lineTo(px, py);
+                    polygon.lineTo(p.x, p.y);
                 }
             }
             polygon.closePath();
@@ -169,13 +168,12 @@ public class Dice extends Cube {
                     pos.add(i);
                     pos.add(j);
 
-                    double x = RenderUtils.screenDistance(pos.x, pos.z);
-                    double y = RenderUtils.screenDistance(pos.y, pos.z);
+                    Point2d p = RenderUtils.projectToScreen(pos);
 
                     if (polygon.getCurrentPoint() == null) {
-                        polygon.moveTo(x, y);
+                        polygon.moveTo(p.x, p.y);
                     } else {
-                        polygon.lineTo(x, y);
+                        polygon.lineTo(p.x, p.y);
                     }
                 }
 

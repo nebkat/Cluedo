@@ -189,6 +189,14 @@ public class Animator {
             return this;
         }
 
+        public Animation fadeIn() {
+            return fade(1.0);
+        }
+
+        public Animation fadeOut() {
+            return fade(0.0);
+        }
+
         public Animation before(Runnable runnable) {
             preRunnable = runnable;
 
