@@ -128,6 +128,7 @@ public class GameController {
      */
     private boolean mPathFindingEnabled = false;
     private List<TileComponent> mTileComponents = new ArrayList<>();
+    private List<TokenOccupiableTile> mPreviousPath;
 
     /**
      * Scanner for reading stdin
@@ -469,6 +470,15 @@ public class GameController {
         }
     }
 
+    private void setCursor(Cursor cursor, JComponent component) {
+        if (cursor == null) {
+            mBoardCursorPanel.setBounds(0, 0, 0, 0);
+        } else {
+            mBoardCursorPanel.setCursor(cursor);
+            mBoardCursorPanel.setBounds(component.getBounds());
+        }
+    }
+
     private void setPathFindingEnabled(boolean enabled) {
         mPathFindingEnabled = enabled;
 
@@ -476,11 +486,13 @@ public class GameController {
     }
 
     private void resetPathFindingTemporaryState() {
-        for (TileComponent component : mTileComponents) {
-            component.setTemporaryBackground(null);
-        }
+        if (mPreviousPath != null) {
+            for (Tile tile : mPreviousPath) {
+                tile.getButton().setTemporaryBackground(null);
+            }
 
-        mBoardCursorPanel.setVisible(false);
+            mPreviousPath = null;
+        }
     }
 
     private void onTileClick(TileComponent tileComponent) {
@@ -504,8 +516,6 @@ public class GameController {
             setPathFindingEnabled(false);
         }
 
-        resetPathFindingTemporaryState();
-
         // Interrupt text input
         mInputPanel.inject("\3");
     }
@@ -513,11 +523,10 @@ public class GameController {
     private void onTileHover(TileComponent tileComponent) {
         if (!mPathFindingEnabled) return;
 
-        resetPathFindingTemporaryState();
-
         // Only perform path finding on valid tiles
         Tile tile = tileComponent.getTile();
         if (!(tile instanceof CorridorTile || tile instanceof RoomTile)) {
+            resetPathFindingTemporaryState();
             return;
         }
 
@@ -526,20 +535,34 @@ public class GameController {
 
         List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, Integer.MAX_VALUE);
         if (path == null) {
+            resetPathFindingTemporaryState();
             return;
         }
 
+        if (mPreviousPath != null) {
+            for (TokenOccupiableTile t : mPreviousPath) {
+                if (!path.contains(t)) {
+                    t.getButton().setTemporaryBackground(null);
+                }
+            }
+        }
+        mPreviousPath = path;
+
         boolean canMove = (path.size() - 1) <= mGame.getTurnRemainingMoves();
-        mBoardCursorPanel.setVisible(true);
-        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(canMove ? Cursor.HAND_CURSOR : Cursor.CROSSHAIR_CURSOR));
+        setCursor(Cursor.getPredefinedCursor(canMove ? Cursor.HAND_CURSOR : Cursor.CROSSHAIR_CURSOR),
+                path.get(path.size() - 1).getButton());
 
         for (int i = 0; i < path.size(); i++) {
             // Colour valid tiles in path green, invalid tiles in red
+            TileComponent button = path.get(i).getButton();
+            boolean active = i == (path.size() - 1);
+            Color color;
             if (i <= mGame.getTurnRemainingMoves()) {
-                path.get(i).getButton().setTemporaryBackground(i < (path.size() - 1) ? Color.GREEN.darker() : Color.GREEN);
+                color = active ? TileComponent.COLOR_PATHFINDING_VALID_ACTIVE : TileComponent.COLOR_PATHFINDING_VALID;
             } else {
-                path.get(i).getButton().setTemporaryBackground(i < (path.size() - 1) ? Color.RED.darker() : Color.RED);
+                color = active ? TileComponent.COLOR_PATHFINDING_INVALID_ACTIVE : TileComponent.COLOR_PATHFINDING_INVALID;
             }
+            button.setTemporaryBackground(color);
         }
     }
 
@@ -821,9 +844,7 @@ public class GameController {
         // Add cursor panel
         mBoardCursorPanel = new JPanel();
         mBoardLayeredPane.add(mBoardCursorPanel, BOARD_LAYER_CURSOR);
-        mBoardCursorPanel.setBounds(boardBounds);
         mBoardCursorPanel.setOpaque(false);
-        mBoardCursorPanel.setVisible(false);
 
         // Add players panel
         mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), (int) (1.9 * mTileSize), boardDimension.width);
@@ -846,8 +867,7 @@ public class GameController {
         System.out.println("Click on board to skip");
 
         // Show cursor panel to allow force finishing dice roll
-        mBoardCursorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        mBoardCursorPanel.setVisible(true);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR), mBoardTilePanel);
         MouseAdapter interruptDiceClickListener = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -954,7 +974,7 @@ public class GameController {
         }
 
         // Hide cursor panel
-        mBoardCursorPanel.setVisible(false);
+        setCursor(null, null);
         mBoardCursorPanel.removeMouseListener(interruptDiceClickListener);
     }
 }

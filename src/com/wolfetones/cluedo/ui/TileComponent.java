@@ -38,6 +38,11 @@ public class TileComponent extends JComponent {
     public static final Color COLOR_PASSAGE = Color.decode("#756e5c");
     public static final Color COLOR_EMPTY = Color.decode("#4f8967");
 
+    public static final Color COLOR_PATHFINDING_VALID = Color.GREEN.darker();
+    public static final Color COLOR_PATHFINDING_VALID_ACTIVE = Color.GREEN;
+    public static final Color COLOR_PATHFINDING_INVALID = Color.RED.darker();
+    public static final Color COLOR_PATHFINDING_INVALID_ACTIVE = Color.RED;
+
     private final Tile mTile;
 
     private Color mTemporaryBackground;
@@ -55,6 +60,10 @@ public class TileComponent extends JComponent {
     }
 
     public void setTemporaryBackground(Color color) {
+        if (mTemporaryBackground == color) {
+            return;
+        }
+
         mTemporaryBackground = color;
 
         repaint();
