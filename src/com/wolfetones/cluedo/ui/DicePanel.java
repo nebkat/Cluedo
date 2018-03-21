@@ -73,7 +73,6 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         super();
 
         setOpaque(false);
-        setVisible(false);
     }
 
     public void initPhysics() {
@@ -106,9 +105,6 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     }
 
     public int rollDice(int[] diceValues, boolean waitForAnimation) {
-        // Show panel
-        setVisible(true);
-
         // Reset status
         mForceFinish = false;
         mAlpha = 0;
@@ -342,7 +338,8 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             mWaitForAnimationLock.notifyAll();
         }
 
-        setVisible(false);
+        mAlpha = 0;
+        repaint();
     }
 
     private void repaintDice() {
