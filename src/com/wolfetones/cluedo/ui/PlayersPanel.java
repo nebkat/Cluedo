@@ -24,6 +24,8 @@
 
 package com.wolfetones.cluedo.ui;
 
+import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 
@@ -46,6 +48,12 @@ public class PlayersPanel extends JPanel {
         private TextBubble bubble;
     }
 
+    private Player mActivePlayer;
+
+    private static final double TOKEN_HIGHLIGHT_TOKEN_RATIO = 180.0/170.0;
+    private int mTokenHighlightOffset;
+    private JComponent mTokenHighlight;
+
     @SuppressWarnings("SuspiciousNameCombination")
     public PlayersPanel(List<Player> players, int iconWidth) {
         super();
@@ -61,7 +69,7 @@ public class PlayersPanel extends JPanel {
 
             PlayerComponents components = new PlayerComponents();
 
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, Config.screenRelativeSize(2)));
             components.panel = panel;
             panel.setOpaque(false);
 
@@ -73,11 +81,20 @@ public class PlayersPanel extends JPanel {
             components.bubble = bubble;
             panel.add(bubble);
 
-            panel.setLocation(0, i * iconWidth);
+            panel.setSize(panel.getPreferredSize());
+            panel.setLocation(0, i * panel.getHeight());
             add(panel);
 
             mPlayerComponents.put(player, components);
         }
+
+        mTokenHighlight = new ScaledImageComponent(Util.loadImage("token-highlight.png"),
+                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth),
+                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth));
+        mTokenHighlightOffset = (int)((TOKEN_HIGHLIGHT_TOKEN_RATIO - 1.0) * iconWidth / 2);
+        mTokenHighlight.setLocation(-mTokenHighlightOffset, -mTokenHighlightOffset + Config.screenRelativeSize(2));
+
+        add(mTokenHighlight);
     }
 
     public void rearrangePlayers(List<Player> players) {
@@ -95,16 +112,42 @@ public class PlayersPanel extends JPanel {
         }
     }
 
-    public void setActivePlayers(List<Player> players) {
-        mPlayerComponents.forEach((key, value) -> value.icon.setSelected(players.contains(key)));
-    }
-
     public void setActivePlayer(Player player) {
-        mPlayerComponents.forEach((key, value) -> value.icon.setSelected(player == null || key == player));
+        if (mActivePlayer == player) {
+            return;
+        }
+
+        int targetX;
+        int targetY;
+
+        int initialX = mTokenHighlight.getX();
+        int initialY;
+
+        if (player != null) {
+            targetX = -mTokenHighlightOffset;
+            targetY = mPlayerComponents.get(player).panel.getY() - mTokenHighlightOffset + Config.screenRelativeSize(2);
+        } else {
+            targetX = -mTokenHighlight.getWidth();
+            targetY = mTokenHighlight.getY();
+        }
+
+        if (mActivePlayer != null) {
+            initialY = mTokenHighlight.getY();
+        } else {
+            initialY = targetY;
+        }
+
+        Animator.getInstance().animateAndInterruptAll(mTokenHighlight)
+                .translate(initialX, initialY, targetX, targetY)
+                .setDuration(300)
+                .start();
+
+        mActivePlayer = player;
     }
 
     public void setPlayerEliminated(Player player, boolean eliminated) {
         mPlayerComponents.get(player).icon.setEliminated(eliminated);
+        mPlayerComponents.get(player).bubble.hideBubble();
     }
 
     public void showDiceRollResult(Player player, int roll) {
@@ -154,25 +197,10 @@ public class PlayersPanel extends JPanel {
     }
 
     private static class PlayerIconComponent extends ScaledImageComponent {
-        private boolean mSelected = false;
         private boolean mEliminated = false;
 
-        private BufferedImage mFilteredImage;
-
-        private PlayerIconComponent(BufferedImage image, int width, int height) {
+        public PlayerIconComponent(BufferedImage image, int width, int height) {
             super(image, width, height);
-
-            mFilteredImage = new BufferedImage(
-                    mImage.getWidth(), mImage.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
-
-            ColorConvertOp op = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
-            op.filter(mImage, mFilteredImage);
-        }
-
-        private void setSelected(boolean selected) {
-            mSelected = selected;
-            repaint();
         }
 
         private void setEliminated(boolean eliminated) {
@@ -185,10 +213,10 @@ public class PlayersPanel extends JPanel {
             Graphics2D g = (Graphics2D) gg;
 
             if (mEliminated) {
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
             }
 
-            g.drawImage(mSelected ? mImage : mFilteredImage, 0, 0, null);
+            g.drawImage(mImage, 0, 0, null);
         }
     }
 }

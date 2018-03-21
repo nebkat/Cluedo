@@ -164,16 +164,30 @@ public class Animator {
                 Translatable component = (Translatable) target;
                 int initialX = component.getX();
                 int initialY = component.getY();
-                animate(0.0, 1.0,
-                        progress -> component.setLocation((int) interpolate(initialX, x, progress),
-                                (int) interpolate(initialY, y, progress)));
+                return translate(initialX, initialY, x, y);
             } else {
                 Component component = (Component) target;
                 int initialX = component.getX();
                 int initialY = component.getY();
+                return translate(initialX, initialY, x, y);
+            }
+        }
+
+        public Animation translate(int fromX, int fromY, int toX, int toY) {
+            if (!(target instanceof Translatable || target instanceof Component)) {
+                throw new IllegalArgumentException("Component does not implement Translatable interface");
+            }
+
+            if (target instanceof Translatable) {
+                Translatable component = (Translatable) target;
                 animate(0.0, 1.0,
-                        progress -> component.setLocation((int) interpolate(initialX, x, progress),
-                                (int) interpolate(initialY, y, progress)));
+                        progress -> component.setLocation((int) interpolate(fromX, toX, progress),
+                                (int) interpolate(fromY, toY, progress)));
+            } else {
+                Component component = (Component) target;
+                animate(0.0, 1.0,
+                        progress -> component.setLocation((int) interpolate(fromX, toX, progress),
+                                (int) interpolate(fromY, toY, progress)));
             }
 
             return this;
