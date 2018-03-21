@@ -849,7 +849,7 @@ public class GameController {
         mBoardCursorPanel.setOpaque(false);
 
         // Add players panel
-        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), sidePanelWidth, boardDimension.width);
+        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), sidePanelWidth);
         mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
         mPlayersPanel.setBounds(boardBounds);
 

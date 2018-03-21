@@ -47,14 +47,14 @@ public class PlayersPanel extends JPanel {
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
-    public PlayersPanel(List<Player> players, int iconWidth, int panelWidth) {
+    public PlayersPanel(List<Player> players, int iconWidth) {
         super();
 
         mPlayers = players;
 
         setOpaque(false);
 
-        setLayout(null);
+        setLayout(new SimpleLayoutManager());
 
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
@@ -74,7 +74,6 @@ public class PlayersPanel extends JPanel {
             panel.add(bubble);
 
             panel.setLocation(0, i * iconWidth);
-            panel.setSize(panelWidth, iconWidth);
             add(panel);
 
             mPlayerComponents.put(player, components);

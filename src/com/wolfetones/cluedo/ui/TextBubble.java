@@ -91,10 +91,6 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         updateSize();
     }
 
-    private void updateSize() {
-        setSize(getPreferredSize());
-    }
-
     public void setButton(String text, Runnable action) {
         if (text == null) {
             mButton.setVisible(false);
@@ -107,6 +103,10 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         mButtonAction = action;
 
         updateSize();
+    }
+
+    private void updateSize() {
+        setSize(getPreferredSize());
     }
 
     public void showBubble() {
