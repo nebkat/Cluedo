@@ -881,21 +881,11 @@ public class GameController {
         // Store list of players that are in the current round (highest rollers or all players initially)
         List<Player> currentRoundPlayers = new ArrayList<>(mPlayers);
         while (currentRoundPlayers.size() > 1) {
-            // Players not in current round are eliminated
-            for (Player player : mPlayers) {
-                if (!currentRoundPlayers.contains(player)) {
-                    mPlayersPanel.setPlayerEliminated(player, true);
-                }
-            }
-
-            // Current highest roll
-            int highestRoll = 0;
-
             // List of players that have rolled the highest number
             List<Player> highestRollPlayers = new ArrayList<>();
 
-            // Player dice roll results for sorting
-            Map<Player, Integer> results = new HashMap<>();
+            // Current highest roll
+            int highestRoll = 0;
 
             // Each player in current round rolls
             for (Player player : currentRoundPlayers) {
@@ -904,8 +894,6 @@ public class GameController {
 
                 // Roll dice
                 int roll = mBoardDicePanel.rollDice(null, true);
-                results.put(player, roll);
-
                 System.out.println(player.getName() + " rolled " + roll);
 
                 if (roll > highestRoll) {
@@ -922,52 +910,62 @@ public class GameController {
                 mPlayersPanel.showDiceRollResult(player, roll);
             }
 
+            mPlayersPanel.setActivePlayer(null);
+
             // Wait for last player's bubble to show fully
             try {
-                Thread.sleep(1000);
+                Thread.sleep(1500);
             } catch (InterruptedException e) {
                 // Ignore
             }
 
-            // No longer highlighting any players
-            mPlayersPanel.setActivePlayers(currentRoundPlayers);
-
-            // For sorting purposes, any player not in this round rolled a 0
-            for (Player player : mPlayers) {
-                if (!currentRoundPlayers.contains(player)) {
-                    results.put(player, 0);
-                }
-            }
-
+            // Players with the highest roll must roll again
             if (highestRollPlayers.size() > 1) {
                 String names = Util.implode(highestRollPlayers.stream().map(Player::getName).collect(Collectors.toList()), ", ", " and ");
 
                 System.out.println(names + " " + (highestRollPlayers.size() > 2 ? "all" : "both") + " rolled " + highestRoll + ", they must now roll again!");
             }
 
-            // Next round players are those that rolled the highest number
-            currentRoundPlayers = highestRollPlayers;
+            // Players not in next round are eliminated
+            for (Player player : mPlayers) {
+                if (!highestRollPlayers.contains(player)) {
+                    mPlayersPanel.setPlayerEliminated(player, true);
+                }
+            }
 
-            // Sort and rearrange players by their result
-            mPlayers.sort(Collections.reverseOrder(Comparator.comparingInt(results::get)));
-            mPlayersPanel.rearrangePlayers(Collections.unmodifiableList(mPlayers));
-
-            // Wait for rearrangement to complete
+            // Wait for bubbles to hide
             try {
-                Thread.sleep(2000);
+                Thread.sleep(1500);
             } catch (InterruptedException e) {
                 // Ignore
             }
 
-            // Hide bubbles for next round
             mPlayersPanel.hideBubbles();
 
             // Wait for bubbles to hide
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 // Ignore
             }
+
+            // Next round players are those that rolled the highest number
+            currentRoundPlayers = highestRollPlayers;
+        }
+
+        // Sort and rearrange players by their result
+        Player p;
+        while ((p = mPlayers.get(0)) != currentRoundPlayers.get(0)) {
+            mPlayers.remove(p);
+            mPlayers.add(p);
+        }
+        mPlayersPanel.rearrangePlayers(Collections.unmodifiableList(mPlayers));
+
+        // Wait for rearrangement to complete
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            // Ignore
         }
 
         // Players are not eliminated to start game
