@@ -74,6 +74,34 @@ public class GameController {
      */
     private static final String HIDDEN_COMMAND_PREFIX = "@";
 
+    private static final Map<String, String> HELP_COMMANDS = new HashMap<>() {
+        private void add(String command, String args, String description) {
+            String title = "| " + command;
+            if (args != null) {
+                title += " " + args;
+            }
+            title += " |";
+
+            String box = new String(new char[title.length()]).replace("\0", "-");
+
+            String text = box + "\n" + title + "\n" + box + "\n" + description + "\n";
+
+            put(command, text);
+        }
+
+        {
+            add(COMMAND_ROLL, null, "Roll dice and initiate movement. Once dice have been rolled, at least one move must be completed, and secret passages can no longer be used in the same turn.");
+            add(COMMAND_PASSAGE, null, "Use secret passage. Moves the player to the room on the opposite corner of the board. Once a secret passage has been used, no other movement is allowed.");
+            add(COMMAND_QUESTION, "(#suspect #weapon)", "Make a suggestion as to who may have committed the murder in the current room. Once a question has been posed, other players are asked in clockwise order whether they have any of the cards involved in this suggestion. If they have any of the cards, they must choose to show one of them to the player who made the suggestion.");
+            add(COMMAND_ACCUSE, "(#suspect #weapon #room)", "Make a final accusation as to who committed the murder. If the final accusation is correct, the player wins, otherwise they are eliminated.");
+            add(COMMAND_NOTES, null, "Show the notes panel. Used to keep track of knowledge of what players have what cards to assist in the investigation of who committed the murder.");
+            add(COMMAND_LOG, null, "Show the suggestion history panel. Lists all suggestions and incorrect final accusations that have been made by players in the past.");
+            add(COMMAND_DONE, null, "Finish turn. Play is passed to the next active player.");
+            add(COMMAND_QUIT, null, "Quit game. Shows the correct solution to the game and exits.");
+            if (CHEAT_ENABLED) add(COMMAND_CHEAT, null, "Shows the correct solution to the game.");
+        }
+    };
+
     /**
      * Commands that can be executed by the user
      */
@@ -86,6 +114,7 @@ public class GameController {
     public static final String COMMAND_NOTES = "notes";
     public static final String COMMAND_LOG = "log";
     public static final String COMMAND_CHEAT = "cheat";
+    public static final String COMMAND_HELP = "help";
 
     public static final String COMMAND_LEFT = "l";
     public static final String COMMAND_UP = "u";
@@ -177,7 +206,7 @@ public class GameController {
      * @param validCommands Valid commands
      * @return The command that the user entered
      */
-    private String readCommand(String question, String... validCommands) {
+    private String[] readCommand(String question, String... validCommands) {
         return readCommand(question, Arrays.asList(validCommands));
     }
 
@@ -188,9 +217,12 @@ public class GameController {
      * @param validCommandsList Valid commands
      * @return The command that the user entered
      */
-    private String readCommand(String question, List<String> validCommandsList) {
+    private String[] readCommand(String question, List<String> validCommandsList) {
         // Maintain a separate list for commands that are printed, excluding hidden commands
         List<String> printedCommandsList = new ArrayList<>();
+
+        // Make copy of commands list
+        validCommandsList = new ArrayList<>(validCommandsList);
 
         // Iterate valid commands to find hidden commands
         ListIterator<String> commandIterator = validCommandsList.listIterator();
@@ -211,28 +243,33 @@ public class GameController {
 
         mInputPanel.setCommandHints(printedCommandsList);
 
-        String command;
+        String[] command;
+        String line;
         while (true) {
-            command = mInputScanner.nextLine();
+            line = mInputScanner.nextLine();
 
             // Interrupt/end of text
-            if (command.equals("\3")) {
-                return null;
+            if (line.equals("\3")) {
+                return new String[] {null};
             }
 
-            command = command.trim().toLowerCase();
+            // Trim, remove duplicate spaces, and use lower case
+            line = line.trim().replaceAll(" +", " ").toLowerCase();
 
             // Wait for text
-            if (command.length() == 0) {
+            if (line.length() == 0) {
                 continue;
             }
 
+            // Split line into command and arguments
+            command = line.split(" ");
+
             // Exit the loop if the command is valid
-            if (validCommandsList.contains(command)) {
+            if (validCommandsList.contains(command[0])) {
                 break;
             }
 
-            System.out.println("Invalid command '" + command + "'");
+            System.out.println("Invalid command '" + command[0] + "'");
         }
 
         mInputPanel.setCommandHints(null);
@@ -267,16 +304,16 @@ public class GameController {
             if (mGame.canMakeFinalAccusation()) commands.add(COMMAND_ACCUSE);
             if (mGame.isTurnFinished()) commands.add(COMMAND_DONE);
 
-            // Notes and log are always available
-            commands.add(COMMAND_NOTES);
-            commands.add(COMMAND_LOG);
-
-            // Cheat and quit are always available but hidden
+            // Cheat, quit, notes, log and help are always available but hidden
             if (CHEAT_ENABLED) commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_CHEAT);
+            commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_NOTES);
+            commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_LOG);
             commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_QUIT);
+            commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_HELP);
 
             mActionPanel.updateStatus(mGame);
-            String command = readCommand("Choose action", commands);
+            String[] args = readCommand("Choose action", commands);
+            String command = args[0];
             mActionPanel.hideAllExceptDone();
             if (command == null) {
                 // Ignore and continue
@@ -286,6 +323,32 @@ public class GameController {
                 System.exit(0);
             } else if (command.equals(COMMAND_CHEAT)) {
                 System.out.println("The solution is: " + mGame.getSolution().asHumanReadableString());
+            } else if (command.equals(COMMAND_HELP)) {
+                System.out.println("Usage: help ([command|list])");
+                if (args.length > 1) {
+                    switch (args[1]) {
+                        case "all":
+                            HELP_COMMANDS.values().forEach(System.out::println);
+                            break;
+                        case "list":
+                            HELP_COMMANDS.keySet().forEach(System.out::println);
+                            break;
+                        default:
+                            if (HELP_COMMANDS.containsKey(args[1])) {
+                                System.out.println(HELP_COMMANDS.get(args[1]));
+                            } else {
+                                System.out.println("Invalid command " + args[1] + ". To view list of all commands use `help list`");
+                            }
+                            break;
+                    }
+                } else {
+                    System.out.println("Brief help for the currently valid commands is listed below. To view help for a specific command use `help [command]`, or to view a list of commands use `help list`.");
+
+                    commands.stream().filter((c) -> !c.startsWith(HIDDEN_COMMAND_PREFIX))
+                            .forEach((c) -> System.out.println(HELP_COMMANDS.get(c)));
+                }
+
+
             } else if (command.equals(COMMAND_DONE)) {
                 break;
             } else if (command.equals(COMMAND_ROLL)) {
@@ -310,7 +373,7 @@ public class GameController {
                     for (int i = 0; i < corridorTiles.size(); i++) {
                         validCommands[i] = Integer.toString(i + 1);
                     }
-                    String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands);
+                    String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands)[0];
                     // If not interrupted by path finding/UI
                     if (entranceCommand != null) {
                         int entranceCorridor = Integer.parseInt(entranceCommand) - 1;
@@ -340,7 +403,7 @@ public class GameController {
 
                     mActionPanel.updateStatus(mGame);
 
-                    String direction = readCommand("Choose direction (or use board tiles)", validCommands);
+                    String direction = readCommand("Choose direction (or use board tiles)", validCommands)[0];
                     if (direction == null) {
                         continue;
                     }
@@ -578,7 +641,7 @@ public class GameController {
         List<String> names = cards.stream().map(Card::getShortName).collect(Collectors.toList());
         Map<String, T> map = cards.stream().collect(Collectors.toMap(Card::getShortName, Function.identity()));
 
-        String card = readCommand(question, names);
+        String card = readCommand(question, names)[0];
         return map.get(card);
     }
 

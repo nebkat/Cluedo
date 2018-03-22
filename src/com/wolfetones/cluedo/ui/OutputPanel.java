@@ -48,7 +48,7 @@ public class OutputPanel extends JTextArea {
                         Config.screenRelativeSize(10))));
 
         setBackground(Color.GRAY);
-        setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
+        setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(16)));
         setWrapStyleWord(true);
         setLineWrap(true);
 
