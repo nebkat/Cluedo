@@ -364,9 +364,6 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         super.paintComponent(gg);
         Graphics2D g = (Graphics2D) gg;
 
-        //g.setColor(Math.random() > 0.5 ? Color.DARK_GRAY : Color.LIGHT_GRAY);
-        //g.fillRect(0, 0, getWidth(), getHeight());
-
         // Enable anti-aliasing
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
