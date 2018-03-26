@@ -31,6 +31,7 @@ import com.wolfetones.cluedo.card.*;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.board.Location;
+import com.wolfetones.cluedo.game.Knowledge;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
@@ -149,9 +150,6 @@ public class GameController {
 
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
-    private JTabbedPane mLeftPane;
-    private JPanel mIOPanel;
-    private boolean mNotesPanelActive = false;
 
     private PlayersPanel mPlayersPanel;
     private ActionPanel mActionPanel;
@@ -502,10 +500,14 @@ public class GameController {
                     mPlayersPanel.setPlayerEliminated(player, true);
                 }
             } else if (command.equals(COMMAND_NOTES)) {
-                JFrame tmpNotesFrame =  new JFrame();
-                tmpNotesFrame.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards()));
-                tmpNotesFrame.pack();
-                tmpNotesFrame.setVisible(true);
+                System.out.println("N O T E S");
+                System.out.println("---------");
+
+                System.out.println();
+
+                printKnowledge(mGame.getBoard().getSuspects(), player, "SUSPECTS");
+                printKnowledge(mGame.getBoard().getWeapons(), player, "WEAPONS");
+                printKnowledge(mGame.getBoard().getRooms(), player, "ROOMS");
             } else if (command.equals(COMMAND_LOG)) {
                 List<Game.LogEntry> log = mGame.getLog();
 
@@ -545,6 +547,23 @@ public class GameController {
                 }
             }
         }
+    }
+
+    private void printKnowledge(List<? extends Card> cards, Player player, String name) {
+        System.out.println(name);
+        for (Card card : cards) {
+            System.out.print(card.getName());
+
+            System.out.print(new String(new char[18 - card.getName().length()]).replace("\0", " "));
+
+            if (mGame.getRemainingCards().contains(card)) {
+                System.out.print("A");
+            } else if (player.hasCard(card)) {
+                System.out.print("X");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     private void setCursor(Cursor cursor, JComponent component) {
@@ -787,9 +806,9 @@ public class GameController {
         mainPanel.setLayout(new BorderLayout());
         mMainFrame.setContentPane(mainPanel);
 
-        mIOPanel = new JPanel();
-        mIOPanel.setLayout(new BoxLayout(mIOPanel, BoxLayout.Y_AXIS));
-        mIOPanel.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
+        JPanel terminal = new JPanel();
+        terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
+        terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
 
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
@@ -797,39 +816,19 @@ public class GameController {
         JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
         outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        mIOPanel.add(outputScrollPane);
-        mIOPanel.add(mInputPanel);
+        terminal.add(outputScrollPane);
+        terminal.add(mInputPanel);
 
         System.setOut(new PrintStream(mOutputPanel.getOutputStream()));
         System.setIn(mInputPanel.getInputStream());
 
-        //mIOPanel = new NotesPanel(mPlayers.get(0), mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards());
-
-        mMainFrame.add(mIOPanel, BorderLayout.LINE_END);
+        mMainFrame.add(terminal, BorderLayout.LINE_END);
 
         setupBoard();
 
         mMainFrame.pack();
         mMainFrame.setLocationRelativeTo(null);
         mMainFrame.setVisible(true);
-    }
-
-    /**
-     * Toggles the left panel between the I/O terminal and the notes screen
-     * @param player Player whose notes should be displayed
-     */
-    public void toggleNotesPanel(Player player) {
-        if (mNotesPanelActive) {
-            mNotesPanelActive = false;
-        } else {
-            //mLeftPanel = new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards());
-            mMainFrame.removeAll();
-            mMainFrame.setContentPane(mainPanel);
-            mMainFrame.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards()));
-
-            mNotesPanelActive = true;
-            mMainFrame.revalidate();
-        }
     }
 
     /**

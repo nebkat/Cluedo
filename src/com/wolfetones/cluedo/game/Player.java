@@ -52,6 +52,10 @@ public class Player {
         return mKnowledge;
     }
 
+    public boolean hasCard(Card card) {
+        return mCards.contains(card);
+    }
+
     /**
      * Returns the {@code Suspect} that this player is controlling.
      *

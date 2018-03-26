@@ -92,7 +92,7 @@ public class NotesPanel extends JPanel {
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(2, 20, 2, 0);
-            if (player.hasKnowledge(suspect)) {
+            if (Math.random() < 0.5) {
                 contentFrame.add(new CheckBox("X"), c);
             } else if (remainingCards.contains(suspect)) {
                 contentFrame.add(new CheckBox("A"), c);
@@ -118,7 +118,7 @@ public class NotesPanel extends JPanel {
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(2, 20, 2, 0);
-            if (player.hasKnowledge(weapon)) {
+            if (Math.random() < 0.5) {
                 contentFrame.add(new CheckBox("X"), c);
             } else if (remainingCards.contains(weapon)) {
                 contentFrame.add(new CheckBox("A"), c);
@@ -144,7 +144,7 @@ public class NotesPanel extends JPanel {
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(2, 20, 2, 0);
-            if (player.hasKnowledge(room)) {
+            if (Math.random() < 0.5) {
                 contentFrame.add(new CheckBox("X"), c);
             } else if (remainingCards.contains(room)) {
                 contentFrame.add(new CheckBox("A"), c);
