@@ -1052,6 +1052,10 @@ public class GameController {
         // Place winning player at the top
         mPlayersPanel.setTopPlayer(currentRoundPlayers.get(0));
 
+        // Put at front of players
+        mPlayers.remove(currentRoundPlayers.get(0));
+        mPlayers.add(0, currentRoundPlayers.get(0));
+
         // Wait for rearrangement to complete
         try {
             Thread.sleep(2000);
