@@ -67,12 +67,12 @@ public class NotesPanel extends JPanel {
 
         int gridyCounter = 0;
 
-        c.fill = GridBagConstraints.HORIZONTAL;
+        /*c.fill = GridBagConstraints.HORIZONTAL;
         JButton backButton = new JButton("Back");
         c.gridx = 3;
         c.gridy = gridyCounter++;
         c.anchor = GridBagConstraints.FIRST_LINE_END;
-        contentFrame.add(backButton,c);
+        contentFrame.add(backButton,c);*/
 
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets(2, 0, 2, 0);
