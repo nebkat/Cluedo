@@ -37,11 +37,19 @@ public class Player {
 
     private List<Card> mCards = new ArrayList<>();
 
-    private Set<Card> mKnowledge = new HashSet<>();
+    private Knowledge mKnowledge;
 
     public Player(Suspect character, String name) {
         mCharacter = character;
         mName = name;
+    }
+
+    public void initiateKnowledge(List<Card> cards, List<Player> players) {
+        mKnowledge = new Knowledge(cards, players);
+    }
+
+    public Knowledge getKnowledge() {
+        return mKnowledge;
     }
 
     /**
@@ -64,26 +72,6 @@ public class Player {
      */
     public void addCard(Card card) {
         mCards.add(card);
-        mKnowledge.add(card);
-    }
-
-    /**
-     * Adds the knowledge of a card being held by somebody else to this player's knowledge map.
-     *
-     * @param card Card to add to knowledge.
-     */
-    public void addKnowledge(Card card) {
-        mKnowledge.add(card);
-    }
-
-    /**
-     * Returns {@code true} if the player knows of a player having the {@code card}.
-     *
-     * @param card Card to check.
-     * @return {@code true} if the player knows of a player having the {@code card}.
-     */
-    public boolean hasKnowledge(Card card) {
-        return mKnowledge.contains(card);
     }
 
     /**

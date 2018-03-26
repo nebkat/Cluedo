@@ -470,7 +470,7 @@ public class GameController {
                     passToPlayer(matchingPlayer, "temporarily");
 
                     Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
-                    player.addKnowledge(shownCard);
+                    player.getKnowledge().setHolding(shownCard, matchingPlayer);
 
                     passToPlayer(player, "back");
 

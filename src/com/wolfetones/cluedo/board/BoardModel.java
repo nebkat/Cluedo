@@ -25,6 +25,7 @@
 package com.wolfetones.cluedo.board;
 
 import com.wolfetones.cluedo.board.tiles.*;
+import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
@@ -188,6 +189,15 @@ public class BoardModel {
      */
     public Tile getTile(int x, int y) {
         return mTiles[y][x];
+    }
+
+    public List<Card> getCards() {
+        List<Card> cards = new ArrayList<>();
+        cards.addAll(mSuspects);
+        cards.addAll(mWeapons);
+        cards.addAll(mRooms);
+
+        return cards;
     }
 
     /**

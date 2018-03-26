@@ -155,6 +155,10 @@ public class Game {
             throw new IllegalStateException("Not enough players to start game");
         }
 
+        for (Player player : mPlayers) {
+            player.initiateKnowledge(mBoard.getCards(), mPlayers);
+        }
+
         mStarted = true;
 
         mActivePlayers = new ArrayList<>(mPlayers);
