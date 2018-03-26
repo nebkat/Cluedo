@@ -27,11 +27,11 @@ package com.wolfetones.cluedo.ui;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.*;
 
 public class Animator {
     private static final int FRAMES_PER_SECOND = 60;
+    private static final double TIME_SCALE = 1.0;
     private static final Function<Double, Double> DEFAULT_INTERPOLATOR = Animator::easeInOutQuintInterpolator;
 
     private static Animator sInstance;
@@ -49,14 +49,14 @@ public class Animator {
 
     private void startAnimation(Animation animation) {
         // Animation delays
-        animation.totalFrames = animation.duration * FRAMES_PER_SECOND / 1000;
+        animation.totalFrames = (int) (animation.duration * FRAMES_PER_SECOND / 1000 * TIME_SCALE);
         animation.remainingFrames = animation.totalFrames;
 
         if (animation.preRunnable != null) {
             animation.preRunnable.run();
         }
 
-        mTimer.scheduleAtFixedRate(animation, animation.delay, 1000 / FRAMES_PER_SECOND);
+        mTimer.scheduleAtFixedRate(animation, (int) (animation.delay * TIME_SCALE), 1000 / FRAMES_PER_SECOND);
         mAnimations.add(animation);
     }
 
@@ -111,10 +111,7 @@ public class Animator {
         private Animation parent;
         private Animation chain;
 
-        private int count = 0;
-        private List<Double> initialValues = new ArrayList<>(1);
-        private List<Double> targetValues = new ArrayList<>(1);
-        private List<Consumer<Double>> setters = new ArrayList<>(1);
+        private List<Property> properties = new ArrayList<>(1);
 
         private Animation(Object target) {
             this.target = target;
@@ -123,9 +120,16 @@ public class Animator {
         public void start() {
             if (parent != null) {
                 parent.start();
-            } else {
-                startAnimation(this);
+                return;
             }
+
+            for (Property property : properties) {
+                if (property.initialSupplier != null) {
+                    property.initial = property.initialSupplier.getAsDouble();
+                }
+            }
+
+            startAnimation(this);
         }
 
         public Animation setDuration(int duration) {
@@ -146,11 +150,26 @@ public class Animator {
             return this;
         }
 
-        public Animation animate(double from, double to, Consumer<Double> setter) {
-            initialValues.add(from);
-            targetValues.add(to);
-            setters.add(setter);
-            count++;
+        public Animation animate(DoubleSupplier from, double to, DoubleConsumer consumer) {
+            Property property = new Property();
+
+            property.initialSupplier = from;
+            property.target = to;
+            property.consumer = consumer;
+
+            properties.add(property);
+
+            return this;
+        }
+
+        public Animation animate(double from, double to, DoubleConsumer consumer) {
+            Property property = new Property();
+
+            property.initial = from;
+            property.target = to;
+            property.consumer = consumer;
+
+            properties.add(property);
 
             return this;
         }
@@ -160,17 +179,17 @@ public class Animator {
                 throw new IllegalArgumentException("Component does not implement Translatable interface");
             }
 
-            if (target instanceof Translatable) {
-                Translatable component = (Translatable) target;
-                int initialX = component.getX();
-                int initialY = component.getY();
-                return translate(initialX, initialY, x, y);
+            Translatable component;
+            if (target instanceof Component) {
+                component = new ComponentTranslatableWrapper((Component) target);
             } else {
-                Component component = (Component) target;
-                int initialX = component.getX();
-                int initialY = component.getY();
-                return translate(initialX, initialY, x, y);
+                component = (Translatable) target;
             }
+
+            animate(component::getX, x, component::setX);
+            animate(component::getY, y, component::setY);
+
+            return this;
         }
 
         public Animation translate(int fromX, int fromY, int toX, int toY) {
@@ -178,17 +197,15 @@ public class Animator {
                 throw new IllegalArgumentException("Component does not implement Translatable interface");
             }
 
-            if (target instanceof Translatable) {
-                Translatable component = (Translatable) target;
-                animate(0.0, 1.0,
-                        progress -> component.setLocation((int) interpolate(fromX, toX, progress),
-                                (int) interpolate(fromY, toY, progress)));
+            Translatable component;
+            if (target instanceof Component) {
+                component = new ComponentTranslatableWrapper((Component) target);
             } else {
-                Component component = (Component) target;
-                animate(0.0, 1.0,
-                        progress -> component.setLocation((int) interpolate(fromX, toX, progress),
-                                (int) interpolate(fromY, toY, progress)));
+                component = (Translatable) target;
             }
+
+            animate(fromX, toX, component::setX);
+            animate(fromY, toY, component::setY);
 
             return this;
         }
@@ -199,7 +216,7 @@ public class Animator {
             }
 
             Scalable component = (Scalable) target;
-            animate(component.getScale(), scale, component::setScale);
+            animate(component::getScale, scale, component::setScale);
 
             return this;
         }
@@ -210,7 +227,7 @@ public class Animator {
             }
 
             Fadable component = (Fadable) target;
-            animate(component.getAlpha(), alpha, component::setAlpha);
+            animate(component::getAlpha, alpha, component::setAlpha);
 
             return this;
         }
@@ -243,12 +260,10 @@ public class Animator {
         }
 
         private void progress(double progress) {
-            for (int i = 0; i < count; i++) {
-                double initial = initialValues.get(i);
-                double target = targetValues.get(i);
-                double interpolation = interpolate(initial, target, progress);
+            for (Property property : properties) {
+                double interpolation = interpolate(property.initial, property.target, progress);
 
-                setters.get(i).accept(interpolation);
+                property.consumer.accept(interpolation);
             }
         }
 
@@ -267,12 +282,50 @@ public class Animator {
                 stopAnimation(this);
             }
         }
+
+        private class Property {
+            DoubleSupplier initialSupplier;
+
+            double initial;
+            double target;
+
+            DoubleConsumer consumer;
+        }
+    }
+
+    private class ComponentTranslatableWrapper implements Translatable {
+        private Component mComponent;
+
+        private ComponentTranslatableWrapper(Component component) {
+            mComponent = component;
+        }
+
+        @Override
+        public double getX() {
+            return mComponent.getX();
+        }
+
+        @Override
+        public double getY() {
+            return mComponent.getY();
+        }
+
+        @Override
+        public void setX(double x) {
+            mComponent.setLocation((int) x, mComponent.getY());
+        }
+
+        @Override
+        public void setY(double y) {
+            mComponent.setLocation(mComponent.getX(), (int) y);
+        }
     }
 
     public interface Translatable {
-        int getX();
-        int getY();
-        void setLocation(int x, int y);
+        double getX();
+        double getY();
+        void setX(double x);
+        void setY(double y);
     }
 
     public interface Scalable {

@@ -43,6 +43,7 @@ import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int FRAMES_PER_SECOND = 60;
@@ -186,7 +187,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         getMoveToCenterTransformations(moveToCenterTranslateDeltas, moveToCenterTransformDeltas);
 
         Animator.getInstance().animate(this)
-                .animate(0.0, 1.0, new Consumer<>() {
+                .animate(0.0, 1.0, new DoubleConsumer() {
                     double previousInterpolation = 0;
 
                     Vector3d translation = new Vector3d();
@@ -194,7 +195,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                     Matrix3d transform = new Matrix3d();
 
                     @Override
-                    public void accept(Double interpolation) {
+                    public void accept(double interpolation) {
                         double scale = interpolation - previousInterpolation;
 
                         previousInterpolation = interpolation;
@@ -213,7 +214,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                         repaintDice();
                     }
                 })
-                .animate(0.0, 1.0, progress -> mTotalTextAlpha = progress.floatValue())
+                .animate(0.0, 1.0, progress -> mTotalTextAlpha = (float) progress)
                 .setDuration(1500)
             .chain()
                 .fadeOut()

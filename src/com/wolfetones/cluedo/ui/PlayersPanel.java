@@ -38,6 +38,7 @@ import java.util.*;
 import java.util.List;
 
 public class PlayersPanel extends JPanel {
+    private int mTopPlayer = 0;
     private List<Player> mPlayers;
 
     private Map<Player, PlayerComponents> mPlayerComponents = new HashMap<>();
@@ -97,16 +98,18 @@ public class PlayersPanel extends JPanel {
         add(mTokenHighlight);
     }
 
-    public void rearrangePlayers(List<Player> players) {
-        mPlayers = players;
+    public void setTopPlayer(Player topPlayer) {
+        mTopPlayer = mPlayers.indexOf(topPlayer);
 
-        for (int i = 0; i < players.size(); i++) {
-            Player player = players.get(i);
+        for (int i = 0; i < mPlayers.size(); i++) {
+            Player player = mPlayers.get(i);
 
             JPanel panel = mPlayerComponents.get(player).panel;
 
+            int newIndex = (i - mTopPlayer + mPlayers.size()) % mPlayers.size();
+
             Animator.getInstance().animateAndInterruptAll(panel)
-                    .translate(0, i * panel.getHeight())
+                    .translate(0, newIndex * panel.getHeight())
                     .setDuration(1500)
                     .start();
         }
@@ -150,10 +153,10 @@ public class PlayersPanel extends JPanel {
         mPlayerComponents.get(player).bubble.hideBubble();
     }
 
-    public void showDiceRollResult(Player player, int roll) {
+    public void showBubble(Player player, String text) {
         TextBubble bubble = mPlayerComponents.get(player).bubble;
 
-        bubble.setText("I rolled " + roll);
+        bubble.setText(text);
         bubble.showBubble();
     }
 

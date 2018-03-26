@@ -284,7 +284,7 @@ public class GameController {
     private void performTurn() {
         Player player = mGame.nextTurn();
 
-        mPlayersPanel.setActivePlayer(player);
+        mPlayersPanel.setTopPlayer(player);
         mPlayersPanel.hideBubbles();
         passToPlayer(player, null);
 
@@ -356,11 +356,12 @@ public class GameController {
                 mBoardDicePanel.rollDice(dice, false);
 
                 // Game will read dice values from dice array if they are not 0
-                int remainingMovements = mGame.rollDice(dice);
+                int remainingMoves = mGame.rollDice(dice);
 
-                mActionPanel.updateStatus(mGame);
+                mPlayersPanel.showBubble(player, "I rolled " + remainingMoves);
+                System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMoves);
 
-                System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMovements);
+                System.out.println("Click on board tiles to move, or alternatively:");
 
                 setPathFindingEnabled(true);
 
@@ -390,7 +391,7 @@ public class GameController {
                 Tile moveTile = null;
                 CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
                 List<String> validCommands = new ArrayList<>(5);
-                while (mGame.getTurnRemainingMoves() > 0) {
+                while ((remainingMoves = mGame.getTurnRemainingMoves()) > 0) {
                     validCommands.clear();
                     if (currentTile == null) {
                         throw new IllegalStateException("Current tile cannot be null");
@@ -401,9 +402,13 @@ public class GameController {
                     if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
                     if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
 
+                    // Update valid actions for stop button
                     mActionPanel.updateStatus(mGame);
 
-                    String direction = readCommand("Choose direction (or use board tiles)", validCommands)[0];
+                    // Update bubble if moved at least once
+                    if (mGame.canStopMoving()) mPlayersPanel.showBubble(player, "I have " + remainingMoves + " move" + (remainingMoves != 1 ? "s" : "") + " remaining");
+
+                    String direction = readCommand("Choose direction (remaining: " + remainingMoves + ")", validCommands)[0];
                     if (direction == null) {
                         continue;
                     }
@@ -441,6 +446,8 @@ public class GameController {
 
                     mGame.moveTo(currentTile);
                 }
+
+                mPlayersPanel.hideBubbles();
 
                 setPathFindingEnabled(false);
             } else if (command.equals(COMMAND_PASSAGE)) {
@@ -970,7 +977,7 @@ public class GameController {
                 }
 
                 // Show result bubble
-                mPlayersPanel.showDiceRollResult(player, roll);
+                mPlayersPanel.showBubble(player, "I rolled " + roll);
             }
 
             mPlayersPanel.setActivePlayer(null);
@@ -1016,13 +1023,8 @@ public class GameController {
             currentRoundPlayers = highestRollPlayers;
         }
 
-        // Sort and rearrange players by their result
-        Player p;
-        while ((p = mPlayers.get(0)) != currentRoundPlayers.get(0)) {
-            mPlayers.remove(p);
-            mPlayers.add(p);
-        }
-        mPlayersPanel.rearrangePlayers(Collections.unmodifiableList(mPlayers));
+        // Place winning player at the top
+        mPlayersPanel.setTopPlayer(currentRoundPlayers.get(0));
 
         // Wait for rearrangement to complete
         try {
