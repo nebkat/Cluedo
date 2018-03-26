@@ -140,6 +140,7 @@ public class GameController {
      * Swing containers
      */
     private JFrame mMainFrame;
+    private JPanel mainPanel;
 
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
@@ -148,6 +149,9 @@ public class GameController {
 
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
+    private JTabbedPane mLeftPane;
+    private JPanel mIOPanel;
+    private boolean mNotesPanelActive = false;
 
     private PlayersPanel mPlayersPanel;
     private ActionPanel mActionPanel;
@@ -498,7 +502,10 @@ public class GameController {
                     mPlayersPanel.setPlayerEliminated(player, true);
                 }
             } else if (command.equals(COMMAND_NOTES)) {
-                // TODO
+                JFrame tmpNotesFrame =  new JFrame();
+                tmpNotesFrame.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards()));
+                tmpNotesFrame.pack();
+                tmpNotesFrame.setVisible(true);
             } else if (command.equals(COMMAND_LOG)) {
                 List<Game.LogEntry> log = mGame.getLog();
 
@@ -776,13 +783,13 @@ public class GameController {
 
         mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
-        JPanel mainPanel = new JPanel();
+        mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mMainFrame.setContentPane(mainPanel);
 
-        JPanel terminal = new JPanel();
-        terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
-        terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
+        mIOPanel = new JPanel();
+        mIOPanel.setLayout(new BoxLayout(mIOPanel, BoxLayout.Y_AXIS));
+        mIOPanel.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
 
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
@@ -790,19 +797,39 @@ public class GameController {
         JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
         outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-        terminal.add(outputScrollPane);
-        terminal.add(mInputPanel);
+        mIOPanel.add(outputScrollPane);
+        mIOPanel.add(mInputPanel);
 
         System.setOut(new PrintStream(mOutputPanel.getOutputStream()));
         System.setIn(mInputPanel.getInputStream());
 
-        mMainFrame.add(terminal, BorderLayout.LINE_END);
+        //mIOPanel = new NotesPanel(mPlayers.get(0), mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards());
+
+        mMainFrame.add(mIOPanel, BorderLayout.LINE_END);
 
         setupBoard();
 
         mMainFrame.pack();
         mMainFrame.setLocationRelativeTo(null);
         mMainFrame.setVisible(true);
+    }
+
+    /**
+     * Toggles the left panel between the I/O terminal and the notes screen
+     * @param player Player whose notes should be displayed
+     */
+    public void toggleNotesPanel(Player player) {
+        if (mNotesPanelActive) {
+            mNotesPanelActive = false;
+        } else {
+            //mLeftPanel = new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards());
+            mMainFrame.removeAll();
+            mMainFrame.setContentPane(mainPanel);
+            mMainFrame.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getRemainingCards()));
+
+            mNotesPanelActive = true;
+            mMainFrame.revalidate();
+        }
     }
 
     /**
