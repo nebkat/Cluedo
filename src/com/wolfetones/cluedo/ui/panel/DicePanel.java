@@ -56,7 +56,6 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int SCREEN_CUBE_SIZE = Config.screenRelativeSize(CUBE_SIZE);
 
     private final Object mDiceMovingLock = new Object();
-    private final Object mWaitForAnimationLock = new Object();
 
     private VerletPhysics mPhysics = new VerletPhysics(10);
 
@@ -143,7 +142,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         mTimer = new Timer();
 
         mTimer.scheduleAtFixedRate(physicsTick, 0, 1000 / FRAMES_PER_SECOND);
-        mTimer.scheduleAtFixedRate(checkDiceTick, 500, 250);
+        mTimer.scheduleAtFixedRate(checkDiceTick, 500, 100);
         mTimer.schedule(forceFinishTask, 5000);
 
         // Fade in
@@ -176,8 +175,11 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             mTotalValue += value;
         }
 
-        // Force finish
-        if (mForceFinish) {
+        // Don't wait for animation if force finished
+        if (mForceFinish && waitForAnimation) {
+            mAlpha = 0;
+            repaint();
+
             return mTotalValue;
         }
 
@@ -217,28 +219,19 @@ public class DicePanel extends JPanel implements Animator.Fadable {
                 })
                 .animate(0.0, 1.0, progress -> mTotalTextAlpha = (float) progress)
                 .setDuration(1500)
+                .setDelay(250)
             .chain()
                 .fadeOut()
-                .after(() -> {
-                    synchronized (mWaitForAnimationLock) {
-                        mWaitForAnimationLock.notifyAll();
-                    }
-                    repaint();
-                })
+                .after(this::repaint)
                 .setDuration(500)
                 .setDelay(1000)
                 .setInterpolator(Animator::easeOutCubic)
-                .start();
+                .awaitIf(waitForAnimation);
 
-        // Wait for dice to fade out
+        // Ensure repaint happens if animation is skipped
         if (waitForAnimation) {
-            try {
-                synchronized (mWaitForAnimationLock) {
-                    mWaitForAnimationLock.wait();
-                }
-            } catch (InterruptedException e) {
-                // Ignore
-            }
+            mAlpha = 0;
+            repaint();
         }
 
         return mTotalValue;
@@ -326,9 +319,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         mForceFinish = true;
 
         mTimer.cancel();
-        Animator.getInstance().interruptAllAnimations(this);
-
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < FRAMES_PER_SECOND * 10; i++) {
             mPhysics.update();
         }
 
@@ -336,12 +327,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             mDiceMovingLock.notifyAll();
         }
 
-        synchronized (mWaitForAnimationLock) {
-            mWaitForAnimationLock.notifyAll();
-        }
-
-        mAlpha = 0;
-        repaint();
+        Animator.getInstance().interruptAllAnimations(this);
     }
 
     private void repaintDice() {

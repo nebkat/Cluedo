@@ -127,13 +127,17 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         Animator.getInstance().animateAndInterruptAll(this)
                 .setDuration(250)
                 .scale(0.0)
-                .after(() -> setVisible(false))
+                .after(() -> {
+                    setVisible(false);
+                    setButton(null, null);
+                })
                 .start();
     }
 
     public void resetBubble() {
         Animator.getInstance().interruptAllAnimations(this);
         setVisible(false);
+        setButton(null, null);
         mScale = 0.0;
     }
 

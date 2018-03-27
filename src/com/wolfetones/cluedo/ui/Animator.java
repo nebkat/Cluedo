@@ -72,6 +72,10 @@ public class Animator {
             animation.chain.start();
         }
 
+        synchronized (animation.lock) {
+            animation.lock.notifyAll();
+        }
+
         mAnimations.remove(animation);
     }
 
@@ -81,6 +85,15 @@ public class Animator {
             Animation animation = iterator.next();
             if (target == null || animation.target == target) {
                 animation.cancel();
+
+                // Release all locks from this animation and it's chained children
+                Animation a = animation;
+                do {
+                    synchronized (a.lock) {
+                        a.lock.notifyAll();
+                    }
+                } while ((a = a.chain) != null);
+
                 iterator.remove();
             }
         }
@@ -111,6 +124,9 @@ public class Animator {
         private Animation parent;
         private Animation chain;
 
+        private boolean skip = false;
+        private final Object lock = new Object();
+
         private List<Property> properties = new ArrayList<>(1);
 
         private Animation(Object target) {
@@ -123,9 +139,20 @@ public class Animator {
                 return;
             }
 
-            for (Property property : properties) {
+            if (skip) {
+                return;
+            }
+
+            Iterator<Property> iterator = properties.iterator();
+            while (iterator.hasNext()) {
+                Property property = iterator.next();
                 if (property.initialSupplier != null) {
                     property.initial = property.initialSupplier.getAsDouble();
+                }
+
+                if (property.initial == property.target) {
+                    property.consumer.accept(property.target);
+                    iterator.remove();
                 }
             }
 
@@ -221,6 +248,18 @@ public class Animator {
             return this;
         }
 
+        public Animation scale(double scaleX, double scaleY) {
+            if (!(target instanceof ScalableXY)) {
+                throw new IllegalArgumentException("Target does not implement ScalableXY interface");
+            }
+
+            ScalableXY component = (ScalableXY) target;
+            animate(component::getScaleX, scaleX, component::setScaleX);
+            animate(component::getScaleY, scaleY, component::setScaleY);
+
+            return this;
+        }
+
         public Animation fade(double alpha) {
             if (!(target instanceof Fadable)) {
                 throw new IllegalArgumentException("Target does not implement Fadable interface");
@@ -259,6 +298,36 @@ public class Animator {
             return chain;
         }
 
+        public Animation skipIf(boolean condition) {
+            skip = condition;
+
+            return this;
+        }
+
+        public void await() {
+            start();
+
+            if (skip) {
+                return;
+            }
+
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {
+                    // Ignore
+                }
+            }
+        }
+
+        public void awaitIf(boolean await) {
+            if (await) {
+                await();
+            } else {
+                start();
+            }
+        }
+
         private void progress(double progress) {
             for (Property property : properties) {
                 double interpolation = interpolate(property.initial, property.target, progress);
@@ -275,10 +344,10 @@ public class Animator {
         public void run() {
             remainingFrames--;
 
-            double progress = 1.0 - ((double) remainingFrames / totalFrames);
+            double progress = totalFrames == 0 ? 1.0 : 1.0 - ((double) remainingFrames / totalFrames);
             progress(interpolator != null ? interpolator.apply(progress) : progress);
 
-            if (remainingFrames == 0) {
+            if (remainingFrames <= 0) {
                 stopAnimation(this);
             }
         }
@@ -333,9 +402,32 @@ public class Animator {
         void setScale(double scale);
     }
 
+    public interface ScalableXY {
+        double getScaleX();
+        double getScaleY();
+        void setScaleX(double scale);
+        void setScaleY(double scale);
+    }
+
     public interface Fadable {
         double getAlpha();
         void setAlpha(double alpha);
+    }
+
+    public static boolean applyTransformations(Graphics2D g, Component c, double scaleX, double scaleY, double alpha) {
+        if (alpha < 1) {
+            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) alpha));
+        }
+
+        if (scaleX == 0 || scaleY == 0) {
+            return false;
+        } else if (scaleX != 1 || scaleY != 1) {
+            g.translate(c.getWidth() / 2, c.getHeight() / 2);
+            g.scale(scaleX, scaleY);
+            g.translate(-c.getWidth() / 2, -c.getHeight() / 2);
+        }
+
+        return true;
     }
 
     public static double easeInCubic(double t) {
@@ -344,6 +436,10 @@ public class Animator {
 
     public static double easeOutCubic(double t) {
         return (--t) * t * t + 1;
+    }
+
+    public static double easeOutQuint(double t) {
+        return 1 + (--t) * t * t * t * t;
     }
 
     public static double easeInOutQuintInterpolator(double t) {

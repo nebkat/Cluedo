@@ -40,7 +40,6 @@ import java.util.*;
 import java.util.List;
 
 public class PlayersPanel extends JPanel {
-    private int mTopPlayer = 0;
     private List<Player> mPlayers;
 
     private Map<Player, PlayerComponents> mPlayerComponents = new HashMap<>();
@@ -52,6 +51,8 @@ public class PlayersPanel extends JPanel {
     }
 
     private Player mActivePlayer;
+
+    private int mItemHeight = -1;
 
     private static final double TOKEN_HIGHLIGHT_TOKEN_RATIO = 180.0/170.0;
     private int mTokenHighlightOffset;
@@ -88,6 +89,10 @@ public class PlayersPanel extends JPanel {
             panel.setLocation(0, i * panel.getHeight());
             add(panel);
 
+            if (mItemHeight < 0) {
+                mItemHeight = panel.getHeight();
+            }
+
             mPlayerComponents.put(player, components);
         }
 
@@ -101,14 +106,14 @@ public class PlayersPanel extends JPanel {
     }
 
     public void setTopPlayer(Player topPlayer) {
-        mTopPlayer = mPlayers.indexOf(topPlayer);
+        int topPlayerIndex = mPlayers.indexOf(topPlayer);
 
         for (int i = 0; i < mPlayers.size(); i++) {
             Player player = mPlayers.get(i);
 
             JPanel panel = mPlayerComponents.get(player).panel;
 
-            int newIndex = (i - mTopPlayer + mPlayers.size()) % mPlayers.size();
+            int newIndex = (i - topPlayerIndex + mPlayers.size()) % mPlayers.size();
 
             Animator.getInstance().animateAndInterruptAll(panel)
                     .translate(0, newIndex * panel.getHeight())
@@ -199,6 +204,10 @@ public class PlayersPanel extends JPanel {
 
             cardPlayerBubble.showBubble(delayCounter * 500);
         }
+    }
+
+    public int getItemHeight() {
+        return mItemHeight;
     }
 
     private static class PlayerIconComponent extends ScaledImageComponent {

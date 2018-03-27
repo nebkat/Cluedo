@@ -62,12 +62,35 @@ public class Util {
     }
 
     public static BufferedImage getScaledImage(BufferedImage image, int width, int height) {
-
         AffineTransform scaleTransform = AffineTransform.getScaleInstance((double) width / image.getWidth(), (double) height / image.getHeight());
 
         return new AffineTransformOp(scaleTransform, AffineTransformOp.TYPE_BICUBIC).filter(
                 image,
                 new BufferedImage(width, height, image.getType()));
+    }
+
+    private static BufferedImage getCompatibleImage(BufferedImage image) {
+        GraphicsConfiguration defaultGraphicsConfiguration = GraphicsEnvironment.
+                getLocalGraphicsEnvironment().getDefaultScreenDevice().
+                getDefaultConfiguration();
+
+        // If image is already using the recommended color model return it
+        if (defaultGraphicsConfiguration.getColorModel().equals(image.getColorModel())) {
+            return image;
+        }
+
+        // Create new image
+        BufferedImage compatibleImage = defaultGraphicsConfiguration.createCompatibleImage(
+                image.getWidth(),
+                image.getHeight(),
+                image.getTransparency());
+
+        // Render to new image
+        Graphics g = compatibleImage.getGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+
+        return compatibleImage;
     }
 
     public static Color getColorWithAlpha(Color color, int alpha) {
@@ -76,7 +99,7 @@ public class Util {
 
     public static BufferedImage loadImage(String image) {
         try {
-            return ImageIO.read(Util.class.getClassLoader().getResourceAsStream(image));
+            return getCompatibleImage(ImageIO.read(Util.class.getClassLoader().getResourceAsStream(image)));
         } catch (IOException | IllegalArgumentException e) {
             throw new IllegalArgumentException("Could not load image '" + image + "'");
         }

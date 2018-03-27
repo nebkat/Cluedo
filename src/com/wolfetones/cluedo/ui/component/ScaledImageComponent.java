@@ -38,6 +38,10 @@ public class ScaledImageComponent extends JComponent {
         this(image, Config.screenRelativeSize(image.getWidth()), Config.screenRelativeSize(image.getHeight()));
     }
 
+    public ScaledImageComponent(BufferedImage image, int width) {
+        this(image, width, width * image.getHeight() / image.getWidth());
+    }
+
     public ScaledImageComponent(BufferedImage image, int width, int height) {
         super();
 

@@ -41,6 +41,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.List;
@@ -66,7 +67,8 @@ public class GameController {
     private static final Integer BOARD_LAYER_DICE = 4;
     private static final Integer BOARD_LAYER_PLAYERS = 5;
     private static final Integer BOARD_LAYER_ACTIONS = 6;
-    private static final Integer BOARD_LAYER_CURSOR = 7;
+    private static final Integer BOARD_LAYER_CARDS = 7;
+    private static final Integer BOARD_LAYER_CURSOR = 8;
 
     /**
      * Prefix placed in front of commands to hide from the list of valid commands
@@ -142,7 +144,7 @@ public class GameController {
      * Swing containers
      */
     private JFrame mMainFrame;
-    private JPanel mainPanel;
+    private JPanel mMainPanel;
 
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
@@ -154,6 +156,12 @@ public class GameController {
 
     private PlayersPanel mPlayersPanel;
     private ActionPanel mActionPanel;
+    private CardDistributionPanel mCardDistributionPanel;
+
+    /**
+     * Click action
+     */
+    private MouseListener mClickAction;
 
     /**
      * Path Finding
@@ -187,12 +195,17 @@ public class GameController {
         setupPlayers();
         setupFrame();
 
+        // Dice throw animation
         throwDiceForOrder();
-
-        mInputScanner = new Scanner(System.in);
 
         mPlayers.forEach(mGame::addPlayer);
         mGame.start();
+
+        // Card distribution animation
+        distributeCards();
+
+        // Input scanner for parsing stdin
+        mInputScanner = new Scanner(System.in);
 
         // Keep performing new turns until the game is over
         while (!mGame.isFinished()) {
@@ -356,7 +369,15 @@ public class GameController {
                 break;
             } else if (command.equals(COMMAND_ROLL)) {
                 int[] dice = new int[Game.NUM_DICE];
+
+                // Show cursor panel to allow force finishing dice roll
+                setClickAction(mBoardDicePanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+                // Roll dice
                 mBoardDicePanel.rollDice(dice, false);
+
+                // Hide cursor panel
+                setClickAction(null, null, null);
 
                 // Game will read dice values from dice array if they are not 0
                 int remainingMoves = mGame.rollDice(dice);
@@ -494,6 +515,8 @@ public class GameController {
 
                 boolean correct = mGame.makeFinalAccusation(suggestion);
 
+                mCardDistributionPanel.finalAccusation(suggestion, mGame.getSolution());
+
                 if (correct) {
                     System.out.println("Congratulations! You were correct!");
                 } else {
@@ -567,17 +590,37 @@ public class GameController {
         System.out.println();
     }
 
-    private void setCursor(Cursor cursor, JComponent component) {
-        if (cursor == null) {
-            mBoardCursorPanel.setBounds(0, 0, 0, 0);
+    private void setClickAction(Runnable clickAction, Component clickArea, Cursor cursor) {
+        if (mClickAction != null) {
+            mBoardCursorPanel.removeMouseListener(mClickAction);
+            mClickAction = null;
+        }
+
+        if (clickArea != null) {
+            mBoardCursorPanel.setBounds(clickArea.getBounds());
         } else {
+            mBoardCursorPanel.setBounds(0, 0, 0, 0);
+        }
+
+        if (cursor != null) {
             mBoardCursorPanel.setCursor(cursor);
-            mBoardCursorPanel.setBounds(component.getBounds());
+        }
+
+        if (clickAction != null) {
+            mClickAction = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    clickAction.run();
+                }
+            };
+            mBoardCursorPanel.addMouseListener(mClickAction);
         }
     }
 
     private void setPathFindingEnabled(boolean enabled) {
         mPathFindingEnabled = enabled;
+
+        setClickAction(null, null, null);
 
         resetPathFindingTemporaryState();
     }
@@ -590,31 +633,6 @@ public class GameController {
 
             mPreviousPath = null;
         }
-    }
-
-    private void onTileClick(TileComponent tileComponent) {
-        if (!mPathFindingEnabled) return;
-
-        // Only perform path finding on valid tiles
-        Tile tile = tileComponent.getTile();
-        if (!(tile instanceof CorridorTile || tile instanceof RoomTile)) {
-            return;
-        }
-
-        Location targetLocation = Location.fromTile(tile);
-        Location currentLocation = mGame.getCurrentPlayerLocation();
-
-        List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, mGame.getTurnRemainingMoves());
-        if (path == null) {
-            return;
-        }
-
-        if (mGame.moveTo(targetLocation) == 0) {
-            setPathFindingEnabled(false);
-        }
-
-        // Interrupt text input
-        mInputPanel.inject("\3");
     }
 
     private void onTileHover(TileComponent tileComponent) {
@@ -646,8 +664,18 @@ public class GameController {
         mPreviousPath = path;
 
         boolean canMove = (path.size() - 1) <= mGame.getTurnRemainingMoves();
-        setCursor(Cursor.getPredefinedCursor(canMove ? Cursor.HAND_CURSOR : Cursor.CROSSHAIR_CURSOR),
-                path.get(path.size() - 1).getButton());
+        if (canMove) {
+            setClickAction(() -> {
+                if (mGame.moveTo(targetLocation) == 0) {
+                    setPathFindingEnabled(false);
+                }
+
+                // Interrupt text input
+                mInputPanel.inject("\3");
+            }, tileComponent, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        } else {
+            setClickAction(null, tileComponent, Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+        }
 
         for (int i = 0; i < path.size(); i++) {
             // Colour valid tiles in path green, invalid tiles in red
@@ -803,9 +831,9 @@ public class GameController {
 
         mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
-        mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
-        mMainFrame.setContentPane(mainPanel);
+        mMainPanel = new JPanel();
+        mMainPanel.setLayout(new BorderLayout());
+        mMainFrame.setContentPane(mMainPanel);
 
         JPanel terminal = new JPanel();
         terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
@@ -892,11 +920,6 @@ public class GameController {
 
                 component.addMouseListener(new MouseAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e) {
-                        onTileClick(component);
-                    }
-
-                    @Override
                     public void mouseEntered(MouseEvent e) {
                         onTileHover(component);
                     }
@@ -955,6 +978,26 @@ public class GameController {
         mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
         mActionPanel.setBounds(boardBounds);
         mActionPanel.updateStatus(mGame);
+
+        // Add card distribution panel
+        mCardDistributionPanel = new CardDistributionPanel();
+        mBoardLayeredPane.add(mCardDistributionPanel, BOARD_LAYER_CARDS);
+        mCardDistributionPanel.setLocation(sidePanelWidth, 0);
+        mCardDistributionPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
+    }
+
+    private void distributeCards() {
+        if (DEMO_MODE) {
+            return;
+        }
+
+        // Show cursor panel to allow force finishing dice roll
+        setClickAction(mCardDistributionPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        mCardDistributionPanel.distributeCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getRemainingCards(), mGame.getBoard());
+
+        // Hide cursor panel
+        setClickAction(null, null, null);
     }
 
     private void throwDiceForOrder() {
@@ -966,14 +1009,7 @@ public class GameController {
         System.out.println("Click on board to skip");
 
         // Show cursor panel to allow force finishing dice roll
-        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR), mBoardTilePanel);
-        MouseAdapter interruptDiceClickListener = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                mBoardDicePanel.forceFinish();
-            }
-        };
-        mBoardCursorPanel.addMouseListener(interruptDiceClickListener);
+        setClickAction(mBoardDicePanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         // Store list of players that are in the current round (highest rollers or all players initially)
         List<Player> currentRoundPlayers = new ArrayList<>(mPlayers);
@@ -1070,7 +1106,6 @@ public class GameController {
         }
 
         // Hide cursor panel
-        setCursor(null, null);
-        mBoardCursorPanel.removeMouseListener(interruptDiceClickListener);
+        setClickAction(null, null, null);
     }
 }

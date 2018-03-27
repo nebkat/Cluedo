@@ -37,6 +37,7 @@ public abstract class Card {
 
     private BufferedImage mCardImage;
 
+    private static BufferedImage sCardBackImage;
     private static BufferedImage sCardHighlightOverlayImage;
     private static BufferedImage sCardSelectedOverlayImage;
 
@@ -61,6 +62,16 @@ public abstract class Card {
 
     public BufferedImage getCardImage() {
         return mCardImage;
+    }
+
+    public static BufferedImage getCardBackImage() {
+        if (sCardBackImage != null) {
+            return sCardBackImage;
+        }
+
+        sCardBackImage = Util.loadImage("card-back.png");
+
+        return sCardBackImage;
     }
 
     public static BufferedImage getCardHighlightOverlayImage() {
