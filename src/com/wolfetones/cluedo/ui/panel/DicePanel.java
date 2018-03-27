@@ -22,11 +22,12 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.cluedo.ui;
+package com.wolfetones.cluedo.ui.panel;
 
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
+import com.wolfetones.cluedo.ui.Animator;
 import com.wolfetones.physics.VectorUtils;
 import com.wolfetones.physics.body.Dice;
 import com.wolfetones.physics.Particle;

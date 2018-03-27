@@ -22,18 +22,20 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.cluedo.ui;
+package com.wolfetones.cluedo.ui.panel;
 
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
+import com.wolfetones.cluedo.ui.Animator;
+import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.SimpleLayoutManager;
+import com.wolfetones.cluedo.ui.component.TextBubble;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
 import java.util.*;
 import java.util.List;
 

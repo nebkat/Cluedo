@@ -26,6 +26,7 @@ package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.board.Location;
+import com.wolfetones.cluedo.ui.component.TokenComponent;
 
 import java.awt.image.BufferedImage;
 
@@ -112,7 +113,7 @@ public abstract class Token extends Card {
     /**
      * Sets the coordinates update listener.
      *
-     * Allows the token to notify its respective {@link com.wolfetones.cluedo.ui.TokenComponent} of coordinate changes.
+     * Allows the token to notify its respective {@link TokenComponent} of coordinate changes.
      *
      * @param listener Runnable to run.
      */

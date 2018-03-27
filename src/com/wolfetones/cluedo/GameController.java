@@ -31,10 +31,11 @@ import com.wolfetones.cluedo.card.*;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.board.Location;
-import com.wolfetones.cluedo.game.Knowledge;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
+import com.wolfetones.cluedo.ui.component.*;
+import com.wolfetones.cluedo.ui.panel.*;
 
 import javax.swing.*;
 import java.awt.*;

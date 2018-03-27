@@ -22,10 +22,11 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.cluedo.ui;
+package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.Util;
 import com.wolfetones.cluedo.card.Token;
+import com.wolfetones.cluedo.ui.Animator;
 
 import javax.swing.*;
 import java.awt.*;

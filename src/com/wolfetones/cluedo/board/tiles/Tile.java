@@ -24,10 +24,7 @@
 
 package com.wolfetones.cluedo.board.tiles;
 
-import com.wolfetones.cluedo.ui.TileComponent;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.wolfetones.cluedo.ui.component.TileComponent;
 
 /**
  * Base tile class, representing a tile on the board.
