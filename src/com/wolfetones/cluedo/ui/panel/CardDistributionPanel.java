@@ -173,11 +173,6 @@ public class CardDistributionPanel extends JPanel {
         AnimatableCard chosenRoom = roomCards.remove(sRandom.nextInt(roomCards.size()));
         List<AnimatableCard> chosenCards = List.of(chosenSuspect, chosenWeapon, chosenRoom);
 
-        List<AnimatableCard> allCards = new ArrayList<>();
-        allCards.addAll(suspectCards);
-        allCards.addAll(weaponCards);
-        allCards.addAll(roomCards);
-
         // Add secret folder component
         ScaledImageComponent secretFolder = new ScaledImageComponent(Util.loadImage("envelope.png"), getWidth() / 4);
         add(secretFolder);
@@ -239,6 +234,20 @@ public class CardDistributionPanel extends JPanel {
                 .skipIf(!isVisible())
                 .await();
 
+        // Randomly distribute cards from stacks to all cards stack, maintaining order within stack
+        List<AnimatableCard> allCards = new ArrayList<>();
+        while (!suspectCards.isEmpty() || !weaponCards.isEmpty() || !roomCards.isEmpty()) {
+            List<AnimatableCard> list = allCardLists.get(sRandom.nextInt(3));
+            if (list.isEmpty()) {
+                continue;
+            }
+
+            AnimatableCard card = list.remove(0);
+
+            allCards.add(card);
+            setComponentZOrder(card, allCards.size());
+        }
+
         // Update new last card
         lastCard = allCards.get(allCards.size() - 1);
 
@@ -246,14 +255,14 @@ public class CardDistributionPanel extends JPanel {
         for (int i = 0; i < allCards.size(); i++) {
             AnimatableCard card = allCards.get(i);
 
-            int offset = (i - allCards.size() / 2) * Config.screenRelativeSize(5);
+            int offset = (i - allCards.size() / 2) * Config.screenRelativeSize(10);
             int targetX = getWidth() / 2 + offset;
-            double targetY = ((double) playerCount / 2) * playerPanelItemHeight;
+            int targetY = getHeight() / 2 + offset;
 
             Animator.getInstance().animate(card)
                     .animate(card::getCenterX, targetX, card::setCenterX)
                     .animate(card::getCenterY, targetY, card::setCenterY)
-                    .scale(0.5)
+                    .scale(1.0)
                     .setDuration(2000)
                     .skipIf(!isVisible())
                     .awaitIf(card == lastCard);
@@ -280,8 +289,8 @@ public class CardDistributionPanel extends JPanel {
                     .animate(card::getCenterX, targetX, card::setCenterX)
                     .animate(card::getCenterY, targetY, card::setCenterY)
                     .scale(0.3)
-                    .setDuration(1000)
-                    .setDelay(delay++ * 200)
+                    .setDuration(500)
+                    .setDelay(delay++ * 100)
                     .skipIf(!isVisible())
                     .awaitIf(i == allCards.size() - remainingCards.size() - 1);
         }
@@ -319,8 +328,8 @@ public class CardDistributionPanel extends JPanel {
         for (AnimatableCard card : allCards) {
             Animator.getInstance().animate(card)
                     .fadeOut()
-                    .setInterpolator(Animator::easeOutCubic)
-                    .setDuration(1000)
+                    .setInterpolator(Animator::easeInCubic)
+                    .setDuration(250)
                     .skipIf(!isVisible())
                     .awaitIf(card == lastCard);
         }
