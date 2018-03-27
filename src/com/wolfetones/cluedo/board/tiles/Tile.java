@@ -33,8 +33,8 @@ public abstract class Tile {
     /**
      * Tile coordinates.
      */
-    protected int mX;
-    protected int mY;
+    private int mX;
+    private int mY;
 
     /**
      * Neighbouring tiles.
