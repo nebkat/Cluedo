@@ -301,6 +301,7 @@ public class GameController {
         Player player = mGame.nextTurn();
 
         mPlayersPanel.setTopPlayer(player);
+        mPlayersPanel.setActivePlayer(0);
         mPlayersPanel.hideBubbles();
         passToPlayer(player, null);
 
@@ -1023,7 +1024,7 @@ public class GameController {
             // Each player in current round rolls
             for (Player player : currentRoundPlayers) {
                 // Current rolling player is highlighted
-                mPlayersPanel.setActivePlayer(player);
+                mPlayersPanel.setActivePlayer(mPlayers.indexOf(player));
 
                 // Roll dice
                 int roll = mBoardDicePanel.rollDice(null, true);
@@ -1043,7 +1044,7 @@ public class GameController {
                 mPlayersPanel.showBubble(player, "I rolled " + roll);
             }
 
-            mPlayersPanel.setActivePlayer(null);
+            mPlayersPanel.setActivePlayer(-1);
 
             // Wait for last player's bubble to show fully
             try {

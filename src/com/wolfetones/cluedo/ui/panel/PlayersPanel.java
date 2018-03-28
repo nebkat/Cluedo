@@ -50,7 +50,7 @@ public class PlayersPanel extends JPanel {
         private TextBubble bubble;
     }
 
-    private Player mActivePlayer;
+    private int mActivePlayerIndex = -1;
 
     private int mItemHeight = -1;
 
@@ -122,26 +122,22 @@ public class PlayersPanel extends JPanel {
         }
     }
 
-    public void setActivePlayer(Player player) {
-        if (mActivePlayer == player) {
-            return;
-        }
-
+    public void setActivePlayer(int index) {
         int targetX;
         int targetY;
 
         int initialX = mTokenHighlight.getX();
         int initialY;
 
-        if (player != null) {
+        if (index >= 0) {
             targetX = -mTokenHighlightOffset;
-            targetY = mPlayerComponents.get(player).panel.getY() - mTokenHighlightOffset + Config.screenRelativeSize(2);
+            targetY = mItemHeight * index - mTokenHighlightOffset + Config.screenRelativeSize(2);
         } else {
             targetX = -mTokenHighlight.getWidth();
             targetY = mTokenHighlight.getY();
         }
 
-        if (mActivePlayer != null) {
+        if (mActivePlayerIndex >= 0) {
             initialY = mTokenHighlight.getY();
         } else {
             initialY = targetY;
@@ -152,7 +148,7 @@ public class PlayersPanel extends JPanel {
                 .setDuration(300)
                 .start();
 
-        mActivePlayer = player;
+        mActivePlayerIndex = index;
     }
 
     public void setPlayerEliminated(Player player, boolean eliminated) {
