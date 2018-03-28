@@ -969,7 +969,7 @@ public class GameController {
         mBoardCursorPanel.setOpaque(false);
 
         // Add players panel
-        mPlayersPanel = new PlayersPanel(Collections.unmodifiableList(mPlayers), sidePanelWidth);
+        mPlayersPanel = new PlayersPanel(mPlayers, sidePanelWidth);
         mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
         mPlayersPanel.setBounds(boardBounds);
 
@@ -1087,11 +1087,16 @@ public class GameController {
         }
 
         // Place winning player at the top
+        Player topPlayer = currentRoundPlayers.get(0);
+        int topPlayerIndex = mPlayers.indexOf(topPlayer);
         mPlayersPanel.setTopPlayer(currentRoundPlayers.get(0));
 
         // Put at front of players
-        mPlayers.remove(currentRoundPlayers.get(0));
-        mPlayers.add(0, currentRoundPlayers.get(0));
+        List<Player> old = new ArrayList<>(mPlayers);
+        for (int i = 0; i < old.size(); i++) {
+            int newIndex = (i - topPlayerIndex + mPlayers.size()) % mPlayers.size();
+            mPlayers.set(newIndex, old.get(i));
+        }
 
         // Wait for rearrangement to complete
         try {
