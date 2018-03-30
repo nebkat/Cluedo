@@ -348,11 +348,14 @@ public class CardDistributionPanel extends JPanel {
 
         int cardWidth = (int) (getWidth() / 5 * CARD_MARGIN);
 
-        List<AnimatableCard> accusationCards = accusation.asList().stream()
+        List<Card> accusationList = accusation.asList();
+        List<Card> solutionList = solution.asList();
+
+        List<AnimatableCard> accusationCards = accusationList.stream()
                 .map((c) -> new AnimatableCard(c, cardWidth))
                 .collect(Collectors.toList());
 
-        List<AnimatableCard> solutionCards = solution.asList().stream()
+        List<AnimatableCard> solutionCards = solutionList.stream()
                 .map((c) -> new AnimatableCard(c, cardWidth))
                 .collect(Collectors.toList());
 
@@ -402,9 +405,16 @@ public class CardDistributionPanel extends JPanel {
             int targetX = (getWidth() / 4) * (i + 1);
             int targetY = getHeight() / 2;
 
+            int cardIndex = i;
+            boolean correct = accusationList.get(cardIndex) == solutionList.get(cardIndex);
+            BufferedImage overlayImage = correct ? Card.getCardCorrectOverlayImage() : Card.getCardIncorrectOverlayImage();
             Animator.getInstance().animate(card)
                     .animate(card::getCenterX, targetX, card::setCenterX)
                     .animate(card::getCenterY, targetY, card::setCenterY)
+                    .after(() -> {
+                        solutionCards.get(cardIndex).setOverlayImage(overlayImage);
+                        accusationCards.get(cardIndex).setOverlayImage(overlayImage);
+                    })
                     .setInterpolator(Animator::easeOutQuint)
                     .setDuration(2000)
                     .setDelay((i + 1) * 2000)
@@ -414,7 +424,7 @@ public class CardDistributionPanel extends JPanel {
 
         // Wait
         Animator.getInstance().animate(this)
-                .setDelay(1000)
+                .setDelay(3000)
                 .skipIf(!isVisible())
                 .await();
 
