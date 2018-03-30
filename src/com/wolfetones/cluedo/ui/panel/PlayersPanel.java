@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.ui.panel;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
@@ -96,7 +96,7 @@ public class PlayersPanel extends JPanel {
             mPlayerComponents.put(player, components);
         }
 
-        mTokenHighlight = new ScaledImageComponent(Util.loadImage("token-highlight.png"),
+        mTokenHighlight = new ScaledImageComponent(ImageUtils.loadImage("token-highlight.png"),
                 (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth),
                 (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth));
         mTokenHighlightOffset = (int)((TOKEN_HIGHLIGHT_TOKEN_RATIO - 1.0) * iconWidth / 2);

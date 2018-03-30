@@ -25,7 +25,7 @@
 package com.wolfetones.cluedo.ui.panel;
 
 import com.wolfetones.cluedo.GameController;
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.ui.Animator;
 import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
@@ -94,7 +94,7 @@ public class ActionPanel extends JPanel {
         for (ButtonDescription description : BUTTON_DESCRIPTIONS) {
             TextBubble bubble = new TextBubble(iconWidth);
 
-            ActionButton button = new ActionButton(Util.loadImage(description.icon), iconWidth, iconWidth, bubble);
+            ActionButton button = new ActionButton(ImageUtils.loadImage(description.icon), iconWidth, iconWidth, bubble);
             button.clickAction(() -> actionCommandListener.accept(description.command));
 
             mButtons.add(button);

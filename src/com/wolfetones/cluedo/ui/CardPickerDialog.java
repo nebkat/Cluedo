@@ -1,6 +1,7 @@
 package com.wolfetones.cluedo.ui;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
+import com.wolfetones.cluedo.util.Util;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
@@ -285,14 +286,9 @@ public class CardPickerDialog extends JDialog {
 
                 mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(16));
 
-                mImage = mCard.getCardImage();
+                mImage = ImageUtils.getScaledImage(mCard.getCardImage(), Config.screenRelativeSize(150));
 
-                int imageWidth = Config.screenRelativeSize(150);
-                int imageHeight = mImage.getHeight() * imageWidth / mImage.getWidth();
-
-                mImage = Util.getScaledImage(mImage, imageWidth, imageHeight);
-
-                setPreferredSize(new Dimension(imageWidth, imageHeight + Config.screenRelativeSize(20)));
+                setPreferredSize(new Dimension(mImage.getWidth(), mImage.getHeight() + Config.screenRelativeSize(20)));
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 addMouseListener(new MouseAdapter() {

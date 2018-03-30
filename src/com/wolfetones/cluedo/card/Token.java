@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.ui.component.TokenComponent;
 
@@ -44,7 +44,7 @@ public abstract class Token extends Card {
 
         if (resourceName != null) {
             String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";
-            mTokenImage = Util.loadImage(imageFile);
+            mTokenImage = ImageUtils.loadImage(imageFile);
         }
     }
 

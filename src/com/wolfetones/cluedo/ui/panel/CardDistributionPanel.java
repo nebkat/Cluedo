@@ -24,7 +24,8 @@
 
 package com.wolfetones.cluedo.ui.panel;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
+import com.wolfetones.cluedo.util.Util;
 import com.wolfetones.cluedo.board.BoardModel;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
@@ -174,7 +175,7 @@ public class CardDistributionPanel extends JPanel {
         List<AnimatableCard> chosenCards = List.of(chosenSuspect, chosenWeapon, chosenRoom);
 
         // Add secret folder component
-        ScaledImageComponent secretFolder = new ScaledImageComponent(Util.loadImage("envelope.png"), getWidth() / 4);
+        ScaledImageComponent secretFolder = new ScaledImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
         add(secretFolder);
         setComponentZOrder(secretFolder, 0);
         secretFolder.setLocation(getWidth() / 3 - secretFolder.getWidth() / 2, getHeight());
@@ -378,7 +379,7 @@ public class CardDistributionPanel extends JPanel {
         }
 
         // Add secret folder component
-        ScaledImageComponent secretFolder = new ScaledImageComponent(Util.loadImage("envelope.png"), getWidth() / 4);
+        ScaledImageComponent secretFolder = new ScaledImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
         add(secretFolder);
         setComponentZOrder(secretFolder, 0);
         secretFolder.setLocation(getWidth() / 2 - secretFolder.getWidth() / 2, getHeight());
@@ -436,6 +437,8 @@ public class CardDistributionPanel extends JPanel {
 
     private class AnimatableCard extends JComponent implements Animator.Scalable, Animator.ScalableXY, Animator.Fadable {
         private BufferedImage mImage;
+        private BufferedImage mOverlayImage;
+
         private String mName;
 
         private int mOffsetX;
@@ -453,11 +456,10 @@ public class CardDistributionPanel extends JPanel {
 
             mName = card.getName();
 
-            int imageHeight = imageWidth * card.getCardImage().getHeight() / card.getCardImage().getWidth();
-
-            mImage = Util.getScaledImage(card.getCardImage(), imageWidth, imageHeight);
+            mImage = ImageUtils.getScaledImage(card.getCardImage(), imageWidth);
             mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(20));
 
+            int imageHeight = mImage.getHeight();
             int defaultHeight = imageHeight + Config.screenRelativeSize(5) + mFont.getSize();
 
             int maxDimension = (int) Math.sqrt(Math.pow(imageWidth, 2) + Math.pow(defaultHeight, 2));
@@ -468,7 +470,13 @@ public class CardDistributionPanel extends JPanel {
         }
 
         public void setImage(BufferedImage image) {
-            mImage = Util.getScaledImage(image, mImage.getWidth(), mImage.getHeight());
+            mImage = ImageUtils.getScaledImage(image, mImage.getWidth(), mImage.getHeight());
+            repaint();
+        }
+
+        public void setOverlayImage(BufferedImage image) {
+            mOverlayImage = ImageUtils.getScaledImage(image, mImage.getWidth(), mImage.getHeight());
+            repaint();
         }
 
         public double getCenterX() {
@@ -495,6 +503,10 @@ public class CardDistributionPanel extends JPanel {
 
             if (mScaleX > 0) {
                 g.drawImage(mImage, mOffsetX, mOffsetY, null);
+
+                if (mOverlayImage != null) {
+                    ((Graphics2D) g).drawImage(mOverlayImage, mOffsetX, mOffsetY, null);
+                }
 
                 g.setColor(Color.WHITE);
                 g.setFont(mFont);

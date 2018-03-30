@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.ui.component;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.Util;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.ui.Animator;
 

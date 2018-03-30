@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.ui.component;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.card.Token;
 import com.wolfetones.cluedo.ui.Animator;
 
@@ -46,7 +46,7 @@ public abstract class TokenComponent extends JComponent {
 
         token.setCoordinatesListener(this::updateCoordinates);
 
-        mTokenImage = Util.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
+        mTokenImage = ImageUtils.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
     }
 
     @Override

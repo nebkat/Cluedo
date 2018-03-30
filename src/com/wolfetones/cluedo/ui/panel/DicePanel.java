@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.ui.panel;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.Util;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.ui.Animator;
@@ -43,7 +43,6 @@ import javax.vecmath.*;
 import java.awt.*;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
 
 public class DicePanel extends JPanel implements Animator.Fadable {

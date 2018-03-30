@@ -24,7 +24,7 @@
 
 package com.wolfetones.cluedo.ui.component;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.config.Config;
 
 import javax.swing.*;
@@ -45,7 +45,7 @@ public class ScaledImageComponent extends JComponent {
     public ScaledImageComponent(BufferedImage image, int width, int height) {
         super();
 
-        mImage = Util.getScaledImage(image, width, height);
+        mImage = ImageUtils.getScaledImage(image, width, height);
 
         setPreferredSize(new Dimension(width, height));
         setSize(getPreferredSize());

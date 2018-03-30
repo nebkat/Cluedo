@@ -36,6 +36,7 @@ import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
 import com.wolfetones.cluedo.ui.component.*;
 import com.wolfetones.cluedo.ui.panel.*;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;

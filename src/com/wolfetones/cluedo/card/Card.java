@@ -24,10 +24,9 @@
 
 package com.wolfetones.cluedo.card;
 
-import com.wolfetones.cluedo.Util;
+import com.wolfetones.cluedo.util.ImageUtils;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 /**
  * Base card class, representing a game card.
@@ -35,18 +34,13 @@ import java.io.IOException;
 public abstract class Card {
     private String mName;
 
-    private BufferedImage mCardImage;
-
-    private static BufferedImage sCardBackImage;
-    private static BufferedImage sCardHighlightOverlayImage;
-    private static BufferedImage sCardSelectedOverlayImage;
+    private String mCardImage;
 
     Card(String name, String resourceName) {
         mName = name;
 
         if (resourceName != null) {
-            String imageFile = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
-            mCardImage = Util.loadImage(imageFile);
+            mCardImage = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
         }
     }
 
@@ -61,36 +55,26 @@ public abstract class Card {
     }
 
     public BufferedImage getCardImage() {
-        return mCardImage;
+        return ImageUtils.loadImage(mCardImage);
     }
 
     public static BufferedImage getCardBackImage() {
-        if (sCardBackImage != null) {
-            return sCardBackImage;
-        }
-
-        sCardBackImage = Util.loadImage("card-back.png");
-
-        return sCardBackImage;
+        return ImageUtils.loadImage("card-back.png");
     }
 
     public static BufferedImage getCardHighlightOverlayImage() {
-        if (sCardHighlightOverlayImage != null) {
-            return sCardHighlightOverlayImage;
-        }
-
-        sCardHighlightOverlayImage = Util.loadImage("card-highlight-overlay.png");
-
-        return sCardHighlightOverlayImage;
+        return ImageUtils.loadImage("card-highlight-overlay.png");
     }
 
     public static BufferedImage getCardSelectedOverlayImage() {
-        if (sCardSelectedOverlayImage != null) {
-            return sCardSelectedOverlayImage;
-        }
+        return ImageUtils.loadImage("card-selected-overlay.png");
+    }
 
-        sCardSelectedOverlayImage = Util.loadImage("card-selected-overlay.png");
+    public static BufferedImage getCardCorrectOverlayImage() {
+        return ImageUtils.loadImage("card-correct-overlay.png");
+    }
 
-        return sCardSelectedOverlayImage;
+    public static BufferedImage getCardIncorrectOverlayImage() {
+        return ImageUtils.loadImage("card-incorrect-overlay.png");
     }
 }
