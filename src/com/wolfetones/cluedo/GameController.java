@@ -145,7 +145,6 @@ public class GameController {
      * Swing containers
      */
     private JFrame mMainFrame;
-    private JPanel mMainPanel;
 
     private JLayeredPane mBoardLayeredPane;
     private JPanel mBoardTilePanel;
@@ -833,9 +832,7 @@ public class GameController {
 
         mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
-        mMainPanel = new JPanel();
-        mMainPanel.setLayout(new BorderLayout());
-        mMainFrame.setContentPane(mMainPanel);
+        mMainFrame.getContentPane().setLayout(new BorderLayout());
 
         JPanel terminal = new JPanel();
         terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
