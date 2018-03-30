@@ -24,12 +24,7 @@
 
 package com.wolfetones.cluedo.util;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.util.Collection;
 
 public class Util {
@@ -56,7 +51,7 @@ public class Util {
             x += (w - fm.stringWidth(s)) / 2;
         }
         if (h >= 0) {
-            y += (fm.getAscent() + (h - (fm.getAscent() + fm.getDescent())) / 2);
+            y += (h - fm.getDescent() + fm.getAscent()) / 2;
         }
         g.drawString(s, x, y);
     }
