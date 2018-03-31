@@ -30,16 +30,26 @@ import java.util.List;
 import java.util.function.*;
 
 public class Animator {
+    /** Target number of frames/updates per second */
     private static final int FRAMES_PER_SECOND = 60;
-    private static final double TIME_SCALE = 1.0;
-    private static final Function<Double, Double> DEFAULT_INTERPOLATOR = Animator::easeInOutQuintInterpolator;
 
+    /** Scaling of all durations and delays, used for debugging */
+    private static final double TIME_SCALE = 1.0;
+
+    /** The default easing function for all animations when not specified */
+    private static final DoubleUnaryOperator DEFAULT_INTERPOLATOR = Animator::easeInOutQuintInterpolator;
+
+    /** Singleton instance */
     private static Animator sInstance;
 
     private Timer mTimer = new Timer();
-
     private Set<Animation> mAnimations = new HashSet<>();
 
+    /**
+     * Returns the animator object associated with the current Java application.
+     *
+     * @return the animator object associated with the current Java application.
+     */
     public static Animator getInstance() {
         if (sInstance == null) {
             sInstance = new Animator();
@@ -47,38 +57,21 @@ public class Animator {
         return sInstance;
     }
 
-    private void startAnimation(Animation animation) {
-        // Animation delays
-        animation.totalFrames = (int) (animation.duration * FRAMES_PER_SECOND / 1000 * TIME_SCALE);
-        animation.remainingFrames = animation.totalFrames;
-
-        if (animation.preRunnable != null) {
-            animation.preRunnable.run();
-        }
-
-        mTimer.scheduleAtFixedRate(animation, (int) (animation.delay * TIME_SCALE), 1000 / FRAMES_PER_SECOND);
-        mAnimations.add(animation);
+    /**
+     * Creates a new animation object for the specified target.
+     *
+     * @param target the animation target
+     * @return new animation
+     */
+    public Animation animate(Object target) {
+        return new Animation(target);
     }
 
-    private void stopAnimation(Animation animation) {
-        animation.cancel();
-
-        if (animation.postRunnable != null) {
-            animation.postRunnable.run();
-        }
-
-        if (animation.chain != null) {
-            animation.chain.parent = null;
-            animation.chain.start();
-        }
-
-        synchronized (animation.lock) {
-            animation.lock.notifyAll();
-        }
-
-        mAnimations.remove(animation);
-    }
-
+    /**
+     * Cancels all currently running animations on the specified target
+     *
+     * @param target the target for which to cancel animations
+     */
     public void interruptAllAnimations(Object target) {
         Iterator<Animation> iterator = mAnimations.iterator();
         while (iterator.hasNext()) {
@@ -86,7 +79,7 @@ public class Animator {
             if (target == null || animation.target == target) {
                 animation.cancel();
 
-                // Release all locks from this animation and it's chained children
+                // Release all locks from this animation and its chained children
                 Animation a = animation;
                 do {
                     synchronized (a.lock) {
@@ -99,24 +92,32 @@ public class Animator {
         }
     }
 
+    /**
+     * Creates a new animation object for the specified target and interrupts all previously running animations on it.
+     *
+     * @param target the animation target
+     * @return new animation
+     */
     public Animation animateAndInterruptAll(Object target) {
         interruptAllAnimations(target);
         return animate(target);
     }
 
-    public Animation animate(Object target) {
-        return new Animation(target);
-    }
-
+    /**
+     * Object representing an animation of a set of properties on a target.
+     */
     public class Animation extends TimerTask {
         private Object target;
+
+        private boolean scheduled = false;
+        private boolean completed = false;
 
         private int totalFrames;
         private int remainingFrames;
 
         private int duration;
         private int delay = 0;
-        private Function<Double, Double> interpolator = DEFAULT_INTERPOLATOR;
+        private DoubleUnaryOperator interpolator = DEFAULT_INTERPOLATOR;
 
         private Runnable preRunnable;
         private Runnable postRunnable;
@@ -133,16 +134,27 @@ public class Animator {
             this.target = target;
         }
 
+        /**
+         * Starts the animation, or the animation's parent animation if it is chained.
+         *
+         *
+         */
         public void start() {
+            // Start parent first
             if (parent != null) {
                 parent.start();
                 return;
             }
 
-            if (skip) {
-                return;
-            }
+            // Already scheduled
+            if (scheduled) return;
+            scheduled = true;
 
+            // Timings
+            totalFrames = (int) (duration * FRAMES_PER_SECOND / 1000 * TIME_SCALE);
+            remainingFrames = totalFrames;
+
+            // Initial/target property values
             Iterator<Property> iterator = properties.iterator();
             while (iterator.hasNext()) {
                 Property property = iterator.next();
@@ -156,27 +168,90 @@ public class Animator {
                 }
             }
 
-            startAnimation(this);
+            // Pre runnable
+            if (preRunnable != null) {
+                preRunnable.run();
+            }
+
+            // Schedule
+            mTimer.scheduleAtFixedRate(this, (int) (delay * TIME_SCALE), 1000 / FRAMES_PER_SECOND);
+
+            // Add to animations list
+            mAnimations.add(this);
         }
 
+        private void complete() {
+            // Already completed
+            if (completed) return;
+            completed = true;
+
+            // Disable timer task
+            cancel();
+
+            // Post runnable
+            if (postRunnable != null) {
+                postRunnable.run();
+            }
+
+            // Start chained animation
+            if (chain != null) {
+                chain.parent = null;
+                chain.start();
+            }
+
+            // Unlock locks
+            synchronized (lock) {
+                lock.notifyAll();
+            }
+
+            // Remove from animations list
+            mAnimations.remove(this);
+        }
+
+        /**
+         * Sets the duration of the animation.
+         *
+         * @param duration the duration of the animation
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation setDuration(int duration) {
             this.duration = duration;
 
             return this;
         }
 
+        /**
+         * Sets the starting delay of the animation.
+         *
+         * @param delay the starting delay of the animation
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation setDelay(int delay) {
             this.delay = delay;
 
             return this;
         }
 
-        public Animation setInterpolator(Function<Double, Double> interpolator) {
+        /**
+         * Sets the easing function of the animation.
+         *
+         * @param interpolator the easing function of the animation
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
+        public Animation setInterpolator(DoubleUnaryOperator interpolator) {
             this.interpolator = interpolator;
 
             return this;
         }
 
+        /**
+         * Adds a property to be animated by the animation.
+         *
+         * @param from a supplier of the initial value of this property when the animations starts
+         * @param to the target value of this property when the animation completes
+         * @param consumer the setter of this animated values of this property
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation animate(DoubleSupplier from, double to, DoubleConsumer consumer) {
             Property property = new Property();
 
@@ -189,6 +264,14 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Adds a property to be animated by the animation.
+         *
+         * @param from the initial value of this property when the animations starts
+         * @param to the target value of this property when the animation completes
+         * @param consumer the setter of this animated values of this property
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation animate(double from, double to, DoubleConsumer consumer) {
             Property property = new Property();
 
@@ -201,6 +284,16 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Translates the object being animated.
+         *
+         * Requires that the object animated implement the {@link Translatable} interface,
+         * or be an AWT {@link Component}.
+         *
+         * @param x the target X location of the object when the animation completes
+         * @param y the target Y location of the object when the animation completes
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation translate(int x, int y) {
             if (!(target instanceof Translatable || target instanceof Component)) {
                 throw new IllegalArgumentException("Component does not implement Translatable interface");
@@ -219,6 +312,19 @@ public class Animator {
             return this;
         }
 
+
+        /**
+         * Translates the object being animated.
+         *
+         * Requires that the object being animated implement the {@link Translatable} interface,
+         * or be an AWT {@link Component}.
+         *
+         * @param fromX the initial X location of the object when the animation starts
+         * @param fromY the initial Y location of the object when the animation starts
+         * @param toX the target X location of the object when the animation completes
+         * @param toY the target Y location of the object when the animation completes
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation translate(int fromX, int fromY, int toX, int toY) {
             if (!(target instanceof Translatable || target instanceof Component)) {
                 throw new IllegalArgumentException("Component does not implement Translatable interface");
@@ -237,6 +343,14 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Scales the object being animated.
+         *
+         * Requires that the object being animated implement the {@link Scalable} interface.
+         *
+         * @param scale the target scale of the object when the animation completes
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation scale(double scale) {
             if (!(target instanceof Scalable)) {
                 throw new IllegalArgumentException("Target does not implement Scalable interface");
@@ -248,6 +362,15 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Scales the object being animated.
+         *
+         * Requires that the object being animated implement the {@link ScalableXY} interface.
+         *
+         * @param scaleX the target X scale of the object when the animation completes
+         * @param scaleY the target Y scale of the object when the animation completes
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation scale(double scaleX, double scaleY) {
             if (!(target instanceof ScalableXY)) {
                 throw new IllegalArgumentException("Target does not implement ScalableXY interface");
@@ -260,6 +383,14 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Fades the object being animated.
+         *
+         * Requires that the object being animated implement the {@link Fadable} interface.
+         *
+         * @param alpha the target opacity of the object when the animation completes
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation fade(double alpha) {
             if (!(target instanceof Fadable)) {
                 throw new IllegalArgumentException("Target does not implement Fadable interface");
@@ -271,26 +402,57 @@ public class Animator {
             return this;
         }
 
+        /**
+         * Fades the object being animated to full opacity.
+         *
+         * Requires that the object being animated implement the {@link Fadable} interface.
+         *
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation fadeIn() {
             return fade(1.0);
         }
 
+        /**
+         * Fades the object being animated to full transparency.
+         *
+         * Requires that the object being animated implement the {@link Fadable} interface.
+         *
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation fadeOut() {
             return fade(0.0);
         }
 
+        /**
+         * Runs the runnable before the animation starts.
+         *
+         * @param runnable the runnable to run.
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation before(Runnable runnable) {
             preRunnable = runnable;
 
             return this;
         }
 
+        /**
+         * Runs the runnable after the animation starts.
+         *
+         * @param runnable the runnable to run.
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
         public Animation after(Runnable runnable) {
             postRunnable = runnable;
 
             return this;
         }
 
+        /**
+         * Initiates a new animation to be run once this animation has completed.
+         *
+         * @return a new animation to be run once this animation has completed.
+         */
         public Animation chain() {
             chain = new Animation(target);
             chain.parent = this;
@@ -298,12 +460,32 @@ public class Animator {
             return chain;
         }
 
-        public Animation skipIf(boolean condition) {
-            skip = condition;
+        /**
+         * Skips the execution of the animation.
+         *
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
+        public Animation skip() {
+            skip = true;
 
             return this;
         }
 
+        /**
+         * Skips the execution of the animation based on a condition.
+         *
+         * @param condition whether to skip the execution of the animation.
+         * @return a reference to this {@code Animation} object to fulfill the "Builder" pattern
+         */
+        public Animation skipIf(boolean condition) {
+            if (condition) skip();
+
+            return this;
+        }
+
+        /**
+         * Starts the animation and waits for it to complete before returning.
+         */
         public void await() {
             start();
 
@@ -320,8 +502,15 @@ public class Animator {
             }
         }
 
-        public void awaitIf(boolean await) {
-            if (await) {
+        /**
+         * Awaits or starts the animation based on a condition.
+         *
+         * Useful in loops when wishing to await only the last object being animated.
+         *
+         * @param condition whether to await completion of the animation
+         */
+        public void awaitIf(boolean condition) {
+            if (condition) {
                 await();
             } else {
                 start();
@@ -330,14 +519,10 @@ public class Animator {
 
         private void progress(double progress) {
             for (Property property : properties) {
-                double interpolation = interpolate(property.initial, property.target, progress);
+                double interpolation = Animator.interpolate(property.initial, property.target, progress);
 
                 property.consumer.accept(interpolation);
             }
-        }
-
-        private double interpolate(double initial, double target, double progress) {
-            return initial + (target - initial) * progress;
         }
 
         @Override
@@ -345,10 +530,10 @@ public class Animator {
             remainingFrames--;
 
             double progress = totalFrames == 0 ? 1.0 : 1.0 - ((double) remainingFrames / totalFrames);
-            progress(interpolator != null ? interpolator.apply(progress) : progress);
+            progress(interpolator != null ? interpolator.applyAsDouble(progress) : progress);
 
             if (remainingFrames <= 0) {
-                stopAnimation(this);
+                complete();
             }
         }
 
@@ -390,6 +575,9 @@ public class Animator {
         }
     }
 
+    /**
+     * Implementing this interface allows objects to be translated using {@link Animation#translate(int, int)}.
+     */
     public interface Translatable {
         double getX();
         double getY();
@@ -397,11 +585,17 @@ public class Animator {
         void setY(double y);
     }
 
+    /**
+     * Implementing this interface allows objects to be scaled using {@link Animation#scale(double)}.
+     */
     public interface Scalable {
         double getScale();
         void setScale(double scale);
     }
 
+    /**
+     * Implementing this interface allows objects to be scaled using {@link Animation#scale(double, double)}.
+     */
     public interface ScalableXY {
         double getScaleX();
         double getScaleY();
@@ -409,39 +603,54 @@ public class Animator {
         void setScaleY(double scale);
     }
 
+    /**
+     * Implementing this interface allows objects to be faded using {@link Animation#fade(double)}.
+     */
     public interface Fadable {
         double getAlpha();
         void setAlpha(double alpha);
     }
 
-    public static boolean applyTransformations(Graphics2D g, Component c, double scaleX, double scaleY, double alpha) {
-        if (alpha < 1) {
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) alpha));
-        }
-
-        if (scaleX == 0 || scaleY == 0) {
-            return false;
-        } else if (scaleX != 1 || scaleY != 1) {
-            g.translate(c.getWidth() / 2, c.getHeight() / 2);
-            g.scale(scaleX, scaleY);
-            g.translate(-c.getWidth() / 2, -c.getHeight() / 2);
-        }
-
-        return true;
+    private static double interpolate(double initial, double target, double progress) {
+        return initial + (target - initial) * progress;
     }
 
+    /**
+     * Cubic ease in interpolator.
+     *
+     * @param t current progress [0..1]
+     * @return interpolated progress [0..1]
+     */
     public static double easeInCubic(double t) {
         return t * t * t;
     }
 
+    /**
+     * Cubic ease out interpolator.
+     *
+     * @param t current progress [0..1]
+     * @return interpolated progress [0..1]
+     */
     public static double easeOutCubic(double t) {
         return (--t) * t * t + 1;
     }
 
+    /**
+     * Quintic ease out interpolator.
+     *
+     * @param t current progress [0..1]
+     * @return interpolated progress [0..1]
+     */
     public static double easeOutQuint(double t) {
         return 1 + (--t) * t * t * t * t;
     }
 
+    /**
+     * Quintic ease in-out in interpolator.
+     *
+     * @param t current progress [0..1]
+     * @return interpolated progress [0..1]
+     */
     public static double easeInOutQuintInterpolator(double t) {
         return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * (--t) * t * t * t * t;
     }
