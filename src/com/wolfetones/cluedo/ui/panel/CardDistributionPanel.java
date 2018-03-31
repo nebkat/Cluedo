@@ -448,6 +448,7 @@ public class CardDistributionPanel extends JPanel {
     private class AnimatableCard extends JComponent implements Animator.Scalable, Animator.ScalableXY, Animator.Fadable {
         private BufferedImage mImage;
         private BufferedImage mOverlayImage;
+        private BufferedImage mBackImage;
 
         private String mName;
 
@@ -468,6 +469,8 @@ public class CardDistributionPanel extends JPanel {
 
             mImage = ImageUtils.getScaledImage(card.getCardImage(), imageWidth);
             mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(20));
+
+            mBackImage = ImageUtils.getScaledImage(Card.getCardBackImage(), imageWidth);
 
             int imageHeight = mImage.getHeight();
             int defaultHeight = imageHeight + Config.screenRelativeSize(5) + mFont.getSize();
@@ -506,33 +509,37 @@ public class CardDistributionPanel extends JPanel {
         }
 
         @Override
-        public void paintComponent(Graphics g) {
-            if (!Animator.applyTransformations((Graphics2D) g, this, Math.abs(mScaleX) * mScale, mScaleY * mScale, mAlpha)) {
+        public void paintComponent(Graphics gg) {
+            Graphics2D g = (Graphics2D) gg;
+
+            if (mAlpha == 0) {
                 return;
+            } else if (mAlpha < 1) {
+                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) mAlpha));
+            }
+
+            double scaleX = Math.abs(mScaleX) * mScale;
+            double scaleY = mScaleY * mScale;
+            if (scaleX == 0 || scaleY == 0) {
+                return;
+            } else if (scaleX != 1 || scaleY != 1) {
+                g.translate(getWidth() / 2, getHeight() / 2);
+                g.scale(scaleX, scaleY);
+                g.translate(-getWidth() / 2, -getHeight() / 2);
             }
 
             if (mScaleX > 0) {
                 g.drawImage(mImage, mOffsetX, mOffsetY, null);
 
                 if (mOverlayImage != null) {
-                    ((Graphics2D) g).drawImage(mOverlayImage, mOffsetX, mOffsetY, null);
+                    g.drawImage(mOverlayImage, mOffsetX, mOffsetY, null);
                 }
 
                 g.setColor(Color.WHITE);
                 g.setFont(mFont);
                 Util.drawCenteredString(mName, mOffsetX, mOffsetY + mImage.getHeight() + Config.screenRelativeSize(5), mImage.getWidth(), mFont.getSize(), g);
             } else {
-                BufferedImage backImage = Card.getCardBackImage();
-                g.drawImage(backImage,
-                        mOffsetX,
-                        mOffsetY,
-                        mOffsetX + mImage.getWidth(),
-                        mOffsetY + mImage.getHeight(),
-                        0,
-                        0,
-                        backImage.getWidth(),
-                        backImage.getHeight(),
-                        null);
+                g.drawImage(mBackImage, mOffsetX, mOffsetY, null);
             }
         }
 
