@@ -33,11 +33,13 @@ import java.awt.image.BufferedImage;
  */
 public abstract class Card {
     private String mName;
-
+    private String[] mSearchNames;
     private String mCardImage;
 
-    Card(String name, String resourceName) {
+    Card(String name, String[] searchNames, String resourceName) {
         mName = name;
+
+        mSearchNames = searchNames;
 
         if (resourceName != null) {
             mCardImage = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
@@ -52,6 +54,10 @@ public abstract class Card {
 
     public String getShortName() {
         return mName.replace(" ", "").replace(".", "").toLowerCase();
+    }
+
+    public String[] getSearchNames() {
+        return mSearchNames;
     }
 
     public BufferedImage getCardImage() {

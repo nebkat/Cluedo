@@ -168,7 +168,7 @@ public class CardPickerDialog extends JDialog {
         Weapon weapon = mWeaponCardPicker.getResult();
         Room room = mRoomCardPicker.getResult();
 
-        return new Suggestion(room, suspect, weapon);
+        return new Suggestion(suspect, weapon, room);
     }
 
     public static Suggestion showAccusationPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms) {
@@ -185,7 +185,7 @@ public class CardPickerDialog extends JDialog {
         Suspect suspect = mSuspectCardPicker.getResult();
         Weapon weapon = mWeaponCardPicker.getResult();
 
-        return new Suggestion(room, suspect, weapon);
+        return new Suggestion(suspect, weapon, room);
     }
 
     public static Suggestion showSuggestionPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, Room room) {

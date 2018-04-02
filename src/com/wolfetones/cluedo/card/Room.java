@@ -68,8 +68,8 @@ public class Room extends Card implements Location {
     private int mTileSumX = 0;
     private int mTileSumY = 0;
 
-    public Room(String name, String cardImage, boolean isGuessRoom) {
-        super(name, cardImage);
+    public Room(String name, String[] searchNames, String cardImage, boolean isGuessRoom) {
+        super(name, searchNames, cardImage);
 
         mIsGuessRoom = isGuessRoom;
     }

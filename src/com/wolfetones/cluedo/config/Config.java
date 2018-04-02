@@ -144,45 +144,45 @@ public class Config {
 
     public static class Cards {
         public static final Room[] ROOMS = {
-            new Room("Guess Room", null, true),
-            new Room("Kitchen", "kitchen"),
-            new Room("Living Room", "living-room"),
-            new Room("Conservatory", "conservatory"),
-            new Room("Library", "library"),
-            new Room("Billiard Room", "billiard-room"),
-            new Room("Trophy Room", "trophy-room"),
-            new Room("Bedroom", "bedroom"),
-            new Room("Hall", "hall"),
-            new Room("Studio", "studio")
+            new Room("Guess Room", null, null, true),
+            new Room("Kitchen", new String[] {"kitchen"}, "kitchen"),
+            new Room("Living Room", new String[] {"livingroom", "living"}, "living-room"),
+            new Room("Conservatory", new String[] {"conservatory"}, "conservatory"),
+            new Room("Library", new String[] {"library"}, "library"),
+            new Room("Billiard Room", new String[] {"billiardroom", "billiard"}, "billiard-room"),
+            new Room("Trophy Room", new String[] {"trophyroom", "trophy"}, "trophy-room"),
+            new Room("Bedroom", new String[] {"bedroom"}, "bedroom"),
+            new Room("Hall", new String[] {"hall"}, "hall"),
+            new Room("Studio", new String[] {"studio"}, "studio")
         };
 
         public static final Suspect[] SUSPECTS = {
-                new Suspect("Miss Scarlett", "miss-scarlett", Color.RED),
-                new Suspect("Colonel Mustard", "colonel-mustard", Color.YELLOW),
-                new Suspect("Mrs. White", "mrs-white", Color.WHITE),
-                new Suspect("Reverend Green", "reverend-green", Color.GREEN),
-                new Suspect("Mrs. Peacock", "mrs-peacock", Color.BLUE),
-                new Suspect("Professor Plum", "professor-plum", Color.MAGENTA)
+                new Suspect("Miss Scarlett", new String[] {"scarlett", "red"}, "miss-scarlett", Color.RED),
+                new Suspect("Colonel Mustard", new String[] {"mustard", "yellow"}, "colonel-mustard", Color.YELLOW),
+                new Suspect("Mrs. White", new String[] {"white"}, "mrs-white", Color.WHITE),
+                new Suspect("Reverend Green", new String[] {"green"}, "reverend-green", Color.GREEN),
+                new Suspect("Mrs. Peacock", new String[] {"peacock", "blue"}, "mrs-peacock", Color.BLUE),
+                new Suspect("Professor Plum", new String[] {"plum", "purple"}, "professor-plum", Color.MAGENTA)
         };
 
         public static final Weapon[] WEAPONS = {
-                new Weapon("Candlestick", "candlestick"),
-                new Weapon("Fire Poker", "fire-poker"),
-                new Weapon("Garden Shears", "garden-shears"),
-                new Weapon("Poison", "poison"),
-                new Weapon("Ice Pick", "ice-pick"),
-                new Weapon("Revolver", "revolver")
+                new Weapon("Candlestick", new String[] {"candlestick"}, "candlestick"),
+                new Weapon("Fire Poker", new String[] {"firepoker"}, "fire-poker"),
+                new Weapon("Garden Shears", new String[] {"gardenshears", "shears"}, "garden-shears"),
+                new Weapon("Poison", new String[] {"poison"}, "poison"),
+                new Weapon("Ice Pick", new String[] {"ice-pick"}, "ice-pick"),
+                new Weapon("Revolver", new String[] {"revolver", "pistol"}, "revolver")
         };
 
         public static class Room extends Card {
             public final boolean guess;
 
-            Room(String n, String i) {
-                this(n, i, false);
+            Room(String n, String[] s, String i) {
+                this(n, s, i, false);
             }
 
-            Room(String n, String r, boolean g) {
-                super(n, r);
+            Room(String n, String[] s, String r, boolean g) {
+                super(n, s, r);
                 guess = g;
             }
         }
@@ -190,24 +190,26 @@ public class Config {
         public static class Suspect extends Card {
             public final Color color;
 
-            Suspect(String n, String r, Color c) {
-                super(n, r);
+            Suspect(String n, String[] s, String r, Color c) {
+                super(n, s, r);
                 color = c;
             }
         }
 
         public static class Weapon extends Card {
-            Weapon(String n, String r) {
-                super(n, r);
+            Weapon(String n, String[] s, String r) {
+                super(n, s, r);
             }
         }
 
         public abstract static class Card {
             public final String name;
+            public final String[] searchNames;
             public final String resource;
 
-            Card(String n, String r) {
+            Card(String n, String[] s, String r) {
                 name = n;
+                searchNames = s;
                 resource = r;
             }
         }

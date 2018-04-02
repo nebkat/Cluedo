@@ -608,9 +608,9 @@ public class Game {
         mCards.addAll(rooms);
 
         // Create a random solution
-        mSolution = new Suggestion(randomCard(rooms),
-                randomCard(suspects),
-                randomCard(weapons));
+        mSolution = new Suggestion(randomCard(suspects),
+                randomCard(weapons),
+                randomCard(rooms));
 
         // Cards to be distributed to players
         List<Card> distributeCards = new ArrayList<>(mCards);

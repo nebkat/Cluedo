@@ -58,21 +58,21 @@ public class BoardModel {
         for (int i = 0; i < Config.Cards.ROOMS.length; i++) {
             Config.Cards.Room configRoom = Config.Cards.ROOMS[i];
 
-            mRooms.add(new Room(configRoom.name, configRoom.resource, configRoom.guess));
+            mRooms.add(new Room(configRoom.name, configRoom.searchNames, configRoom.resource, configRoom.guess));
         }
 
         // Initialize suspects
         for (int i = 0; i < Config.Cards.SUSPECTS.length; i++) {
             Config.Cards.Suspect configSuspect = Config.Cards.SUSPECTS[i];
 
-            mSuspects.add(new Suspect(configSuspect.name, configSuspect.resource, configSuspect.color));
+            mSuspects.add(new Suspect(configSuspect.name, configSuspect.searchNames, configSuspect.resource, configSuspect.color));
         }
 
         // Initialize weapons
         for (int i = 0; i < Config.Cards.WEAPONS.length; i++) {
             Config.Cards.Weapon configWeapon = Config.Cards.WEAPONS[i];
 
-            mWeapons.add(new Weapon(configWeapon.name, configWeapon.resource));
+            mWeapons.add(new Weapon(configWeapon.name, configWeapon.searchNames, configWeapon.resource));
         }
 
         // Initialize tiles

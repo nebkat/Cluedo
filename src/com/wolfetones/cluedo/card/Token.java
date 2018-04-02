@@ -39,8 +39,8 @@ public abstract class Token extends Card {
 
     private BufferedImage mTokenImage;
 
-    Token(String name, String resourceName) {
-        super(name, resourceName);
+    Token(String name, String[] searchNames, String resourceName) {
+        super(name, searchNames, resourceName);
 
         if (resourceName != null) {
             String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";

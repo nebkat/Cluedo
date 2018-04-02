@@ -28,8 +28,8 @@ package com.wolfetones.cluedo.card;
  * Weapon
  */
 public class Weapon extends Token {
-    public Weapon(String name, String cardImage) {
-        super(name, cardImage);
+    public Weapon(String name, String[] searchNames, String cardImage) {
+        super(name, searchNames, cardImage);
     }
 
     @Override

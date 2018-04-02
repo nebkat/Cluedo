@@ -483,7 +483,32 @@ public class GameController {
             } else if (command.equals(COMMAND_PASSAGE)) {
                 mGame.usePassage();
             } else if (command.equals(COMMAND_QUESTION)) {
-                Suggestion suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+                Suggestion suggestion;
+                if (args.length == 1) {
+                    suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+                } else {
+                    if (args.length != 3) {
+                        System.out.println("Invalid number of arguments provided for question command");
+                        System.out.println(HELP_COMMANDS.get(COMMAND_QUESTION));
+                        continue;
+                    }
+
+                    suggestion = createSuggestion(args[1], args[2], null, mGame.getCurrentPlayerLocation().asRoom());
+
+                    boolean valid = true;
+                    for (Card card : suggestion.asList()) {
+                        // Can't use undistributed cards in suggestion
+                        if (mGame.getUndistributedCards().contains(card)) {
+                            valid = false;
+
+                            System.out.println("Can't use " + card.getName() + " in question as it is visible to all players");
+                        }
+                    }
+
+                    if (!valid) {
+                        suggestion = null;
+                    }
+                }
 
                 if (suggestion == null) {
                     continue;
@@ -514,7 +539,19 @@ public class GameController {
                     System.out.println("No players have any of the suggested cards");
                 }
             } else if (command.equals(COMMAND_ACCUSE)) {
-                Suggestion suggestion = createSuggestion(null);
+                Suggestion suggestion;
+                if (args.length == 1) {
+                    suggestion = createSuggestion(null);
+                } else {
+                    if (args.length != 4) {
+                        System.out.println("Invalid number of arguments provided for question command");
+                        System.out.println(HELP_COMMANDS.get(COMMAND_ACCUSE));
+                        continue;
+                    }
+
+                    suggestion = createSuggestion(args[1], args[2], args[3], null);
+                }
+
                 if (suggestion == null) {
                     continue;
                 }
@@ -709,22 +746,6 @@ public class GameController {
     }
 
     /**
-     * Requests that the user choose a card from the list of cards provided.
-     *
-     * @param question Prompt to provide to the user when listing valid cards.
-     * @param cards List of cards available.
-     * @param <T> {@code Room}, {@code Suspect} or {@code Weapon}.
-     * @return Card chosen by the user.
-     */
-    private <T extends Card> T chooseCard(String question, List<T> cards) {
-        List<String> names = cards.stream().map(Card::getShortName).collect(Collectors.toList());
-        Map<String, T> map = cards.stream().collect(Collectors.toMap(Card::getShortName, Function.identity()));
-
-        String card = readCommand(question, names)[0];
-        return map.get(card);
-    }
-
-    /**
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
@@ -829,12 +850,32 @@ public class GameController {
         } else {
             return CardPickerDialog.showAccusationPickerDialog(mMainFrame, suspects, weapons, rooms);
         }
+    }
 
-        /*Suspect suspect = chooseCard("Choose suspect", suspects);
-        Weapon weapon = chooseCard("Choose weapon", weapons);
-        Room room = currentRoom == null ? chooseCard("Choose room", rooms) : currentRoom;
+    /**
+     * Creates a new {@code Suggestion} from user text inputs.
+     *
+     * If {@code currentRoom} is provided then that room is used, otherwise {@code requestedRoom} is searched for.
+     */
+    private Suggestion createSuggestion(String requestedSuspect, String requestedWeapon, String requestedRoom, Room currentRoom) {
+        List<Suspect> suspects = mGame.getBoard().getSuspects();
+        List<Weapon> weapons = mGame.getBoard().getWeapons();
+        List<Room> rooms = mGame.getBoard().getRooms();
 
-        return new Suggestion(room, suspect, weapon);*/
+        Suspect suspect = suspects.stream()
+                .filter((s) -> Arrays.stream(s.getSearchNames()).anyMatch(requestedSuspect::equalsIgnoreCase))
+                .findFirst().orElse(null);
+
+        Weapon weapon = weapons.stream()
+                .filter((w) -> Arrays.stream(w.getSearchNames()).anyMatch(requestedWeapon::equalsIgnoreCase))
+                .findFirst().orElse(null);
+
+        Room room = currentRoom != null ? currentRoom :
+                rooms.stream()
+                        .filter((r) -> Arrays.stream(r.getSearchNames()).anyMatch(requestedRoom::equalsIgnoreCase))
+                        .findFirst().orElse(null);
+
+        return new Suggestion(suspect, weapon, room);
     }
 
     /**

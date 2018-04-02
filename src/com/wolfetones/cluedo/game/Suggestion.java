@@ -44,12 +44,11 @@ public class Suggestion {
 
     /**
      * Suggestion constructor.
-     *
-     * @param r Room in which the murder was committed.
-     * @param s Suspect that committed the murder.
+     *  @param s Suspect that committed the murder.
      * @param w Weapon that was used in the murder.
+     * @param r Room in which the murder was committed.
      */
-    public Suggestion(Room r, Suspect s, Weapon w) {
+    public Suggestion(Suspect s, Weapon w, Room r) {
         room = r;
         suspect = s;
         weapon = w;
