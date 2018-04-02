@@ -95,7 +95,7 @@ public class SlideOutCardsPanel extends JPanel {
                 .map((c) -> new ScaledImageComponent(c.getCardImage(), cardWidth))
                 .forEach(this::add);
 
-        setSize(getPreferredSize());
+        setSize(getPreferredSize().width, getHeight());
 
         slideOut();
 
