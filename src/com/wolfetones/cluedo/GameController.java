@@ -69,6 +69,7 @@ public class GameController {
     private static final Integer BOARD_LAYER_ACTIONS = 6;
     private static final Integer BOARD_LAYER_CARDS = 7;
     private static final Integer BOARD_LAYER_CURSOR = 8;
+    private static final Integer BOARD_LAYER_PANELS = 9;
 
     /**
      * Prefix placed in front of commands to hide from the list of valid commands
@@ -928,8 +929,6 @@ public class GameController {
         mMainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mMainFrame.setResizable(false);
 
-        mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
-
         mMainFrame.getContentPane().setLayout(new BorderLayout());
 
         JPanel terminal = new JPanel();
@@ -966,6 +965,8 @@ public class GameController {
         mBoardLayeredPane.setBackground(TileComponent.COLOR_EMPTY);
         mBoardLayeredPane.setOpaque(true);
         mMainFrame.add(mBoardLayeredPane, BorderLayout.CENTER);
+
+        mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
 
         Dimension boardDimension = new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
         mBoardLayeredPane.setPreferredSize(boardDimension);
@@ -1081,18 +1082,36 @@ public class GameController {
         mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
 
         // Slide out panels
-        int slideOutPanelHiddenWidth = Config.screenRelativeSize(40);
-        int slideOutPanelHeight = Config.screenHeightPercentage(0.2f);
+        int slideOutPanelHandleSize = Config.screenRelativeSize(40);
+        int slideOutPanelHandleWidth = Config.screenHeightPercentage(0.2f);
 
         // Player cards slide out panel
-        mPlayerCardsPanel = new SlideOutCardsPanel("Your cards".toUpperCase(), slideOutPanelHiddenWidth, slideOutPanelHeight, boardDimension.width);
-        mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_CARDS);
-        mPlayerCardsPanel.setLocation(boardDimension.width, boardDimension.height / 4 - slideOutPanelHeight / 2);
+        mPlayerCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT, "Your cards".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.width);
+        mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_PANELS);
+        mPlayerCardsPanel.setLocation(boardDimension.width, boardDimension.height / 4 - slideOutPanelHandleWidth / 2);
 
         // Undistributed cards slide out panel
-        mUndistributedCardsPanel = new SlideOutCardsPanel("Public cards".toUpperCase(), slideOutPanelHiddenWidth, slideOutPanelHeight, boardDimension.width);
-        mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_CARDS);
-        mUndistributedCardsPanel.setLocation(boardDimension.width, boardDimension.height * 3 / 4 - slideOutPanelHeight / 2);
+        mUndistributedCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT, "Public cards".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.width);
+        mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_PANELS);
+        mUndistributedCardsPanel.setLocation(boardDimension.width, boardDimension.height * 3 / 4 - slideOutPanelHandleWidth / 2);
+
+        // Wider panels at bottom
+        int slideOutPanelAvailableWidth = boardDimension.width - 2 * sidePanelWidth;
+        slideOutPanelHandleWidth = (slideOutPanelAvailableWidth - sidePanelWidth) / 2;
+
+        // Log panel
+        SlideOutPanel historySlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "History".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mBoardLayeredPane.add(historySlideOutPanel, BOARD_LAYER_PANELS);
+        historySlideOutPanel.setLocation(sidePanelWidth, boardDimension.height - slideOutPanelHandleSize);
+        historySlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
+        historySlideOutPanel.reposition();
+
+        // Notes panel
+        SlideOutPanel notesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mBoardLayeredPane.add(notesSlideOutPanel, BOARD_LAYER_PANELS);
+        notesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height - slideOutPanelHandleSize);
+        notesSlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
+        notesSlideOutPanel.reposition();
     }
 
     private void dealCards() {

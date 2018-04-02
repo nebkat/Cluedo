@@ -53,7 +53,7 @@ public class Config {
 
     public static class Board {
         public static final int WIDTH = 28;
-        public static final int HEIGHT = 27;
+        public static final int HEIGHT = 28;
 
         public static final int STRING_WIDTH = WIDTH * 2 + 1;
         public static final int STRING_HEIGHT = HEIGHT * 2 + 1;
@@ -112,6 +112,8 @@ public class Config {
                 "    █           ███=███           ███=███           ░    " +
                 "    █7 7 7 7 7 7█ █@█ █8 8 8 8 8 8█ █=█ █9 9 9 9 9 9░    " +
                 "    █░░░█░█░█░░░█ ███ █████████████ ███ ███░░░█░█░░░█    " +
+                "                                                         " +
+                "                                                         " +
                 "                                                         " +
                 "                                                         ";
 
