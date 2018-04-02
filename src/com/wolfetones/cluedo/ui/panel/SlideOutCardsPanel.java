@@ -49,6 +49,8 @@ public class SlideOutCardsPanel extends JPanel {
     public SlideOutCardsPanel(String title, int hiddenWidth, int height, int containerWidth) {
         super();
 
+        setOpaque(false);
+
         mTitle = title;
         mFont = new Font(Font.SANS_SERIF, Font.BOLD, hiddenWidth / 2);
         mHiddenWidth = hiddenWidth;
