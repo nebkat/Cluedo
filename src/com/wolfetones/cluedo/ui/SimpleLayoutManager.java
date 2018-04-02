@@ -40,7 +40,16 @@ public class SimpleLayoutManager implements LayoutManager {
 
     @Override
     public Dimension preferredLayoutSize(Container parent) {
-        return null;
+        int width = 0;
+        int height = 0;
+
+        for (Component component : parent.getComponents()) {
+            Dimension preferredSize = component.getPreferredSize();
+            width = Math.max(width, (int) (component.getX() + preferredSize.getWidth()));
+            height = Math.max(height, (int) (component.getY() + preferredSize.getHeight()));
+        }
+
+        return new Dimension(width, height);
     }
 
     @Override
