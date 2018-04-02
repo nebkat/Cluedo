@@ -42,6 +42,49 @@ public class Game {
 
     private static Random sRandom = new Random();
 
+    // States
+    private boolean mStarted = false;
+    private boolean mFinished = false;
+
+    /**
+     * Cards
+     */
+    private List<Card> mCards = new ArrayList<>(21);
+    /** Cards that have not been distributed to any player (visible to all) */
+    private List<Card> mUndistributedCards = new ArrayList<>(0);
+
+    /** Game solution */
+    private Suggestion mSolution;
+
+    /**
+     * Players
+     */
+    private List<Player> mPlayers = new ArrayList<>(6);
+    /** Players not eliminated */
+    private List<Player> mActivePlayers;
+    private ListIterator<Player> mActivePlayerIterator;
+
+    private Player mCurrentPlayer;
+    private Location mCurrentPlayerLocation;
+
+    /*
+     * Current abilities in turn, depending on state and location
+     */
+    private Room mTurnInitialPlayerRoom;
+    private boolean mTurnCanRollDice;
+    private boolean mTurnCanUsePassage;
+    private boolean mTurnCanPoseQuestion;
+    private boolean mTurnCanMakeFinalAccusation;
+    private boolean mTurnFinished;
+    private int mTurnRemainingMoves;
+    private boolean mTurnHasMoved;
+    private boolean mTurnMovementComplete;
+
+    /**
+     * Board
+     */
+    private BoardModel mBoard = new BoardModel();
+
     /**
      * Log
      */
@@ -82,55 +125,13 @@ public class Game {
         }
     }
 
-    /*
-     * States
-     */
-    private boolean mStarted = false;
-    private boolean mFinished = false;
-
-    /** Cards */
-    private List<Card> mCards = new ArrayList<>(21);
-    /** Cards that have not been distributed to any player (visible to all) */
-    private List<Card> mRemainingCards = new ArrayList<>(0);
-
-    /** Game solution */
-    private Suggestion mSolution;
-
-    /*
-     * Players
-     */
-    private List<Player> mPlayers = new ArrayList<>(6);
-    private List<Player> mActivePlayers;
-    private ListIterator<Player> mActivePlayerIterator;
-    private Player mCurrentPlayer;
-    private Location mCurrentPlayerLocation;
-
-    /*
-     * Current abilities in turn, depending on state and location
-     */
-    private Room mTurnInitialPlayerRoom;
-    private boolean mTurnCanRollDice;
-    private boolean mTurnCanUsePassage;
-    private boolean mTurnCanPoseQuestion;
-    private boolean mTurnCanMakeFinalAccusation;
-    private boolean mTurnFinished;
-    private int mTurnRemainingMoves;
-    private boolean mTurnHasMoved;
-    private boolean mTurnMovementComplete;
-
-    /**
-     * Board
-     */
-    private BoardModel mBoard = new BoardModel();
-
-    public Game() {}
-
     /**
      * Add a player to the game.
      *
      * Must be performed before game has started.
      *
      * @param player Player to add to the game.
+     * @throws IllegalStateException If the game has already started.
      */
     public void addPlayer(Player player) {
         if (mStarted) {
@@ -142,6 +143,10 @@ public class Game {
 
     /**
      * Start the game.
+     *
+     * At least 2 players must be added to start the game.
+     *
+     * @throws IllegalStateException If the game has already started, or there are not enough players to start the game.
      */
     public void start() {
         if (mStarted) {
@@ -165,15 +170,43 @@ public class Game {
     }
 
     /**
-     * Returns {@code true} if the game has finished.
+     * Gets the game board associated with this game.
      *
-     * The game has finished once a correct accusation has been made or all
-     * players have made incorrect accusations.
-     *
-     * @return {@code true} if the game has finished.
+     * @return the game board associated with this game.
      */
-    public boolean isFinished() {
-        return mFinished;
+    public BoardModel getBoard() {
+        return mBoard;
+    }
+
+    /**
+     * Gets the {@code Solution} to the game.
+     *
+     * Used in cheat command, and for graphical display
+     *
+     * @return the {@code Solution} to the game.
+     */
+    public Suggestion getSolution() {
+        return mSolution;
+    }
+
+    /**
+     * Gets the list of undistributed cards, which are visible to all players.
+     *
+     * Suggestions can't be made using any of these cards.
+     *
+     * @return a list of cards that were not distributed to any player.
+     */
+    public List<? extends Card> getUndistributedCards() {
+        return mUndistributedCards;
+    }
+
+    /**
+     * Gets the question log.
+     *
+     * @return the game question log.
+     */
+    public List<LogEntry> getLog() {
+        return mLog;
     }
 
     /**
@@ -227,51 +260,6 @@ public class Game {
         return mCurrentPlayer;
     }
 
-    public boolean canRollDice() {
-        return !mTurnMovementComplete && mTurnCanRollDice;
-    }
-
-    public boolean canUsePassage() {
-        return !mTurnMovementComplete && mTurnCanUsePassage;
-    }
-
-    public boolean canPoseQuestion() {
-        return mTurnCanPoseQuestion;
-    }
-
-    public boolean canMakeFinalAccusation() {
-        return mTurnCanMakeFinalAccusation;
-    }
-
-    public boolean canStopMoving() { return mTurnHasMoved && mTurnRemainingMoves > 0; }
-
-    public boolean isTurnFinished() {
-        return mTurnFinished;
-    }
-
-    /**
-     * Uses a passage in the player's current room.
-     *
-     * @throws IllegalStateException If player has already moved or player's current room does not have a passage.
-     */
-    public void usePassage() {
-        // Can't use passage if player has already moved this turn
-        if (mTurnMovementComplete) {
-            throw new IllegalStateException("Player has already moved");
-        }
-
-        // Can't use passage if not currently in a room
-        if (!mTurnCanUsePassage) {
-            throw new IllegalStateException("Player cannot use passage, either not in a room or in a room that does not contain a secret passage");
-        }
-
-        // Move to new room
-        completeMove(mCurrentPlayerLocation.asRoom().getPassageRoom());
-
-        // Can no longer move
-        mTurnMovementComplete = true;
-    }
-
     /**
      * Rolls the dice randomly and returns the number of allowed moves.
      *
@@ -313,6 +301,29 @@ public class Game {
     }
 
     /**
+     * Uses a passage in the player's current room.
+     *
+     * @throws IllegalStateException If player has already moved or player's current room does not have a passage.
+     */
+    public void usePassage() {
+        // Can't use passage if player has already moved this turn
+        if (mTurnMovementComplete) {
+            throw new IllegalStateException("Player has already moved");
+        }
+
+        // Can't use passage if not currently in a room
+        if (!mTurnCanUsePassage) {
+            throw new IllegalStateException("Player cannot use passage, either not in a room or in a room that does not contain a secret passage");
+        }
+
+        // Move to new room
+        completeMove(mCurrentPlayerLocation.asRoom().getPassageRoom());
+
+        // Can no longer move
+        mTurnMovementComplete = true;
+    }
+
+    /**
      * Moves the player's {@code Token} to a {@link Location} and subtracts the number of moves required.
      *
      * @param location Location to move to.
@@ -345,6 +356,8 @@ public class Game {
 
     /**
      * Stops movement before all moves have been used and allows turn to end.
+     *
+     * @throws IllegalStateException If the player has not completed at least one move, or attempts to stop movement in a room.
      */
     public void stopMoving() {
         // Ensure one move has been performed
@@ -388,44 +401,6 @@ public class Game {
     }
 
     /**
-     * Makes the final accusation and returns {@code true} if the accusation is correct.
-     *
-     * The player must be in the guess room to make the final accusation.
-     *
-     * If the accusation is correct, the game is finished, otherwise the player is eliminated.
-     *
-     * @param suggestion Final accusation.
-     * @return {@code true} if the accusation is correct.
-     * @throws IllegalStateException If the player is not currently in the guess room.
-     */
-    public boolean makeFinalAccusation(Suggestion suggestion) {
-        // Can't make accusation outside of guess room
-        if (!mTurnCanMakeFinalAccusation) {
-            throw new IllegalStateException("Player is not in guess room");
-        }
-
-        // Turn is finished once an accusation is made
-        mTurnFinished = true;
-
-        // Can no longer make final accusation
-        mTurnCanMakeFinalAccusation = false;
-
-        // Insert log entry
-        mLog.add(LogEntry.newFinalAccusationEntry(mCurrentPlayer, suggestion, mSolution.equals(suggestion)));
-
-        // Check whether accusation is correct
-        if (mSolution.equals(suggestion)) {
-            mFinished = true;
-            return true;
-        } else {
-            // Remove player if accusation is incorrect
-            mActivePlayerIterator.remove();
-            mFinished = mActivePlayers.isEmpty();
-            return false;
-        }
-    }
-
-    /**
      * Poses a question to other players and returns the first player that has a matching card.
      *
      * @param suggestion Question to pose.
@@ -436,6 +411,11 @@ public class Game {
         // Can't pose question unless allowed
         if (!mTurnCanPoseQuestion) {
             throw new IllegalStateException("Player cannot make guess");
+        }
+
+        // Can't pose question using undistributed cards
+        if (!Collections.disjoint(mUndistributedCards, suggestion.asList())) {
+            throw new IllegalArgumentException("Cannot make guess using any of the undistributed cards");
         }
 
         // Player can finish turn once a guess has been made
@@ -478,42 +458,144 @@ public class Game {
         return matchingPlayer;
     }
 
+    /**
+     * Makes the final accusation and returns {@code true} if the accusation is correct.
+     *
+     * The player must be in the guess room to make the final accusation.
+     *
+     * If the accusation is correct, the game is finished, otherwise the player is eliminated.
+     *
+     * @param suggestion Final accusation.
+     * @return {@code true} if the accusation is correct.
+     * @throws IllegalStateException If the player is not currently in the guess room.
+     */
+    public boolean makeFinalAccusation(Suggestion suggestion) {
+        // Can't make accusation outside of guess room
+        if (!mTurnCanMakeFinalAccusation) {
+            throw new IllegalStateException("Player is not in guess room");
+        }
 
+        // Turn is finished once an accusation is made
+        mTurnFinished = true;
 
-    public BoardModel getBoard() {
-        return mBoard;
+        // Can no longer make final accusation
+        mTurnCanMakeFinalAccusation = false;
+
+        // Insert log entry
+        mLog.add(LogEntry.newFinalAccusationEntry(mCurrentPlayer, suggestion, mSolution.equals(suggestion)));
+
+        // Check whether accusation is correct
+        if (mSolution.equals(suggestion)) {
+            mFinished = true;
+            return true;
+        } else {
+            // Remove player if accusation is incorrect
+            mActivePlayerIterator.remove();
+            mFinished = mActivePlayers.isEmpty();
+            return false;
+        }
     }
 
-    public Location getTurnInitialPlayerRoom() {
-        return mTurnInitialPlayerRoom;
-    }
-
+    /**
+     * Returns the player's current location.
+     *
+     * @return the player's current location.
+     */
     public Location getCurrentPlayerLocation() {
         return mCurrentPlayerLocation;
     }
 
+    /**
+     * Returns the {@code Room} in which the player was at the beginning of their turn.
+     *
+     * Used to ensure that the player does not return to the same room during their turn.
+     *
+     * @return the {@code Room} in which the player was at the beginning of their turn.
+     */
+    public Location getTurnInitialPlayerRoom() {
+        return mTurnInitialPlayerRoom;
+    }
+
+    /**
+     * Returns {@code true} if the player is currently able to roll the dice for movement.
+     *
+     * @return {@code true} if the player is currently able to roll the dice for movement.
+     */
+    public boolean canRollDice() {
+        return !mTurnMovementComplete && mTurnCanRollDice;
+    }
+
+    /**
+     * Returns {@code true} if the player is currently able to use a secret passage.
+     *
+     * @return {@code true} if the player is currently able to use a secret passage.
+     */
+    public boolean canUsePassage() {
+        return !mTurnMovementComplete && mTurnCanUsePassage;
+    }
+
+    /**
+     * Returns the number of moves remaining in the player's turn.
+     *
+     * @return the number of moves remaining in the player's turn.
+     */
     public int getTurnRemainingMoves() {
         return mTurnRemainingMoves;
     }
 
-    public Suggestion getSolution() {
-        return mSolution;
-    }
-
-    public List<? extends Card> getRemainingCards() {
-        return mRemainingCards;
-    }
-
-    public List<LogEntry> getLog() {
-        return mLog;
+    /**
+     * Returns {@code true} if the player is currently able to pose a question.
+     *
+     * @return {@code true} if the player is currently able to pose a question.
+     */
+    public boolean canPoseQuestion() {
+        return mTurnCanPoseQuestion;
     }
 
     /**
-     * Chooses a random solution and distributes remaining cards to players
+     * Returns {@code true} if the player is currently able to make a final accusation.
+     *
+     * @return {@code true} if the player is currently able to make a final accusation.
+     */
+    public boolean canMakeFinalAccusation() {
+        return mTurnCanMakeFinalAccusation;
+    }
+
+    /**
+     * Returns {@code true} if the player is currently able to stop moving.
+     *
+     * @return {@code true} if the player is currently able to stop moving.
+     */
+    public boolean canStopMoving() {
+        return mTurnHasMoved && mTurnRemainingMoves > 0;
+    }
+
+    /**
+     * Returns {@code true} if the player's turn is finished.
+     *
+     * @return {@code true} if the player's turn is finished.
+     */
+    public boolean isTurnFinished() {
+        return mTurnFinished;
+    }
+
+    /**
+     * Returns {@code true} if the game has finished.
+     *
+     * The game has finished once a correct accusation has been made or all players have made incorrect accusations.
+     *
+     * @return {@code true} if the game has finished.
+     */
+    public boolean isFinished() {
+        return mFinished;
+    }
+
+    /**
+     * Chooses a random solution and distributes remaining cards to players.
      *
      * Once the solution has been chosen the remaining cards are evenly distributed to players,
-     * Any cards that cannot be evenly distributed are placed in the remaining cards pile, which
-     * is visible to all players.
+     * any cards that cannot be evenly distributed are placed in the undistributed cards pile,
+     * which is visible to all players.
      */
     private void setupCards() {
         List<Suspect> suspects = mBoard.getSuspects();
@@ -539,13 +621,13 @@ public class Game {
         // Shuffle cards
         Collections.shuffle(distributeCards);
 
-        // Place cards that will not divide evenly into the remaining cards pile
-        mRemainingCards = distributeCards.stream()
+        // Place cards that will not divide evenly into the undistributed cards pile
+        mUndistributedCards = distributeCards.stream()
                 .limit(distributeCards.size() % mPlayers.size())
                 .collect(Collectors.toList());
 
-        // Remove remaining cards from cards to be distributed
-        distributeCards.removeAll(mRemainingCards);
+        // Remove undistributed cards from cards to be distributed
+        distributeCards.removeAll(mUndistributedCards);
 
         // Distribute cards to players
         for (int i = 0; i < distributeCards.size(); i++) {

@@ -586,7 +586,7 @@ public class GameController {
 
             System.out.print(new String(new char[18 - card.getName().length()]).replace("\0", " "));
 
-            if (mGame.getRemainingCards().contains(card)) {
+            if (mGame.getUndistributedCards().contains(card)) {
                 System.out.print("A");
             } else if (player.hasCard(card)) {
                 System.out.print("X");
@@ -820,9 +820,9 @@ public class GameController {
         List<Room> rooms = mGame.getBoard().getRooms();
 
         // Can't make suggestions using the universally known cards
-        suspects.removeAll(mGame.getRemainingCards());
-        weapons.removeAll(mGame.getRemainingCards());
-        rooms.removeAll(mGame.getRemainingCards());
+        suspects.removeAll(mGame.getUndistributedCards());
+        weapons.removeAll(mGame.getUndistributedCards());
+        rooms.removeAll(mGame.getUndistributedCards());
 
         if (currentRoom != null) {
             return CardPickerDialog.showSuggestionPickerDialog(mMainFrame, suspects, weapons, currentRoom);
@@ -1009,7 +1009,7 @@ public class GameController {
         // Show cursor panel to allow force finishing dice roll
         setClickAction(mCardDistributionPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        mCardDistributionPanel.distributeCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getRemainingCards(), mGame.getBoard());
+        mCardDistributionPanel.distributeCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getUndistributedCards(), mGame.getBoard());
 
         // Hide cursor panel
         setClickAction(null, null, null);
