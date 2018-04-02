@@ -81,7 +81,7 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
         setVisible(false);
 
-        setBackground(Util.getColorWithAlpha(Color.WHITE, 200));
+        setBackground(new Color(255, 255, 255, 200));
 
         updateSize();
     }

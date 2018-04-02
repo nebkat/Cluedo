@@ -56,8 +56,4 @@ public class Util {
         g.drawString(s, x, y);
     }
 
-    public static Color getColorWithAlpha(Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
-    }
-
 }
