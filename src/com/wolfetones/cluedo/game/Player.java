@@ -79,6 +79,15 @@ public class Player {
     }
 
     /**
+     * Returns a list of cards that this player is holding.
+     *
+     * @return a list of cards that this player is holding.
+     */
+    public List<Card> getCards() {
+        return mCards;
+    }
+
+    /**
      * Returns {@code true} if the player holds any of the cards used in the {@code suggestion}.
      *
      * @param suggestion Suggestion to check.

@@ -157,6 +157,9 @@ public class GameController {
     private ActionPanel mActionPanel;
     private CardAnimationsPanel mCardAnimationsPanel;
 
+    private SlideOutCardsPanel mPlayerCardsPanel;
+    private SlideOutCardsPanel mUndistributedCardsPanel;
+
     /**
      * Click action
      */
@@ -302,7 +305,13 @@ public class GameController {
         mPlayersPanel.setTopPlayer(player);
         mPlayersPanel.setActivePlayer(0);
         mPlayersPanel.hideBubbles();
+
         passToPlayer(player, null);
+
+        mPlayerCardsPanel.setCards(player.getCards());
+        if (!mGame.getUndistributedCards().isEmpty()) {
+            mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
+        }
 
         mOutputPanel.clear();
 
@@ -1039,6 +1048,20 @@ public class GameController {
         mBoardLayeredPane.add(mCardAnimationsPanel, BOARD_LAYER_CARDS);
         mCardAnimationsPanel.setLocation(sidePanelWidth, 0);
         mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
+
+        // Slide out panels
+        int slideOutPanelHiddenWidth = Config.screenRelativeSize(40);
+        int slideOutPanelHeight = Config.screenHeightPercentage(0.2f);
+
+        // Player cards slide out panel
+        mPlayerCardsPanel = new SlideOutCardsPanel("Your cards".toUpperCase(), slideOutPanelHiddenWidth, slideOutPanelHeight, boardDimension.width);
+        mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_CARDS);
+        mPlayerCardsPanel.setLocation(boardDimension.width, boardDimension.height / 4 - slideOutPanelHeight / 2);
+
+        // Undistributed cards slide out panel
+        mUndistributedCardsPanel = new SlideOutCardsPanel("Public cards".toUpperCase(), slideOutPanelHiddenWidth, slideOutPanelHeight, boardDimension.width);
+        mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_CARDS);
+        mUndistributedCardsPanel.setLocation(boardDimension.width, boardDimension.height * 3 / 4 - slideOutPanelHeight / 2);
     }
 
     private void dealCards() {

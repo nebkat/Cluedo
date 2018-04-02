@@ -32,7 +32,7 @@ import java.awt.*;
 public class TileBorder implements Border {
     private final char[] mBordersAndCorners;
 
-    private static final Color COLOR_WALL = Color.decode("#832f32");
+    public static final Color COLOR_WALL = Color.decode("#832f32");
     private static final Color COLOR_WINDOW = Color.WHITE;
     private static final Color COLOR_CORRIDOR = Color.decode("#666666");
     private static final Color COLOR_PASSAGE = Color.BLACK;
