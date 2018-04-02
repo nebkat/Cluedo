@@ -65,6 +65,8 @@ public class StartTileCircle extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
+        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
         g.setColor(mColor);
         g.fillOval(0, 0, getWidth(), getHeight());
     }
