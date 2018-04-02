@@ -60,7 +60,7 @@ public class Suggestion {
      * @return The cards of the suggestion.
      */
     public List<Card> asList() {
-        return Arrays.asList(suspect, room, weapon);
+        return List.of(suspect, room, weapon);
     }
 
     public String asHumanReadableString() {

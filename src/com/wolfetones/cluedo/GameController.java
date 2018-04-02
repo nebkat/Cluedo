@@ -748,17 +748,17 @@ public class GameController {
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
+        // Fill in players if in demo mode
         if (DEMO_MODE) {
+            List<Suspect> suspects = mGame.getBoard().getSuspects();
             for (int i = 0; i < 6; i++) {
-                Suspect suspect = mGame.getBoard().getSuspect(i);
-                mPlayers.add(new Player(suspect, suspect.getName()));
+                mPlayers.add(new Player(suspects.get(i), suspects.get(i).getName()));
             }
 
             return;
         }
 
-        List<Suspect> remainingSuspects = mGame.getBoard().getSuspects();
-
+        List<Suspect> remainingSuspects = mGame.getBoard().getSuspectsModifiable();
         while (remainingSuspects.size() > 0) {
             Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
             if (player != null) {
@@ -835,9 +835,9 @@ public class GameController {
      */
     @SuppressWarnings("SuspiciousMethodCalls")
     private Suggestion createSuggestion(Room currentRoom) {
-        List<Suspect> suspects = mGame.getBoard().getSuspects();
-        List<Weapon> weapons = mGame.getBoard().getWeapons();
-        List<Room> rooms = mGame.getBoard().getRooms();
+        List<Suspect> suspects = mGame.getBoard().getSuspectsModifiable();
+        List<Weapon> weapons = mGame.getBoard().getWeaponsModifiable();
+        List<Room> rooms = mGame.getBoard().getRoomsModifiable();
 
         // Can't make suggestions using the universally known cards
         suspects.removeAll(mGame.getUndistributedCards());

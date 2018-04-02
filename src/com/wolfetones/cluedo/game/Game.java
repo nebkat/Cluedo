@@ -46,10 +46,6 @@ public class Game {
     private boolean mStarted = false;
     private boolean mFinished = false;
 
-    /**
-     * Cards
-     */
-    private List<Card> mCards = new ArrayList<>(21);
     /** Cards that have not been distributed to any player (visible to all) */
     private List<Card> mUndistributedCards = new ArrayList<>(0);
 
@@ -598,22 +594,13 @@ public class Game {
      * which is visible to all players.
      */
     private void setupCards() {
-        List<Suspect> suspects = mBoard.getSuspects();
-        List<Weapon> weapons = mBoard.getWeapons();
-        List<Room> rooms = mBoard.getRooms();
-
-        // Add all cards to the cards list
-        mCards.addAll(suspects);
-        mCards.addAll(weapons);
-        mCards.addAll(rooms);
-
         // Create a random solution
-        mSolution = new Suggestion(randomCard(suspects),
-                randomCard(weapons),
-                randomCard(rooms));
+        mSolution = new Suggestion(randomCard(mBoard.getSuspects()),
+                randomCard(mBoard.getWeapons()),
+                randomCard(mBoard.getRooms()));
 
         // Cards to be distributed to players
-        List<Card> distributeCards = new ArrayList<>(mCards);
+        List<Card> distributeCards = mBoard.getCardsModifiable();
 
         // Remove all solution cards
         distributeCards.removeAll(mSolution.asList());

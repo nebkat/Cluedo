@@ -41,9 +41,10 @@ public class BoardModel {
     /**
      * Cards
      */
-    private List<Room> mRooms = new ArrayList<>();
-    private List<Suspect> mSuspects = new ArrayList<>();
-    private List<Weapon> mWeapons = new ArrayList<>();
+    private List<Card> mCards;
+    private List<Suspect> mSuspects;
+    private List<Weapon> mWeapons;
+    private List<Room> mRooms;
 
     /**
      * A 2D array containing the tiles on the board, in format {@code [y][x]}.
@@ -54,26 +55,36 @@ public class BoardModel {
      * Constructs a new {@code BoardModel} and initializes all cards and tiles.
      */
     public BoardModel() {
-        // Initialize rooms
-        for (int i = 0; i < Config.Cards.ROOMS.length; i++) {
-            Config.Cards.Room configRoom = Config.Cards.ROOMS[i];
-
-            mRooms.add(new Room(configRoom.name, configRoom.searchNames, configRoom.resource, configRoom.guess));
-        }
+        mCards = new ArrayList<>();
+        mSuspects = new ArrayList<>();
+        mWeapons = new ArrayList<>();
+        mRooms = new ArrayList<>();
 
         // Initialize suspects
-        for (int i = 0; i < Config.Cards.SUSPECTS.length; i++) {
-            Config.Cards.Suspect configSuspect = Config.Cards.SUSPECTS[i];
-
+        for (Config.Cards.Suspect configSuspect : Config.Cards.SUSPECTS) {
             mSuspects.add(new Suspect(configSuspect.name, configSuspect.searchNames, configSuspect.resource, configSuspect.color));
         }
 
         // Initialize weapons
-        for (int i = 0; i < Config.Cards.WEAPONS.length; i++) {
-            Config.Cards.Weapon configWeapon = Config.Cards.WEAPONS[i];
-
+        for (Config.Cards.Weapon configWeapon : Config.Cards.WEAPONS) {
             mWeapons.add(new Weapon(configWeapon.name, configWeapon.searchNames, configWeapon.resource));
         }
+
+        // Initialize rooms
+        for (Config.Cards.Room configRoom : Config.Cards.ROOMS) {
+            mRooms.add(new Room(configRoom.name, configRoom.searchNames, configRoom.resource, configRoom.guess));
+        }
+
+        // Add all suspects, weapons and rooms to cards list
+        mCards.addAll(mSuspects);
+        mCards.addAll(mWeapons);
+        mCards.addAll(mRooms);
+
+        // Make all lists unmodifiable
+        mCards = Collections.unmodifiableList(mCards);
+        mSuspects = Collections.unmodifiableList(mSuspects);
+        mWeapons = Collections.unmodifiableList(mWeapons);
+        mRooms = Collections.unmodifiableList(mRooms);
 
         // Initialize tiles
         int startTileSuspectIterator = 0;
@@ -191,42 +202,80 @@ public class BoardModel {
         return mTiles[y][x];
     }
 
+    /**
+     * Returns an unmodifiable list containing all cards.
+     *
+     * Includes all {@code Suspect}s, {@code Weapon}s and {@code Room}s.
+     *
+     * @return an unmodifiable list containing all cards.
+     */
     public List<Card> getCards() {
-        List<Card> cards = new ArrayList<>();
-        cards.addAll(mSuspects);
-        cards.addAll(mWeapons);
-        cards.addAll(mRooms);
-
-        return cards;
+        return mCards;
     }
 
     /**
-     * Returns a list containing all of the {@code Room} cards.
+     * Returns a modifiable list containing all cards.
      *
-     * @return a list containing all of the {@code Room} cards.
+     * Includes all {@code Suspect}s, {@code Weapon}s and {@code Room}s.
+     *
+     * @return a modifiable list containing all cards.
+     */
+    public List<Card> getCardsModifiable() {
+        return new ArrayList<>(mCards);
+    }
+
+    /**
+     * Returns an unmodifiable list containing all of the {@code Suspect} cards.
+     *
+     * @return an unmodifiable list containing all of the {@code Suspect} cards.
+     */
+    public List<Suspect> getSuspects() {
+        return mSuspects;
+    }
+
+    /**
+     * Returns an unmodifiable list containing all of the {@code Weapon} cards.
+     *
+     * @return an unmodifiable list containing all of the {@code Weapon} cards.
+     */
+    public List<Weapon> getWeapons() {
+        return mWeapons;
+    }
+
+    /**
+     * Returns an unmodifiable list containing all of the {@code Room} cards.
+     *
+     * @return an unmodifiable list containing all of the {@code Room} cards.
      */
     public List<Room> getRooms() {
-        return new ArrayList<>(mRooms);
+        return mRooms;
     }
 
-    public Room getRoom(int id) {
-        return mRooms.get(id);
-    }
-
-    public List<Suspect> getSuspects() {
+    /**
+     * Returns a modifiable list containing all of the {@code Suspect} cards.
+     *
+     * @return a modifiable list containing all of the {@code Suspect} cards.
+     */
+    public List<Suspect> getSuspectsModifiable() {
         return new ArrayList<>(mSuspects);
     }
 
-    public Suspect getSuspect(int id) {
-        return mSuspects.get(id);
-    }
-
-    public List<Weapon> getWeapons() {
+    /**
+     * Returns a modifiable list containing all of the {@code Weapon} cards.
+     *
+     * @return a modifiable list containing all of the {@code Weapon} cards.
+     */
+    public List<Weapon> getWeaponsModifiable() {
         return new ArrayList<>(mWeapons);
     }
 
-    public Weapon getWeapon(int id) {
-        return mWeapons.get(id);
+    /**
+     * Returns a modifiable list containing all of the {@code Room} cards.
+     *
+     * @return a modifiable list containing all of the {@code Room} cards.
+     */
+    public List<Room> getRoomsModifiable() {
+        return new ArrayList<>(mRooms);
     }
 
     private static int[] tileCoordinatesToBoardStringCoordinates(int x, int y) {
@@ -236,15 +285,11 @@ public class BoardModel {
         return new int[] {x, y};
     }
 
-    public static int tileCoordinatesToOffset(int x, int y) {
-        return x + y * Config.Board.WIDTH;
-    }
-
     private static int tileCoordinatesToBoardStringOffset(int x, int y) {
         return boardStringCoordinatesToOffset(1 + 2 * x, 1 + 2 * y);
     }
 
-    public static int boardStringCoordinatesToOffset(int x, int y) {
+    private static int boardStringCoordinatesToOffset(int x, int y) {
         return x + y * Config.Board.STRING_WIDTH;
     }
 
