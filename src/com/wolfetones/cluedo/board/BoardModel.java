@@ -80,12 +80,6 @@ public class BoardModel {
         mCards.addAll(mWeapons);
         mCards.addAll(mRooms);
 
-        // Make all lists unmodifiable
-        mCards = Collections.unmodifiableList(mCards);
-        mSuspects = Collections.unmodifiableList(mSuspects);
-        mWeapons = Collections.unmodifiableList(mWeapons);
-        mRooms = Collections.unmodifiableList(mRooms);
-
         // Initialize tiles
         int startTileSuspectIterator = 0;
         for (int y = 0; y < Config.Board.HEIGHT; y++) {
@@ -181,14 +175,18 @@ public class BoardModel {
                 .boxed()
                 .collect(Collectors.toList());
         Collections.shuffle(weaponRooms);
-
         for (int i = 0; i < mWeapons.size(); i++) {
             mWeapons.get(i).setLocation(mRooms.get(weaponRooms.get(i)));
         }
 
-
         // Remove guess room from rooms list
         mRooms.remove(0);
+
+        // Make all lists unmodifiable
+        mCards = Collections.unmodifiableList(mCards);
+        mSuspects = Collections.unmodifiableList(mSuspects);
+        mWeapons = Collections.unmodifiableList(mWeapons);
+        mRooms = Collections.unmodifiableList(mRooms);
     }
 
     /**
