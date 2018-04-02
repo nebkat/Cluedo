@@ -348,11 +348,8 @@ public class DicePanel extends JPanel implements Animator.Fadable {
 
     @Override
     protected void paintComponent(Graphics gg) {
-        super.paintComponent(gg);
         Graphics2D g = (Graphics2D) gg;
-
-        // Enable anti-aliasing
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Util.setHighQualityRenderingHints(g);
 
         // Translate rendering to screen center so world based elements don't have to
         g.translate(getWidth() / 2, getHeight() / 2);

@@ -30,6 +30,7 @@ import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.ui.Animator;
 import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
 import com.wolfetones.cluedo.ui.component.TextBubble;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -165,6 +166,7 @@ public class ActionPanel extends JPanel {
         @Override
         public void paintComponent(Graphics gg) {
             Graphics2D g = (Graphics2D) gg;
+            Util.setHighQualityRenderingHints(g);
 
             if (mScale == 0) {
                 return;

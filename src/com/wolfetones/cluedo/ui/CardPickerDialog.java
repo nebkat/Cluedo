@@ -316,6 +316,7 @@ public class CardPickerDialog extends JDialog {
             @Override
             public void paintComponent(Graphics gg) {
                 Graphics2D g = (Graphics2D) gg;
+                Util.setHighQualityRenderingHints(g);
 
                 // Set alpha
                 float alpha = 0.5f;

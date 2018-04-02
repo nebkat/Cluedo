@@ -26,6 +26,7 @@ package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.config.Config;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -55,7 +56,7 @@ public class ScaledImageComponent extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        Util.setHighQualityRenderingHints(g);
 
         g.drawImage(mImage, 0, 0, null);
     }

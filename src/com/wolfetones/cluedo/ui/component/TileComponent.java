@@ -25,6 +25,7 @@
 package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.Color;
@@ -71,7 +72,7 @@ public class TileComponent extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        Util.setHighQualityRenderingHints(g);
 
         if (isOpaque()) {
             if (mTemporaryBackground == null) {

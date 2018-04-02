@@ -25,6 +25,7 @@
 package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.config.Config;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.border.Border;
 import java.awt.*;
@@ -58,7 +59,7 @@ public class TileBorder implements Border {
 
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Util.setHighQualityRenderingHints(g);
 
         for (int border = BORDER_LEFT; border <= BORDER_BOTTOM; border += 2) {
             switch (mBordersAndCorners[border]) {

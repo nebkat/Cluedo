@@ -26,6 +26,7 @@ package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.board.tiles.CorridorTile;
 import com.wolfetones.cluedo.board.tiles.StartTile;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -65,7 +66,7 @@ public class StartTileCircle extends JComponent {
 
     @Override
     public void paintComponent(Graphics g) {
-        ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Util.setHighQualityRenderingHints(g);
 
         g.setColor(mColor);
         g.fillOval(0, 0, getWidth(), getHeight());

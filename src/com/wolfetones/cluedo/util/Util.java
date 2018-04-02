@@ -26,8 +26,19 @@ package com.wolfetones.cluedo.util;
 
 import java.awt.*;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Util {
+    public static final Map<RenderingHints.Key, ?> HIGH_QUALITY_RENDERING_HINTS = new HashMap<>() {{
+        put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        put(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+        put(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        put(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+        put(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+    }};
+
     public static String implode(Collection<?> items, String join) {
         return implode(items, join, join);
     }
@@ -56,4 +67,7 @@ public class Util {
         g.drawString(s, x, y);
     }
 
+    public static void setHighQualityRenderingHints(Graphics g) {
+        ((Graphics2D) g).setRenderingHints(HIGH_QUALITY_RENDERING_HINTS);
+    }
 }

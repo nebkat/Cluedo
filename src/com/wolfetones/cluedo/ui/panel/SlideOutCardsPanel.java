@@ -108,9 +108,7 @@ public class SlideOutCardsPanel extends JPanel {
     @Override
     public void paintComponent(Graphics gg) {
         Graphics2D g = (Graphics2D) gg;
-
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        Util.setHighQualityRenderingHints(g);
 
         int arcSize = Config.screenRelativeSize(10);
         g.setColor(TileBorder.COLOR_WALL);

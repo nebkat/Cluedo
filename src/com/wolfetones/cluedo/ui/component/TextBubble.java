@@ -143,9 +143,8 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
     @Override
     public void paintComponent(Graphics gg) {
-        super.paintComponent(gg);
-
         Graphics2D g = (Graphics2D) gg;
+        Util.setHighQualityRenderingHints(g);
 
         if (mScale == 0) {
             g.translate(-Integer.MAX_VALUE, -Integer.MAX_VALUE);

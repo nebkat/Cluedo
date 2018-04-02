@@ -32,6 +32,7 @@ import com.wolfetones.cluedo.ui.Animator;
 import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
 import com.wolfetones.cluedo.ui.SimpleLayoutManager;
 import com.wolfetones.cluedo.ui.component.TextBubble;
+import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
@@ -221,6 +222,7 @@ public class PlayersPanel extends JPanel {
         @Override
         public void paintComponent(Graphics gg) {
             Graphics2D g = (Graphics2D) gg;
+            Util.setHighQualityRenderingHints(g);
 
             if (mEliminated) {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));

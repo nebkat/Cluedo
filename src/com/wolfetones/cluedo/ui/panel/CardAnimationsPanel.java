@@ -509,6 +509,7 @@ public class CardAnimationsPanel extends JPanel {
         @Override
         public void paintComponent(Graphics gg) {
             Graphics2D g = (Graphics2D) gg;
+            Util.setHighQualityRenderingHints(g);
 
             if (mAlpha == 0) {
                 return;
