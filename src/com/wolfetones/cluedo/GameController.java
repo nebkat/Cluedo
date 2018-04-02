@@ -343,285 +343,319 @@ public class GameController {
             if (command == null) {
                 // Ignore and continue
                 System.err.println("Unexpected interrupt");
-            } else if (command.equals(COMMAND_QUIT)) {
-                System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
-                System.exit(0);
-            } else if (command.equals(COMMAND_CHEAT)) {
-                System.out.println("The solution is: " + mGame.getSolution().asHumanReadableString());
-            } else if (command.equals(COMMAND_HELP)) {
-                System.out.println("Usage: help ([command|list])");
-                if (args.length > 1) {
-                    switch (args[1]) {
-                        case "all":
-                            HELP_COMMANDS.values().forEach(System.out::println);
-                            break;
-                        case "list":
-                            HELP_COMMANDS.keySet().forEach(System.out::println);
-                            break;
-                        default:
-                            if (HELP_COMMANDS.containsKey(args[1])) {
-                                System.out.println(HELP_COMMANDS.get(args[1]));
-                            } else {
-                                System.out.println("Invalid command " + args[1] + ". To view list of all commands use `help list`");
-                            }
-                            break;
-                    }
-                } else {
-                    System.out.println("Brief help for the currently valid commands is listed below. To view help for a specific command use `help [command]`, or to view a list of commands use `help list`.");
-
-                    commands.stream().filter((c) -> !c.startsWith(HIDDEN_COMMAND_PREFIX))
-                            .forEach((c) -> System.out.println(HELP_COMMANDS.get(c)));
-                }
-
-
             } else if (command.equals(COMMAND_DONE)) {
                 break;
+            } else if (command.equals(COMMAND_QUIT)) {
+                performQuit();
+            } else if (command.equals(COMMAND_CHEAT)) {
+                performCheat();
+            } else if (command.equals(COMMAND_HELP)) {
+                performHelp(args, commands);
             } else if (command.equals(COMMAND_ROLL)) {
-                int[] dice = new int[Game.NUM_DICE];
-
-                // Show cursor panel to allow force finishing dice roll
-                setClickAction(mBoardDicePanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-                // Roll dice
-                mBoardDicePanel.rollDice(dice, false);
-
-                // Hide cursor panel
-                setClickAction(null, null, null);
-
-                // Game will read dice values from dice array if they are not 0
-                int remainingMoves = mGame.rollDice(dice);
-
-                mPlayersPanel.showBubble(player, "I rolled " + remainingMoves);
-                System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMoves);
-
-                System.out.println("Click on board tiles to move, or alternatively:");
-
-                setPathFindingEnabled(true);
-
-                // Exit if in room
-                Location startLocation = mGame.getCurrentPlayerLocation();
-                if (startLocation.isRoom()) {
-                    List<RoomTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
-                    corridorTiles.sort(Comparator.comparingInt(Tile::getX));
-                    String[] validCommands = new String[corridorTiles.size()];
-                    for (int i = 0; i < corridorTiles.size(); i++) {
-                        validCommands[i] = Integer.toString(i + 1);
-                    }
-                    String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands)[0];
-                    // If not interrupted by path finding/UI
-                    if (entranceCommand != null) {
-                        int entranceCorridor = Integer.parseInt(entranceCommand) - 1;
-
-                        mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
-                    }
-                }
-
-                // May have moved directly to another move using path finding/UI
-                if (mGame.getTurnRemainingMoves() == 0) {
-                    continue;
-                }
-
-                Tile moveTile = null;
-                CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
-                List<String> validCommands = new ArrayList<>(5);
-                while ((remainingMoves = mGame.getTurnRemainingMoves()) > 0) {
-                    validCommands.clear();
-                    if (currentTile == null) {
-                        throw new IllegalStateException("Current tile cannot be null");
-                    }
-                    if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
-                    if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
-                    if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
-                    if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
-                    if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
-
-                    // Update valid actions for stop button
-                    mActionPanel.updateStatus(mGame);
-
-                    // Update bubble if moved at least once
-                    if (mGame.canStopMoving()) mPlayersPanel.showBubble(player, "I have " + remainingMoves + " move" + (remainingMoves != 1 ? "s" : "") + " remaining");
-
-                    String direction = readCommand("Choose direction (remaining: " + remainingMoves + ")", validCommands)[0];
-                    if (direction == null) {
-                        continue;
-                    }
-
-                    // Stop moving
-                    if (direction.equals(COMMAND_STOP)) {
-                        mGame.stopMoving();
-                        break;
-                    }
-
-                    // Get tile for direction
-                    switch (direction.toLowerCase()) {
-                        case COMMAND_LEFT:
-                            moveTile = currentTile.getLeft();
-                            break;
-                        case COMMAND_UP:
-                            moveTile = currentTile.getUp();
-                            break;
-                        case COMMAND_RIGHT:
-                            moveTile = currentTile.getRight();
-                            break;
-                        case COMMAND_DOWN:
-                            moveTile = currentTile.getDown();
-                            break;
-                    }
-
-                    Location targetLocation = Location.fromTile(moveTile);
-                    if (targetLocation.isRoom()) {
-                        // Ensure that player is not returning to the room that they started in
-                        if (targetLocation == mGame.getTurnInitialPlayerRoom()) {
-                            System.out.println("Can't return to same room");
-                            continue;
-                        }
-
-                        mGame.moveTo(targetLocation);
-                        break;
-                    } else {
-                        currentTile = targetLocation.asTile();
-                    }
-
-                    mGame.moveTo(targetLocation);
-                }
-
-                mPlayersPanel.hideBubbles();
-
-                setPathFindingEnabled(false);
+                performRoll(player);
             } else if (command.equals(COMMAND_PASSAGE)) {
-                mGame.usePassage();
+                performPassage();
             } else if (command.equals(COMMAND_QUESTION)) {
-                Suggestion suggestion;
-                if (args.length == 1) {
-                    suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
-                } else {
-                    if (args.length != 3) {
-                        System.out.println("Invalid number of arguments provided for question command");
-                        System.out.println(HELP_COMMANDS.get(COMMAND_QUESTION));
-                        continue;
-                    }
-
-                    suggestion = createSuggestion(args[1], args[2], null, mGame.getCurrentPlayerLocation().asRoom());
-
-                    boolean valid = true;
-                    for (Card card : suggestion.asList()) {
-                        // Can't use undistributed cards in suggestion
-                        if (mGame.getUndistributedCards().contains(card)) {
-                            valid = false;
-
-                            System.out.println("Can't use " + card.getName() + " in question as it is visible to all players");
-                        }
-                    }
-
-                    if (!valid) {
-                        suggestion = null;
-                    }
-                }
-
-                if (suggestion == null) {
-                    continue;
-                }
-
-                Player matchingPlayer = mGame.poseQuestion(suggestion);
-
-                if (matchingPlayer != null) {
-                    List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
-
-                    mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
-                    readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
-
-                    passToPlayer(matchingPlayer, "temporarily");
-
-                    Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
-                    player.getKnowledge().setHolding(shownCard, matchingPlayer);
-
-                    passToPlayer(player, "back");
-
-                    CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
-                    System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
-
-                    mPlayersPanel.hideBubbles();
-                } else {
-                    mPlayersPanel.showQuestionResponses(player, suggestion, null, null);
-
-                    System.out.println("No players have any of the suggested cards");
-                }
+                performQuestion(player, args);
             } else if (command.equals(COMMAND_ACCUSE)) {
-                Suggestion suggestion;
-                if (args.length == 1) {
-                    suggestion = createSuggestion(null);
-                } else {
-                    if (args.length != 4) {
-                        System.out.println("Invalid number of arguments provided for question command");
-                        System.out.println(HELP_COMMANDS.get(COMMAND_ACCUSE));
-                        continue;
-                    }
-
-                    suggestion = createSuggestion(args[1], args[2], args[3], null);
-                }
-
-                if (suggestion == null) {
-                    continue;
-                }
-
-                boolean correct = mGame.makeFinalAccusation(suggestion);
-
-                mCardAnimationsPanel.finalAccusation(suggestion, mGame.getSolution());
-
-                if (correct) {
-                    System.out.println("Congratulations! You were correct!");
-                } else {
-                    System.out.println("Your guess was incorrect. You have been eliminated.");
-                    mPlayersPanel.setPlayerEliminated(player, true);
-                }
+                performAccuse(player, args);
             } else if (command.equals(COMMAND_NOTES)) {
-                System.out.println("N O T E S");
-                System.out.println("---------");
-
-                System.out.println();
-
-                printKnowledge(mGame.getBoard().getSuspects(), player, "SUSPECTS");
-                printKnowledge(mGame.getBoard().getWeapons(), player, "WEAPONS");
-                printKnowledge(mGame.getBoard().getRooms(), player, "ROOMS");
+                performNotes(player);
             } else if (command.equals(COMMAND_LOG)) {
-                List<Game.LogEntry> log = mGame.getLog();
-
-                if (log.isEmpty()) {
-                    System.out.println("No entries in log");
-                }
-
-                for (int i = 0; i < log.size(); i++) {
-                    Game.LogEntry entry = log.get(i);
-                    String text = (i + 1) + ". ";
-                    if (entry.player == player) {
-                        text += "You";
-                    }
-                    if (entry.type == Game.LogEntry.Type.Question) {
-                        text += " suggested " + entry.suggestion.asHumanReadableString() + ", ";
-                        if (entry.responder != null) {
-                            if (entry.responder == player) {
-                                text += "you";
-                            } else {
-                                text += entry.responder.getName();
-                            }
-                            text += " showed a card";
-                        } else {
-                            text += "nobody had any card";
-                        }
-                    } else if (entry.type == Game.LogEntry.Type.FinalAccusation) {
-                        text += " made a final accusation of " + entry.suggestion.asHumanReadableString() + " ";
-                        String was = entry.player == player ? "were" : "was";
-                        if (entry.correct) {
-                            text += "and " + was + " correct";
-                        } else {
-                            text += "but" + was + " incorrect";
-                        }
-                    }
-
-                    System.out.println(text);
-                }
+                performLog(player);
             }
         }
+    }
+
+    private void performQuit() {
+        System.out.println("The solution was: " + mGame.getSolution().asHumanReadableString());
+        System.exit(0);
+    }
+
+    private void performCheat() {
+        System.out.println("The solution is: " + mGame.getSolution().asHumanReadableString());
+    }
+
+    private void performHelp(String[] args, List<String> commands) {
+        System.out.println("Usage: help ([command|list])");
+        if (args.length > 1) {
+            switch (args[1]) {
+                case "all":
+                    HELP_COMMANDS.values().forEach(System.out::println);
+                    break;
+                case "list":
+                    HELP_COMMANDS.keySet().forEach(System.out::println);
+                    break;
+                default:
+                    if (HELP_COMMANDS.containsKey(args[1])) {
+                        System.out.println(HELP_COMMANDS.get(args[1]));
+                    } else {
+                        System.out.println("Invalid command " + args[1] + ". To view list of all commands use `help list`");
+                    }
+                    break;
+            }
+        } else {
+            System.out.println("Brief help for the currently valid commands is listed below. To view help for a specific command use `help [command]`, or to view a list of commands use `help list`.");
+
+            commands.stream().filter((c) -> !c.startsWith(HIDDEN_COMMAND_PREFIX))
+                    .forEach((c) -> System.out.println(HELP_COMMANDS.get(c)));
+        }
+    }
+
+    private void performPassage() {
+        mGame.usePassage();
+    }
+
+    private void performRoll(Player player) {
+        int[] dice = new int[Game.NUM_DICE];
+
+        // Show cursor panel to allow force finishing dice roll
+        setClickAction(mBoardDicePanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Roll dice
+        mBoardDicePanel.rollDice(dice, false);
+
+        // Hide cursor panel
+        setClickAction(null, null, null);
+
+        // Game will read dice values from dice array if they are not 0
+        int remainingMoves = mGame.rollDice(dice);
+
+        mPlayersPanel.showBubble(player, "I rolled " + remainingMoves);
+        System.out.println("Rolled " + Util.implode(Arrays.stream(dice).boxed().collect(Collectors.toList()), "+") + " = " + remainingMoves);
+
+        System.out.println("Click on board tiles to move, or alternatively:");
+
+        setPathFindingEnabled(true);
+
+        // Exit if in room
+        Location startLocation = mGame.getCurrentPlayerLocation();
+        if (startLocation.isRoom()) {
+            List<RoomTile> corridorTiles = startLocation.asRoom().getEntranceCorridors();
+            corridorTiles.sort(Comparator.comparingInt(Tile::getX));
+            String[] validCommands = new String[corridorTiles.size()];
+            for (int i = 0; i < corridorTiles.size(); i++) {
+                validCommands[i] = Integer.toString(i + 1);
+            }
+            String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands)[0];
+            // If not interrupted by path finding/UI
+            if (entranceCommand != null) {
+                int entranceCorridor = Integer.parseInt(entranceCommand) - 1;
+
+                mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
+            }
+        }
+
+        // May have moved directly to another move using path finding/UI
+        if (mGame.getTurnRemainingMoves() == 0) {
+            return;
+        }
+
+        Tile moveTile = null;
+        CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
+        List<String> validCommands = new ArrayList<>(5);
+        while ((remainingMoves = mGame.getTurnRemainingMoves()) > 0) {
+            validCommands.clear();
+            if (currentTile == null) {
+                throw new IllegalStateException("Current tile cannot be null");
+            }
+            if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
+            if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
+            if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
+            if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
+            if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
+
+            // Update valid actions for stop button
+            mActionPanel.updateStatus(mGame);
+
+            // Update bubble if moved at least once
+            if (mGame.canStopMoving()) mPlayersPanel.showBubble(player, "I have " + remainingMoves + " move" + (remainingMoves != 1 ? "s" : "") + " remaining");
+
+            String direction = readCommand("Choose direction (remaining: " + remainingMoves + ")", validCommands)[0];
+            if (direction == null) {
+                continue;
+            }
+
+            // Stop moving
+            if (direction.equals(COMMAND_STOP)) {
+                mGame.stopMoving();
+                break;
+            }
+
+            // Get tile for direction
+            switch (direction.toLowerCase()) {
+                case COMMAND_LEFT:
+                    moveTile = currentTile.getLeft();
+                    break;
+                case COMMAND_UP:
+                    moveTile = currentTile.getUp();
+                    break;
+                case COMMAND_RIGHT:
+                    moveTile = currentTile.getRight();
+                    break;
+                case COMMAND_DOWN:
+                    moveTile = currentTile.getDown();
+                    break;
+            }
+
+            Location targetLocation = Location.fromTile(moveTile);
+            if (targetLocation.isRoom()) {
+                // Ensure that player is not returning to the room that they started in
+                if (targetLocation == mGame.getTurnInitialPlayerRoom()) {
+                    System.out.println("Can't return to same room");
+                    continue;
+                }
+
+                mGame.moveTo(targetLocation);
+                break;
+            } else {
+                currentTile = targetLocation.asTile();
+            }
+
+            mGame.moveTo(targetLocation);
+        }
+
+        mPlayersPanel.hideBubbles();
+
+        setPathFindingEnabled(false);
+    }
+
+    private void performQuestion(Player player, String[] args) {
+        Suggestion suggestion;
+        if (args.length == 1) {
+            suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
+        } else {
+            if (args.length != 3) {
+                System.out.println("Invalid number of arguments provided for question command");
+                System.out.println(HELP_COMMANDS.get(COMMAND_QUESTION));
+                return;
+            }
+
+            suggestion = createSuggestion(args[1], args[2], null, mGame.getCurrentPlayerLocation().asRoom());
+
+            boolean valid = true;
+            for (Card card : suggestion.asList()) {
+                // Can't use undistributed cards in suggestion
+                if (mGame.getUndistributedCards().contains(card)) {
+                    valid = false;
+
+                    System.out.println("Can't use " + card.getName() + " in question as it is visible to all players");
+                }
+            }
+
+            if (!valid) {
+                suggestion = null;
+            }
+        }
+
+        if (suggestion == null) {
+            return;
+        }
+
+        Player matchingPlayer = mGame.poseQuestion(suggestion);
+
+        if (matchingPlayer != null) {
+            List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
+
+            mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
+            readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
+
+            passToPlayer(matchingPlayer, "temporarily");
+
+            Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
+            player.getKnowledge().setHolding(shownCard, matchingPlayer);
+
+            passToPlayer(player, "back");
+
+            CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
+            System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
+
+            mPlayersPanel.hideBubbles();
+        } else {
+            mPlayersPanel.showQuestionResponses(player, suggestion, null, null);
+
+            System.out.println("No players have any of the suggested cards");
+        }
+    }
+
+    private void performAccuse(Player player, String[] args) {
+        Suggestion suggestion;
+        if (args.length == 1) {
+            suggestion = createSuggestion(null);
+        } else {
+            if (args.length != 4) {
+                System.out.println("Invalid number of arguments provided for question command");
+                System.out.println(HELP_COMMANDS.get(COMMAND_ACCUSE));
+                return;
+            }
+
+            suggestion = createSuggestion(args[1], args[2], args[3], null);
+        }
+
+        if (suggestion == null) {
+            return;
+        }
+
+        boolean correct = mGame.makeFinalAccusation(suggestion);
+
+        mCardAnimationsPanel.finalAccusation(suggestion, mGame.getSolution());
+
+        if (correct) {
+            System.out.println("Congratulations! You were correct!");
+        } else {
+            System.out.println("Your guess was incorrect. You have been eliminated.");
+            mPlayersPanel.setPlayerEliminated(player, true);
+        }
+    }
+
+    private void performLog(Player player) {
+        List<Game.LogEntry> log = mGame.getLog();
+
+        if (log.isEmpty()) {
+            System.out.println("No entries in log");
+        }
+
+        for (int i = 0; i < log.size(); i++) {
+            Game.LogEntry entry = log.get(i);
+            String text = (i + 1) + ". ";
+            if (entry.player == player) {
+                text += "You";
+            }
+            if (entry.type == Game.LogEntry.Type.Question) {
+                text += " suggested " + entry.suggestion.asHumanReadableString() + ", ";
+                if (entry.responder != null) {
+                    if (entry.responder == player) {
+                        text += "you";
+                    } else {
+                        text += entry.responder.getName();
+                    }
+                    text += " showed a card";
+                } else {
+                    text += "nobody had any card";
+                }
+            } else if (entry.type == Game.LogEntry.Type.FinalAccusation) {
+                text += " made a final accusation of " + entry.suggestion.asHumanReadableString() + " ";
+                String was = entry.player == player ? "were" : "was";
+                if (entry.correct) {
+                    text += "and " + was + " correct";
+                } else {
+                    text += "but" + was + " incorrect";
+                }
+            }
+
+            System.out.println(text);
+        }
+    }
+
+    private void performNotes(Player player) {
+        System.out.println("N O T E S");
+        System.out.println("---------");
+
+        System.out.println();
+
+        printKnowledge(mGame.getBoard().getSuspects(), player, "SUSPECTS");
+        printKnowledge(mGame.getBoard().getWeapons(), player, "WEAPONS");
+        printKnowledge(mGame.getBoard().getRooms(), player, "ROOMS");
     }
 
     private void printKnowledge(List<? extends Card> cards, Player player, String name) {
