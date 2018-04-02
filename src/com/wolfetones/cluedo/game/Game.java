@@ -82,24 +82,21 @@ public class Game {
         }
     }
 
-    /**
-     * State
+    /*
+     * States
      */
     private boolean mStarted = false;
     private boolean mFinished = false;
 
-    /**
-     * Cards
-     */
+    /** Cards */
     private List<Card> mCards = new ArrayList<>(21);
+    /** Cards that have not been distributed to any player (visible to all) */
     private List<Card> mRemainingCards = new ArrayList<>(0);
 
-    /**
-     * Game solution
-     */
+    /** Game solution */
     private Suggestion mSolution;
 
-    /**
+    /*
      * Players
      */
     private List<Player> mPlayers = new ArrayList<>(6);
@@ -108,9 +105,10 @@ public class Game {
     private Player mCurrentPlayer;
     private Location mCurrentPlayerLocation;
 
-    /**
+    /*
      * Current abilities in turn, depending on state and location
      */
+    private Room mTurnInitialPlayerRoom;
     private boolean mTurnCanRollDice;
     private boolean mTurnCanUsePassage;
     private boolean mTurnCanPoseQuestion;
@@ -118,7 +116,6 @@ public class Game {
     private boolean mTurnFinished;
     private int mTurnRemainingMoves;
     private boolean mTurnHasMoved;
-
     private boolean mTurnMovementComplete;
 
     /**
@@ -192,6 +189,13 @@ public class Game {
 
         mCurrentPlayer = mActivePlayerIterator.next();
         mCurrentPlayerLocation = mCurrentPlayer.getCharacter().getLocation();
+
+        // Store to ensure player does not return to the room they started in
+        if (mCurrentPlayerLocation.isRoom()) {
+            mTurnInitialPlayerRoom = mCurrentPlayerLocation.asRoom();
+        } else {
+            mTurnInitialPlayerRoom = null;
+        }
 
         // Check if the player is capable of performing a move
         if (mCurrentPlayerLocation.isRoom()) {
@@ -320,10 +324,14 @@ public class Game {
             throw new IllegalStateException("No more moves remaining");
         }
 
+        if (location == mTurnInitialPlayerRoom) {
+            throw new IllegalArgumentException("Cannot return to room player started in");
+        }
+
         // Make sure tile can be reached within the allowed number of moves
         List<TokenOccupiableTile> shortestPath = PathFinder.findShortestPathAdvanced(mCurrentPlayerLocation, location, mTurnRemainingMoves);
         if (shortestPath == null) {
-            throw new IllegalStateException("Cannot move to location " + location);
+            throw new IllegalArgumentException("Cannot move to location " + location);
         }
 
         // Subtract the number of moves used
@@ -474,6 +482,10 @@ public class Game {
 
     public BoardModel getBoard() {
         return mBoard;
+    }
+
+    public Location getTurnInitialPlayerRoom() {
+        return mTurnInitialPlayerRoom;
     }
 
     public Location getCurrentPlayerLocation() {

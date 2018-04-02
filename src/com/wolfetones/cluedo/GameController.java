@@ -437,11 +437,14 @@ public class GameController {
                     if (direction == null) {
                         continue;
                     }
+
+                    // Stop moving
                     if (direction.equals(COMMAND_STOP)) {
                         mGame.stopMoving();
                         break;
                     }
 
+                    // Get tile for direction
                     switch (direction.toLowerCase()) {
                         case COMMAND_LEFT:
                             moveTile = currentTile.getLeft();
@@ -457,19 +460,21 @@ public class GameController {
                             break;
                     }
 
-                    if (moveTile instanceof RoomTile) {
-                        if (((RoomTile) moveTile).getRoom() == startLocation) {
+                    Location targetLocation = Location.fromTile(moveTile);
+                    if (targetLocation.isRoom()) {
+                        // Ensure that player is not returning to the room that they started in
+                        if (targetLocation == mGame.getTurnInitialPlayerRoom()) {
                             System.out.println("Can't return to same room");
                             continue;
                         }
 
-                        mGame.moveTo(((RoomTile) moveTile).getRoom());
+                        mGame.moveTo(targetLocation);
                         break;
                     } else {
-                        currentTile = (CorridorTile) moveTile;
+                        currentTile = targetLocation.asTile();
                     }
 
-                    mGame.moveTo(currentTile);
+                    mGame.moveTo(targetLocation);
                 }
 
                 mPlayersPanel.hideBubbles();
@@ -621,12 +626,11 @@ public class GameController {
     private void setPathFindingEnabled(boolean enabled) {
         mPathFindingEnabled = enabled;
 
-        setClickAction(null, null, null);
-
         resetPathFindingTemporaryState();
     }
 
     private void resetPathFindingTemporaryState() {
+        // Reset backgrounds of tiles in previous path
         if (mPreviousPath != null) {
             for (Tile tile : mPreviousPath) {
                 tile.getButton().setTemporaryBackground(null);
@@ -634,6 +638,8 @@ public class GameController {
 
             mPreviousPath = null;
         }
+
+        setClickAction(null, null, null);
     }
 
     private void onTileHover(TileComponent tileComponent) {
@@ -649,12 +655,20 @@ public class GameController {
         Location targetLocation = Location.fromTile(tile);
         Location currentLocation = mGame.getCurrentPlayerLocation();
 
+        // Can't move to same location, or back into the room that the player started in
+        if (targetLocation == currentLocation || targetLocation == mGame.getTurnInitialPlayerRoom()) {
+            resetPathFindingTemporaryState();
+            return;
+        }
+
+        // Try to find a path to the target location
         List<TokenOccupiableTile> path = PathFinder.findShortestPathAdvanced(currentLocation, targetLocation, Integer.MAX_VALUE);
         if (path == null) {
             resetPathFindingTemporaryState();
             return;
         }
 
+        // Reset backgrounds of tiles not in new path
         if (mPreviousPath != null) {
             for (TokenOccupiableTile t : mPreviousPath) {
                 if (!path.contains(t)) {
@@ -664,6 +678,21 @@ public class GameController {
         }
         mPreviousPath = path;
 
+        // Update backgrounds of tiles in new path
+        for (int i = 0; i < path.size(); i++) {
+            // Colour valid tiles in path green, invalid tiles in red
+            TileComponent button = path.get(i).getButton();
+            boolean active = i == (path.size() - 1);
+            Color color;
+            if (i <= mGame.getTurnRemainingMoves()) {
+                color = active ? TileComponent.COLOR_PATHFINDING_VALID_ACTIVE : TileComponent.COLOR_PATHFINDING_VALID;
+            } else {
+                color = active ? TileComponent.COLOR_PATHFINDING_INVALID_ACTIVE : TileComponent.COLOR_PATHFINDING_INVALID;
+            }
+            button.setTemporaryBackground(color);
+        }
+
+        // Tile click action
         boolean canMove = (path.size() - 1) <= mGame.getTurnRemainingMoves();
         if (canMove) {
             setClickAction(() -> {
@@ -676,19 +705,6 @@ public class GameController {
             }, tileComponent, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         } else {
             setClickAction(null, tileComponent, Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-        }
-
-        for (int i = 0; i < path.size(); i++) {
-            // Colour valid tiles in path green, invalid tiles in red
-            TileComponent button = path.get(i).getButton();
-            boolean active = i == (path.size() - 1);
-            Color color;
-            if (i <= mGame.getTurnRemainingMoves()) {
-                color = active ? TileComponent.COLOR_PATHFINDING_VALID_ACTIVE : TileComponent.COLOR_PATHFINDING_VALID;
-            } else {
-                color = active ? TileComponent.COLOR_PATHFINDING_INVALID_ACTIVE : TileComponent.COLOR_PATHFINDING_INVALID;
-            }
-            button.setTemporaryBackground(color);
         }
     }
 
