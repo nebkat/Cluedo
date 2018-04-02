@@ -106,8 +106,8 @@ public class SlideOutCardsPanel extends JPanel {
         int fontSize = 16;
         int cardHeight = getHeight() * 7 / 10;
         if (cards.size() > 6) {
-            cardHeight = getHeight() / 2;
-            fontSize = 10;
+            cardHeight = getHeight() * 6 / 10;
+            fontSize = 12;
         }
 
         int cardWidth = cardHeight * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
