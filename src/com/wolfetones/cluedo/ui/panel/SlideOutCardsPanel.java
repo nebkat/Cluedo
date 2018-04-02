@@ -92,19 +92,33 @@ public class SlideOutCardsPanel extends JPanel {
     public void setCards(List<? extends Card> cards) {
         removeAll();
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.ipadx = Config.screenRelativeSize(5);
+        GridBagConstraints imageConstraints = new GridBagConstraints();
+        imageConstraints.gridy = 0;
+        imageConstraints.ipadx = Config.screenRelativeSize(5);
+        imageConstraints.ipady = Config.screenRelativeSize(5);
 
-        int cardHeight = getHeight() * 4 / 5;
+        GridBagConstraints textConstraints = new GridBagConstraints();
+        textConstraints.gridy = 1;
+
+        int fontSize = 16;
+        int cardHeight = getHeight() * 7 / 10;
         if (cards.size() > 6) {
-            cardHeight = getHeight() * 3 / 5;
+            cardHeight = getHeight() / 2;
+            fontSize = 10;
         }
 
         int cardWidth = cardHeight * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
 
-        cards.stream()
-                .map((c) -> new ScaledImageComponent(c.getCardImage(), cardWidth))
-                .forEach((c) -> add(c, constraints));
+        for (Card card : cards) {
+            ScaledImageComponent image = new ScaledImageComponent(card.getCardImage(), cardWidth);
+
+            JLabel label = new JLabel(card.getName());
+            label.setForeground(Color.BLACK);
+            label.setFont(Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(fontSize)));
+
+            add(image, imageConstraints);
+            add(label, textConstraints);
+        }
 
         setSize(getPreferredSize().width, getHeight());
 
