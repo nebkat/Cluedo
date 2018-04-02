@@ -75,11 +75,6 @@ public class BoardModel {
             mRooms.add(new Room(configRoom.name, configRoom.searchNames, configRoom.resource, configRoom.guess));
         }
 
-        // Add all suspects, weapons and rooms to cards list
-        mCards.addAll(mSuspects);
-        mCards.addAll(mWeapons);
-        mCards.addAll(mRooms);
-
         // Initialize tiles
         int startTileSuspectIterator = 0;
         for (int y = 0; y < Config.Board.HEIGHT; y++) {
@@ -181,6 +176,11 @@ public class BoardModel {
 
         // Remove guess room from rooms list
         mRooms.remove(0);
+
+        // Add all suspects, weapons and rooms to cards list
+        mCards.addAll(mSuspects);
+        mCards.addAll(mWeapons);
+        mCards.addAll(mRooms);
 
         // Make all lists unmodifiable
         mCards = Collections.unmodifiableList(mCards);
