@@ -399,6 +399,7 @@ public class CardAnimationsPanel extends JPanel {
             AnimatableCard card = solutionCards.get(i);
 
             card.setAlpha(1.0);
+            card.setScaleX(-1);
             card.setCenterX(secretFolder.getX() + secretFolder.getWidth() / 2);
             card.setCenterY(secretFolder.getY() + secretFolder.getHeight() / 2);
 
@@ -411,13 +412,16 @@ public class CardAnimationsPanel extends JPanel {
             Animator.getInstance().animate(card)
                     .animate(card::getCenterX, targetX, card::setCenterX)
                     .animate(card::getCenterY, targetY, card::setCenterY)
+                    .setInterpolator(Animator::easeOutQuint)
+                    .setDuration(2000)
+                    .chain()
+                    .scale(1, 1)
                     .after(() -> {
                         solutionCards.get(cardIndex).setOverlayImage(overlayImage);
                         accusationCards.get(cardIndex).setOverlayImage(overlayImage);
                     })
-                    .setInterpolator(Animator::easeOutQuint)
-                    .setDuration(2000)
-                    .setDelay((i + 1) * 2000)
+                    .setDuration(800)
+                    .setDelay(1000 + i * 2000)
                     .skipIf(!isVisible())
                     .awaitIf(i == solutionCards.size() - 1);
         }
@@ -550,6 +554,7 @@ public class CardAnimationsPanel extends JPanel {
         @Override
         public void setScale(double scale) {
             mScale = scale;
+            repaint();
         }
 
         @Override
