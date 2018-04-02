@@ -44,12 +44,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class CardDistributionPanel extends JPanel {
+public class CardAnimationsPanel extends JPanel {
     private static final double CARD_MARGIN = 0.9;
 
     private static Random sRandom = new Random();
 
-    public CardDistributionPanel() {
+    public CardAnimationsPanel() {
         super();
 
         setLayout(null);
@@ -57,7 +57,7 @@ public class CardDistributionPanel extends JPanel {
         setOpaque(false);
     }
 
-    public void distributeCards(int playerCount, int playerPanelItemHeight, List<? extends Card> remainingCards, BoardModel board) {
+    public void dealCards(int playerCount, int playerPanelItemHeight, List<? extends Card> remainingCards, BoardModel board) {
         setVisible(true);
 
         List<Suspect> suspects = board.getSuspects();

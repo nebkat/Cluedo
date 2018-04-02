@@ -46,7 +46,6 @@ import java.awt.event.MouseListener;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -156,7 +155,7 @@ public class GameController {
 
     private PlayersPanel mPlayersPanel;
     private ActionPanel mActionPanel;
-    private CardDistributionPanel mCardDistributionPanel;
+    private CardAnimationsPanel mCardAnimationsPanel;
 
     /**
      * Click action
@@ -201,8 +200,8 @@ public class GameController {
         mPlayers.forEach(mGame::addPlayer);
         mGame.start();
 
-        // Card distribution animation
-        distributeCards();
+        // Card dealing animation
+        dealCards();
 
         // Input scanner for parsing stdin
         mInputScanner = new Scanner(System.in);
@@ -558,7 +557,7 @@ public class GameController {
 
                 boolean correct = mGame.makeFinalAccusation(suggestion);
 
-                mCardDistributionPanel.finalAccusation(suggestion, mGame.getSolution());
+                mCardAnimationsPanel.finalAccusation(suggestion, mGame.getSolution());
 
                 if (correct) {
                     System.out.println("Congratulations! You were correct!");
@@ -1036,21 +1035,21 @@ public class GameController {
         mActionPanel.updateStatus(mGame);
 
         // Add card distribution panel
-        mCardDistributionPanel = new CardDistributionPanel();
-        mBoardLayeredPane.add(mCardDistributionPanel, BOARD_LAYER_CARDS);
-        mCardDistributionPanel.setLocation(sidePanelWidth, 0);
-        mCardDistributionPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
+        mCardAnimationsPanel = new CardAnimationsPanel();
+        mBoardLayeredPane.add(mCardAnimationsPanel, BOARD_LAYER_CARDS);
+        mCardAnimationsPanel.setLocation(sidePanelWidth, 0);
+        mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
     }
 
-    private void distributeCards() {
+    private void dealCards() {
         if (DEMO_MODE) {
             return;
         }
 
         // Show cursor panel to allow force finishing dice roll
-        setClickAction(mCardDistributionPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setClickAction(mCardAnimationsPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        mCardDistributionPanel.distributeCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getUndistributedCards(), mGame.getBoard());
+        mCardAnimationsPanel.dealCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getUndistributedCards(), mGame.getBoard());
 
         // Hide cursor panel
         setClickAction(null, null, null);
