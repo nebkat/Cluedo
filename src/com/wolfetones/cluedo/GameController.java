@@ -169,7 +169,6 @@ public class GameController {
      * Path Finding
      */
     private boolean mPathFindingEnabled = false;
-    private List<TileComponent> mTileComponents = new ArrayList<>();
     private List<TokenOccupiableTile> mPreviousPath;
 
     /**
@@ -1013,8 +1012,6 @@ public class GameController {
                 TileComponent component = new TileComponent(tile);
                 tile.setButton(component);
                 component.setSize(mTileSize, mTileSize);
-
-                mTileComponents.add(component);
 
                 component.addMouseListener(new MouseAdapter() {
                     @Override
