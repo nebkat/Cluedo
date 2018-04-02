@@ -26,15 +26,16 @@ package com.wolfetones.cluedo.ui;
 
 import java.awt.*;
 
+/**
+ * Simple layout manager uses preferred size for all components
+ */
 public class SimpleLayoutManager implements LayoutManager {
     @Override
     public void addLayoutComponent(String name, Component comp) {
-
     }
 
     @Override
     public void removeLayoutComponent(Component comp) {
-
     }
 
     @Override
@@ -49,8 +50,7 @@ public class SimpleLayoutManager implements LayoutManager {
 
     @Override
     public void layoutContainer(Container parent) {
-        for (int i = 0 ; i < parent.getComponentCount() ; i++) {
-            Component c = parent.getComponent(i);
+        for (Component c : parent.getComponents()) {
             c.setSize(c.getPreferredSize());
         }
     }
