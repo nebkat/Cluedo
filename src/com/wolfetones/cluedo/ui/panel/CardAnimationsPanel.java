@@ -66,21 +66,23 @@ public class CardAnimationsPanel extends JPanel {
 
         int cardWidth = (int) (getWidth() / suspects.size() * CARD_MARGIN);
 
+        // Create cards
         List<AnimatableCard> suspectCards = suspects.stream()
-                .map((s) -> new AnimatableCard(s, cardWidth))
+                .map((c) -> new AnimatableCard(c, cardWidth))
                 .collect(Collectors.toList());
 
         List<AnimatableCard> weaponCards = weapons.stream()
-                .map((s) -> new AnimatableCard(s, cardWidth))
+                .map((c) -> new AnimatableCard(c, cardWidth))
                 .collect(Collectors.toList());
 
         List<AnimatableCard> roomCards = rooms.stream()
-                .map((s) -> new AnimatableCard(s, cardWidth))
+                .map((c) -> new AnimatableCard(c, cardWidth))
                 .collect(Collectors.toList());
 
         List<List<AnimatableCard>> allCardLists = List.of(suspectCards, weaponCards, roomCards);
         AnimatableCard lastCard = roomCards.get(roomCards.size() - 1);
 
+        // Add components
         suspectCards.forEach(this::add);
         weaponCards.forEach(this::add);
         roomCards.forEach(this::add);
@@ -335,10 +337,8 @@ public class CardAnimationsPanel extends JPanel {
                     .awaitIf(card == lastCard);
         }
 
-        // Remove all child components
-        for (Component component : getComponents()) {
-            remove(component);
-        }
+        // Remove all added components
+        removeAll();
 
         setVisible(false);
     }
@@ -428,10 +428,8 @@ public class CardAnimationsPanel extends JPanel {
                 .skipIf(!isVisible())
                 .await();
 
-        // Remove all child components
-        for (Component component : getComponents()) {
-            remove(component);
-        }
+        // Remove all added components
+        removeAll();
 
         setVisible(false);
     }
