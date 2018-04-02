@@ -34,6 +34,9 @@ import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Utility class for loading and caching images.
+ */
 public class ImageUtils {
     private static Map<String, SoftReference<BufferedImage>> sCache = new HashMap<>();
 
@@ -60,7 +63,7 @@ public class ImageUtils {
         BufferedImage image;
         try {
             image = ImageIO.read(Util.class.getClassLoader().getResourceAsStream(file));
-        } catch (IOException | IllegalArgumentException e) {
+        } catch (IOException | IllegalArgumentException | NullPointerException e) {
             throw new IllegalArgumentException("Could not load image '" + file + "'");
         }
 
