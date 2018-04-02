@@ -37,6 +37,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
+import java.util.Collections;
 import java.util.List;
 
 public class SlideOutCardsPanel extends JPanel {
@@ -91,6 +92,8 @@ public class SlideOutCardsPanel extends JPanel {
 
     public void setCards(List<? extends Card> cards) {
         removeAll();
+
+        Collections.sort(cards);
 
         GridBagConstraints imageConstraints = new GridBagConstraints();
         imageConstraints.gridy = 0;

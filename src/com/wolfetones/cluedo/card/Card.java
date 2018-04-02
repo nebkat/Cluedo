@@ -31,7 +31,9 @@ import java.awt.image.BufferedImage;
 /**
  * Base card class, representing a game card.
  */
-public abstract class Card {
+public abstract class Card implements Comparable<Card> {
+    private static final Class[] TYPE_ORDER = {Suspect.class, Weapon.class, Room.class};
+
     private String mName;
     private String[] mSearchNames;
     private String mCardImage;
@@ -50,10 +52,6 @@ public abstract class Card {
 
     public String getName() {
         return mName;
-    }
-
-    public String getShortName() {
-        return mName.replace(" ", "").replace(".", "").toLowerCase();
     }
 
     public String[] getSearchNames() {
@@ -82,5 +80,27 @@ public abstract class Card {
 
     public static BufferedImage getCardIncorrectOverlayImage() {
         return ImageUtils.loadImage("card-incorrect-overlay.png");
+    }
+
+    private int getTypeIndex() {
+        for (int i = 0; i < TYPE_ORDER.length; i++) {
+            if (TYPE_ORDER[i] == getClass()) {
+                return i;
+            }
+        }
+        return TYPE_ORDER.length;
+    }
+
+    private static int compare(Card a, Card b) {
+        if (a.getClass() == b.getClass()) {
+            return a.getName().compareTo(b.getName());
+        }
+
+        return Integer.compare(a.getTypeIndex(), b.getTypeIndex());
+    }
+
+    @Override
+    public int compareTo(Card c) {
+        return Card.compare(this, c);
     }
 }
