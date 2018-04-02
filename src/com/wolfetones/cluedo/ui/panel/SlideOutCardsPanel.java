@@ -49,6 +49,7 @@ public class SlideOutCardsPanel extends JPanel {
     public SlideOutCardsPanel(String title, int hiddenWidth, int height, int containerWidth) {
         super();
 
+        setLayout(new GridBagLayout());
         setOpaque(false);
 
         mTitle = title;
@@ -91,11 +92,19 @@ public class SlideOutCardsPanel extends JPanel {
     public void setCards(List<? extends Card> cards) {
         removeAll();
 
-        int cardWidth = getHeight() * 4 / 5 * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.ipadx = Config.screenRelativeSize(5);
+
+        int cardHeight = getHeight() * 4 / 5;
+        if (cards.size() > 6) {
+            cardHeight = getHeight() * 3 / 5;
+        }
+
+        int cardWidth = cardHeight * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
 
         cards.stream()
                 .map((c) -> new ScaledImageComponent(c.getCardImage(), cardWidth))
-                .forEach(this::add);
+                .forEach((c) -> add(c, constraints));
 
         setSize(getPreferredSize().width, getHeight());
 
