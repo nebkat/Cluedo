@@ -332,6 +332,8 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     private void repaintDice() {
         for (Dice dice : mDices) {
             Point2d p = RenderUtils.projectToScreen(dice.getCenter());
+            p.x = Config.screenRelativeSize(p.x);
+            p.y = Config.screenRelativeSize(p.y);
 
             repaint((int) p.x + getWidth() / 2 - SCREEN_CUBE_SIZE,
                     (int) p.y + getHeight() / 2 - SCREEN_CUBE_SIZE,
@@ -354,6 +356,9 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         // Translate rendering to screen center so world based elements don't have to
         g.translate(getWidth() / 2, getHeight() / 2);
 
+        // Scale world coordinates to screen coordinates
+        g.scale(Config.screenRelativeSize(1.0), Config.screenRelativeSize(1.0));
+
         // Fade in/out
         if (mAlpha < 1) {
             g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, mAlpha));
@@ -363,6 +368,9 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         for (Dice dice : mDices) {
             dice.draw(g);
         }
+
+        // Scale back to normal coordinates
+        g.scale(1.0 / Config.screenRelativeSize(1.0), 1.0 / Config.screenRelativeSize(1.0));
 
         // Draw + = text
         if (mTotalTextAlpha > 0) {

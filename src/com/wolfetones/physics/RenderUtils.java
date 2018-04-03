@@ -24,7 +24,6 @@
 
 package com.wolfetones.physics;
 
-import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.physics.geometry.Plane;
 
 import javax.vecmath.Point2d;
@@ -32,9 +31,20 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 public class RenderUtils {
-    private static Point2d sProjectionPoint = new Point2d();
-
     public static final double CAMERA_HEIGHT_FROM_SCREEN = 1250;
+
+    private static double screenDistance(double worldDistance, double depth) {
+        return CAMERA_HEIGHT_FROM_SCREEN * worldDistance / (-depth + CAMERA_HEIGHT_FROM_SCREEN);
+    }
+
+    public static Point2d projectToScreen(Point3d point) {
+        Point2d projection = new Point2d();
+
+        projection.x = screenDistance(point.x, point.z);
+        projection.y = screenDistance(point.y, point.z);
+
+        return projection;
+    }
 
     public static Plane getPlaneFromCameraToPoint(Point2d point) {
         double depth = -Math.pow(point.distance(new Point2d()), 2) / CAMERA_HEIGHT_FROM_SCREEN;
@@ -46,18 +56,5 @@ public class RenderUtils {
         normal.sub(inner, point3d);
 
         return new Plane(point3d, normal);
-    }
-
-    public static double screenDistance(double worldDistance, double depth) {
-        return Config.screenRelativeSize(CAMERA_HEIGHT_FROM_SCREEN * worldDistance / (-depth + CAMERA_HEIGHT_FROM_SCREEN));
-    }
-
-    public static Point2d projectToScreen(Point3d point) {
-        Point2d projection = new Point2d();
-
-        projection.x = screenDistance(point.x, point.z);
-        projection.y = screenDistance(point.y, point.z);
-
-        return projection;
     }
 }
