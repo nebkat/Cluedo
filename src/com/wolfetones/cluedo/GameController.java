@@ -928,6 +928,7 @@ public class GameController {
         mMainFrame.setTitle(Config.TITLE);
         mMainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mMainFrame.setResizable(false);
+        mMainFrame.setVisible(true);
 
         mMainFrame.getContentPane().setLayout(new BorderLayout());
 
@@ -953,7 +954,6 @@ public class GameController {
 
         mMainFrame.pack();
         mMainFrame.setLocationRelativeTo(null);
-        mMainFrame.setVisible(true);
     }
 
     /**
@@ -966,7 +966,10 @@ public class GameController {
         mBoardLayeredPane.setOpaque(true);
         mMainFrame.add(mBoardLayeredPane, BorderLayout.CENTER);
 
-        mTileSize = Config.screenHeightPercentage(0.9f) / Config.Board.HEIGHT;
+        int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
+        Point framePosition = mMainFrame.getContentPane().getLocationOnScreen();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(mMainFrame.getGraphicsConfiguration());
+        mTileSize = (screenHeight - framePosition.y - screenInsets.top - screenInsets.bottom) / Config.Board.HEIGHT;
 
         Dimension boardDimension = new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
         mBoardLayeredPane.setPreferredSize(boardDimension);
