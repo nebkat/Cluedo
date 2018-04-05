@@ -177,6 +177,7 @@ public class GameController {
     private PlayersPanel mPlayersPanel;
     private ActionPanel mActionPanel;
     private CardAnimationsPanel mCardAnimationsPanel;
+    private NotesPanel mNotesPanel;
 
     private SlideOutCardsPanel mPlayerCardsPanel;
     private SlideOutCardsPanel mUndistributedCardsPanel;
@@ -360,7 +361,9 @@ public class GameController {
         mOutputPanel.clear();
 
         mNotesSlideOutPanel.removeAll();
-        mNotesSlideOutPanel.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards()));
+        mNotesPanel = new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards());
+        mNotesPanel.setMaximumSize(new Dimension(mNotesSlideOutPanel.getWidth(), Integer.MAX_VALUE));
+        mNotesSlideOutPanel.add(mNotesPanel);
         mNotesSlideOutPanel.reposition();
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");

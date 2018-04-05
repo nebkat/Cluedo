@@ -31,124 +31,96 @@ import com.wolfetones.cluedo.card.Weapon;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Knowledge;
 import com.wolfetones.cluedo.game.Player;
-import com.wolfetones.cluedo.ui.component.TileComponent;
+import com.wolfetones.cluedo.util.ImageUtils;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
-import java.util.*;
+import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NotesPanel extends JPanel {
+
+    private Knowledge mKnowledge;
     
     public NotesPanel(Player player, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> remainingCards){
         super();
 
-        Knowledge knowledge = player.getKnowledge();
+        mKnowledge = player.getKnowledge();
         
         setOpaque(false);
 
+
+        setBorder(BorderFactory.createEmptyBorder(
+                0, Config.screenRelativeSize(20),
+                0, Config.screenRelativeSize(20)));
         setLayout(new GridBagLayout());
+
+
         GridBagConstraints c = new GridBagConstraints();
 
-        int gridYCounter = 0;
+        addSection("Suspects", suspects, c);
+        addSection("Weapons", weapons, c);
+        addSection("Rooms", rooms, c);
+    }
 
+    private void addSection(String title, List<? extends Card> cards, GridBagConstraints c){
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets(2, 0, 2, 0);
         c.gridx = 0;
-        c.gridy = gridYCounter++;
-        JLabel suspectsLabel = new JLabel("Suspects");
+        c.gridy++;
+        JLabel suspectsLabel = new JLabel(title);
         suspectsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
         add(suspectsLabel, c);
 
-        for (Suspect suspect : suspects) {
+        for (Card card : cards) {
             c.insets = new Insets(1, 0, 1, 0);
             c.gridx = 0;
-            c.gridy = gridYCounter++;
+            c.gridy++;
 
-            add(new JLabel(suspect.getName()), c);
+            add(new JLabel(card.getName()), c);
 
-            c.gridx = 1;
-            // Padding around the check box
             c.insets = new Insets(1, 20, 1, 0);
-            if (player.hasCard(suspect)) {
-                add(new CheckBox("X"), c);
-            } else if (remainingCards.contains(suspect)) {
-                add(new CheckBox("A"), c);
-            } else {
-                add(new CheckBox(""),c);
-            }
-        }
+            for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
+                c.gridx++;
+                // Padding around the check box
 
-        JLabel weaponsLabel = new JLabel("Weapons");
-        c.insets = new Insets(2, 0, 2, 0);
-        c.gridx = 0;
-        c.gridy = gridYCounter++;
-        weaponsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        add(weaponsLabel, c);
-
-        for (Weapon weapon : weapons) {
-            c.insets = new Insets(1, 0, 1, 0);
-            c.gridx = 0;
-            c.gridy = gridYCounter++;
-
-            add(new JLabel(weapon.getName()), c);
-
-            c.gridx = 1;
-            // Padding around the check box
-            c.insets = new Insets(1, 20, 1, 0);
-            if (player.hasCard(weapon)) {
-                add(new CheckBox("X"), c);
-            } else if (remainingCards.contains(weapon)) {
-                add(new CheckBox("A"), c);
-            } else {
-                add(new CheckBox(""),c);
-            }
-        }
-
-        JLabel roomsLabel = new JLabel("Rooms");
-        c.insets = new Insets(2, 0, 2, 0);
-        c.gridx = 0;
-        c.gridy = gridYCounter++;
-        roomsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        add(roomsLabel, c);
-
-        for (Room room : rooms) {
-            c.insets = new Insets(1, 0, 1, 0);
-            c.gridx = 0;
-            c.gridy = gridYCounter++;
-
-            add(new JLabel(room.getName()), c);
-
-            c.gridx = 1;
-            // Padding around the check box
-            c.insets = new Insets(1, 20, 1, 0);
-            if (player.hasCard(room)) {
-                add(new CheckBox("X"), c);
-            } else if (remainingCards.contains(room)) {
-                add(new CheckBox("A"), c);
-            } else {
-                add(new CheckBox(""),c);
+                add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(16)), c);
             }
         }
     }
-    private class CheckBox extends JPanel {
-        private CheckBox(String contents) {
+    private static class CheckBox extends JComponent {
+        private static final Map<Knowledge.Value, String> VALUE_ICONS = new HashMap<>() {{
+            put(Knowledge.Value.Holding, "holding");
+            put(Knowledge.Value.NotHolding, "not-holding");
+            put(Knowledge.Value.SuspectedHolding, "suspected-holding");
+        }};
+
+        private Knowledge.Status mStatus;
+        private Player mPlayer;
+        private BufferedImage mImage;
+
+        private CheckBox(Player player, Knowledge.Status status, int width) {
             super();
 
-            setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            mStatus = status;
+            mPlayer = player;
+            if (status.getValue() != null) {
+                mImage = ImageUtils.loadImage("resources/" + VALUE_ICONS.get(status.getValue()) + ".png");
+                mImage = ImageUtils.getScaledImage(mImage, width);
+            }
+            setBorder(BorderFactory.createLineBorder(Color.BLACK, Config.screenRelativeSize(2)));
 
-            setOpaque(false);
+            setPreferredSize(new Dimension(width, width));
+        }
 
-            setLayout(new GridBagLayout());
-
-            GridBagConstraints c = new GridBagConstraints();
-
-            c.insets = new Insets(2, 2, 2, 0);
-
-            add(new JLabel(contents), c);
-
-            setPreferredSize(new Dimension(15,15));
+        @Override
+        public void paintComponent(Graphics g) {
+            if (mImage != null) {
+                g.drawImage(mImage, 0, 0, null);
+            }
         }
     }
 
