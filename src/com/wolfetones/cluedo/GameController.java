@@ -161,6 +161,9 @@ public class GameController {
     private SlideOutCardsPanel mPlayerCardsPanel;
     private SlideOutCardsPanel mUndistributedCardsPanel;
 
+    private SlideOutPanel mHistorySlideOutPanel;
+    private SlideOutPanel mNotesSlideOutPanel;
+
     /**
      * Click action
      */
@@ -340,6 +343,11 @@ public class GameController {
             String[] args = readCommand("Choose action", commands);
             String command = args[0];
             mActionPanel.hideAllExceptDone();
+
+            mNotesSlideOutPanel.removeAll();
+            mNotesSlideOutPanel.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards()));
+            mNotesSlideOutPanel.revalidate();
+
             if (command == null) {
                 // Ignore and continue
                 System.err.println("Unexpected interrupt");
@@ -1103,18 +1111,18 @@ public class GameController {
         slideOutPanelHandleWidth = (slideOutPanelAvailableWidth - sidePanelWidth) / 2;
 
         // Log panel
-        SlideOutPanel historySlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "History".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
-        mBoardLayeredPane.add(historySlideOutPanel, BOARD_LAYER_PANELS);
-        historySlideOutPanel.setLocation(sidePanelWidth, boardDimension.height - slideOutPanelHandleSize);
-        historySlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
-        historySlideOutPanel.reposition();
+        mHistorySlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "History".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mBoardLayeredPane.add(mHistorySlideOutPanel, BOARD_LAYER_PANELS);
+        mHistorySlideOutPanel.setLocation(sidePanelWidth, boardDimension.height - slideOutPanelHandleSize);
+        mHistorySlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
+        mHistorySlideOutPanel.reposition();
 
         // Notes panel
-        SlideOutPanel notesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
-        mBoardLayeredPane.add(notesSlideOutPanel, BOARD_LAYER_PANELS);
-        notesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height - slideOutPanelHandleSize);
-        notesSlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
-        notesSlideOutPanel.reposition();
+        mNotesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mBoardLayeredPane.add(mNotesSlideOutPanel, BOARD_LAYER_PANELS);
+        mNotesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height - slideOutPanelHandleSize);
+        mNotesSlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
+        mNotesSlideOutPanel.reposition();
     }
 
     private void dealCards() {
