@@ -70,17 +70,23 @@ public class NotesPanel extends JPanel {
         c.anchor = GridBagConstraints.WEST;
         c.insets = new Insets(2, 0, 2, 0);
         c.gridx = 0;
-        c.gridy++;
-        JLabel suspectsLabel = new JLabel(title);
-        suspectsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        add(suspectsLabel, c);
+        c.gridwidth = 6;
 
+        c.gridy++;
+        JLabel sectionLabel = new JLabel(title);
+        sectionLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, Config.screenRelativeSize(32)));
+        add(sectionLabel, c);
+
+        c.gridwidth = 1;
         for (Card card : cards) {
             c.insets = new Insets(1, 0, 1, 0);
             c.gridx = 0;
             c.gridy++;
 
-            add(new JLabel(card.getName()), c);
+
+            JLabel cardLabel = new JLabel(card.getName());
+            cardLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(16)));
+            add(cardLabel, c);
 
             c.insets = new Insets(1, 20, 1, 0);
             for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
