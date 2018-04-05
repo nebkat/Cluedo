@@ -40,6 +40,9 @@ import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -72,7 +75,7 @@ public class GameController {
     private static final Integer BOARD_LAYER_PANELS = 9;
 
     /**
-     * Prefix placed in front of commands to hide from the list of valid commands
+     * Prefix placed in front of commands to hide from the list of valid commands.
      *
      * Used with commands such as quit and cheat which are always available
      * but not necessary to be shown every time.
@@ -132,14 +135,31 @@ public class GameController {
     private static final String COMMAND_YES = "y";
     private static final String COMMAND_NO = "n";
 
+    private static final Map<Integer, String> KEY_COMMAND_MAP = new HashMap<>() {{
+        // Commands
+        put(KeyEvent.VK_R, COMMAND_ROLL);
+        put(KeyEvent.VK_P, COMMAND_PASSAGE);
+        put(KeyEvent.VK_Q, COMMAND_QUESTION);
+        put(KeyEvent.VK_A, COMMAND_ACCUSE);
+        put(KeyEvent.VK_N, COMMAND_NOTES);
+        put(KeyEvent.VK_L, COMMAND_LOG);
+        put(KeyEvent.VK_S, COMMAND_SHOW);
+        put(KeyEvent.VK_D, COMMAND_DONE);
+
+        // Directions
+        put(KeyEvent.VK_LEFT, COMMAND_LEFT);
+        put(KeyEvent.VK_UP, COMMAND_UP);
+        put(KeyEvent.VK_RIGHT, COMMAND_RIGHT);
+        put(KeyEvent.VK_DOWN, COMMAND_DOWN);
+        put(KeyEvent.VK_ESCAPE, COMMAND_STOP);
+    }};
+
     /**
      * Game instance
      */
     private Game mGame = new Game();
 
     private List<Player> mPlayers = new ArrayList<>();
-
-    private int mTileSize;
 
     /**
      * Swing containers
@@ -174,6 +194,12 @@ public class GameController {
      */
     private boolean mPathFindingEnabled = false;
     private List<TokenOccupiableTile> mPreviousPath;
+    private MouseListener mTilePathFindingListener = new MouseAdapter() {
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            onTileHover((TileComponent) e.getComponent());
+        }
+    };
 
     /**
      * Scanner for reading stdin
@@ -264,6 +290,19 @@ public class GameController {
 
         mInputPanel.setCommandHints(printedCommandsList);
 
+        final List<String> finalValidCommandsList = validCommandsList;
+        KeyListener keyListener = new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                String command = KEY_COMMAND_MAP.get(e.getKeyCode());
+                if (finalValidCommandsList.contains(command)) {
+                    mInputPanel.append(command);
+                }
+            }
+        };
+
+        mMainFrame.addKeyListener(keyListener);
+
         String[] command;
         String line;
         while (true) {
@@ -292,6 +331,8 @@ public class GameController {
 
             System.out.println("Invalid command '" + command[0] + "'");
         }
+
+        mMainFrame.removeKeyListener(keyListener);
 
         mInputPanel.setCommandHints(null);
         mInputPanel.clear();
@@ -713,6 +754,12 @@ public class GameController {
     private void setPathFindingEnabled(boolean enabled) {
         mPathFindingEnabled = enabled;
 
+        if (enabled) {
+            for (Component c : mBoardTilePanel.getComponents()) c.addMouseListener(mTilePathFindingListener);
+        } else {
+            for (Component c : mBoardTilePanel.getComponents()) c.removeMouseListener(mTilePathFindingListener);
+        }
+
         resetPathFindingTemporaryState();
     }
 
@@ -942,7 +989,7 @@ public class GameController {
 
         JPanel terminal = new JPanel();
         terminal.setLayout(new BoxLayout(terminal, BoxLayout.Y_AXIS));
-        terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.25f), 0));
+        terminal.setPreferredSize(new Dimension(Config.screenWidthPercentage(0.3f), 0));
 
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
@@ -974,12 +1021,20 @@ public class GameController {
         mBoardLayeredPane.setOpaque(true);
         mMainFrame.add(mBoardLayeredPane, BorderLayout.CENTER);
 
+        mMainFrame.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                mMainFrame.requestFocus();
+                mMainFrame.requestFocusInWindow();
+            }
+        });
+
         int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
         Point framePosition = mMainFrame.getContentPane().getLocationOnScreen();
         Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(mMainFrame.getGraphicsConfiguration());
-        mTileSize = (screenHeight - framePosition.y - screenInsets.top - screenInsets.bottom) / Config.Board.HEIGHT;
+        int tileSize = (screenHeight - framePosition.y - screenInsets.top - screenInsets.bottom) / Config.Board.HEIGHT;
 
-        Dimension boardDimension = new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
+        Dimension boardDimension = new Dimension(tileSize * Config.Board.WIDTH, tileSize * Config.Board.HEIGHT);
         mBoardLayeredPane.setPreferredSize(boardDimension);
 
         Rectangle boardBounds = new Rectangle(0, 0, boardDimension.width, boardDimension.height);
@@ -999,8 +1054,8 @@ public class GameController {
             label.setVerticalAlignment(JLabel.CENTER);
             label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
 
-            int centerX = (int) (r.getCenterX() * mTileSize);
-            int centerY = (int) (r.getCenterY() * mTileSize);
+            int centerX = (int) (r.getCenterX() * tileSize);
+            int centerY = (int) (r.getCenterY() * tileSize);
 
             label.setBounds(centerX - 250, centerY - 100, 500, 200);
 
@@ -1009,12 +1064,12 @@ public class GameController {
 
         // Add suspect tokens
         for (Suspect s : mGame.getBoard().getSuspects()) {
-            mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new SuspectTokenComponent(s, tileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add weapon tokens
         for (Weapon w : mGame.getBoard().getWeapons()) {
-            mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new WeaponTokenComponent(w, tileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add tiles
@@ -1023,14 +1078,7 @@ public class GameController {
                 Tile tile = mGame.getBoard().getTile(x, y);
                 TileComponent component = new TileComponent(tile);
                 tile.setButton(component);
-                component.setSize(mTileSize, mTileSize);
-
-                component.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        onTileHover(component);
-                    }
-                });
+                component.setSize(tileSize, tileSize);
 
                 // Tile borders
                 char[] bc = BoardModel.getTileBordersAndCorners(x, y);
@@ -1040,7 +1088,7 @@ public class GameController {
 
                 // Add start tile background circle
                 if (tile instanceof StartTile) {
-                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), BOARD_LAYER_START_TILE_CIRCLES);
+                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, tileSize), BOARD_LAYER_START_TILE_CIRCLES);
                 }
 
                 // Set colors
@@ -1062,7 +1110,7 @@ public class GameController {
             }
         }
 
-        int sidePanelWidth = (int) (1.8 * mTileSize);
+        int sidePanelWidth = (int) (1.8 * tileSize);
 
         // Add dice panel
         mBoardDicePanel = new DicePanel();
