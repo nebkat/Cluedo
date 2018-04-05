@@ -361,7 +361,7 @@ public class GameController {
 
         mNotesSlideOutPanel.removeAll();
         mNotesSlideOutPanel.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards()));
-        mNotesSlideOutPanel.revalidate();
+        mNotesSlideOutPanel.reposition();
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
