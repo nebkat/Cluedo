@@ -29,6 +29,7 @@ import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.card.Suspect;
 import com.wolfetones.cluedo.card.Weapon;
 import com.wolfetones.cluedo.config.Config;
+import com.wolfetones.cluedo.game.Knowledge;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.ui.component.TileComponent;
 
@@ -39,21 +40,15 @@ import java.util.*;
 import java.util.List;
 
 public class NotesPanel extends JPanel {
-
-    private Color BACKGROUND_COLOUR = TileComponent.COLOR_ROOM;
-
+    
     public NotesPanel(Player player, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> remainingCards){
         super();
 
-        //setPreferredSize(new Dimension(Config.screenHeightPercentage(0.2f),500));
+        Knowledge knowledge = player.getKnowledge();
+        
+        setOpaque(false);
 
-        setBackground(BACKGROUND_COLOUR);
-        // Align the content to the left rather than the center
-        setLayout(new FlowLayout(FlowLayout.LEFT));
-
-        JPanel contentFrame = new JPanel();
-        contentFrame.setBackground(BACKGROUND_COLOUR);
-        contentFrame.setLayout(new GridBagLayout());
+        setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
 
         int gridYCounter = 0;
@@ -64,24 +59,24 @@ public class NotesPanel extends JPanel {
         c.gridy = gridYCounter++;
         JLabel suspectsLabel = new JLabel("Suspects");
         suspectsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        contentFrame.add(suspectsLabel, c);
+        add(suspectsLabel, c);
 
         for (Suspect suspect : suspects) {
             c.insets = new Insets(1, 0, 1, 0);
             c.gridx = 0;
             c.gridy = gridYCounter++;
 
-            contentFrame.add(new JLabel(suspect.getName()), c);
+            add(new JLabel(suspect.getName()), c);
 
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(1, 20, 1, 0);
             if (player.hasCard(suspect)) {
-                contentFrame.add(new CheckBox("X"), c);
+                add(new CheckBox("X"), c);
             } else if (remainingCards.contains(suspect)) {
-                contentFrame.add(new CheckBox("A"), c);
+                add(new CheckBox("A"), c);
             } else {
-                contentFrame.add(new CheckBox(""),c);
+                add(new CheckBox(""),c);
             }
         }
 
@@ -90,24 +85,24 @@ public class NotesPanel extends JPanel {
         c.gridx = 0;
         c.gridy = gridYCounter++;
         weaponsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        contentFrame.add(weaponsLabel, c);
+        add(weaponsLabel, c);
 
         for (Weapon weapon : weapons) {
             c.insets = new Insets(1, 0, 1, 0);
             c.gridx = 0;
             c.gridy = gridYCounter++;
 
-            contentFrame.add(new JLabel(weapon.getName()), c);
+            add(new JLabel(weapon.getName()), c);
 
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(1, 20, 1, 0);
             if (player.hasCard(weapon)) {
-                contentFrame.add(new CheckBox("X"), c);
+                add(new CheckBox("X"), c);
             } else if (remainingCards.contains(weapon)) {
-                contentFrame.add(new CheckBox("A"), c);
+                add(new CheckBox("A"), c);
             } else {
-                contentFrame.add(new CheckBox(""),c);
+                add(new CheckBox(""),c);
             }
         }
 
@@ -116,28 +111,26 @@ public class NotesPanel extends JPanel {
         c.gridx = 0;
         c.gridy = gridYCounter++;
         roomsLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(32)));
-        contentFrame.add(roomsLabel, c);
+        add(roomsLabel, c);
 
         for (Room room : rooms) {
             c.insets = new Insets(1, 0, 1, 0);
             c.gridx = 0;
             c.gridy = gridYCounter++;
 
-            contentFrame.add(new JLabel(room.getName()), c);
+            add(new JLabel(room.getName()), c);
 
             c.gridx = 1;
             // Padding around the check box
             c.insets = new Insets(1, 20, 1, 0);
             if (player.hasCard(room)) {
-                contentFrame.add(new CheckBox("X"), c);
+                add(new CheckBox("X"), c);
             } else if (remainingCards.contains(room)) {
-                contentFrame.add(new CheckBox("A"), c);
+                add(new CheckBox("A"), c);
             } else {
-                contentFrame.add(new CheckBox(""),c);
+                add(new CheckBox(""),c);
             }
         }
-
-        add(contentFrame);
     }
     private class CheckBox extends JPanel {
         private CheckBox(String contents) {
@@ -145,7 +138,7 @@ public class NotesPanel extends JPanel {
 
             setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
 
-            setBackground(BACKGROUND_COLOUR);
+            setOpaque(false);
 
             setLayout(new GridBagLayout());
 
