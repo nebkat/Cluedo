@@ -34,14 +34,9 @@ import com.wolfetones.cluedo.ui.component.TileComponent;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import java.awt.*;
 import java.util.*;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Font;
-import java.awt.Insets;
-import java.awt.Dimension;
+import java.util.List;
 
 public class NotesPanel extends JPanel {
 
@@ -152,7 +147,13 @@ public class NotesPanel extends JPanel {
 
             setBackground(BACKGROUND_COLOUR);
 
-            add(new JLabel(contents));
+            setLayout(new GridBagLayout());
+
+            GridBagConstraints c = new GridBagConstraints();
+
+            c.insets = new Insets(2, 2, 2, 0);
+
+            add(new JLabel(contents), c);
 
             setPreferredSize(new Dimension(15,15));
         }
