@@ -74,12 +74,15 @@ public class NotesPanel extends JPanel {
         add(sectionLabel, c);
 
         c.gridwidth = 1;
+        c.insets = new Insets(0, 1, 0, 1);
         for (Player player : mPlayers) {
             c.gridx++;
 
             add(new PlayerToken(player.getCharacter().getColor(), Config.screenRelativeSize(28)), c);
         }
 
+        c.insets = new Insets(0, 0, 0, 0);
+        c.ipadx = 0;
         c.gridx = 0;
 
         for (Card card : cards) {
@@ -118,7 +121,7 @@ public class NotesPanel extends JPanel {
         @Override
         public void paintComponent(Graphics g) {
             g.setColor(mColor);
-            g.fillRect(0, 0, getWidth(), getHeight());
+            g.fillOval(0, 0, getWidth(), getHeight());
         }
     }
 
