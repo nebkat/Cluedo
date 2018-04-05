@@ -359,6 +359,10 @@ public class GameController {
 
         mOutputPanel.clear();
 
+        mNotesSlideOutPanel.removeAll();
+        mNotesSlideOutPanel.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards()));
+        mNotesSlideOutPanel.revalidate();
+
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
         List<String> commands = new ArrayList<>();
@@ -384,10 +388,6 @@ public class GameController {
             String[] args = readCommand("Choose action", commands);
             String command = args[0];
             mActionPanel.hideAllExceptDone();
-
-            mNotesSlideOutPanel.removeAll();
-            mNotesSlideOutPanel.add(new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards()));
-            mNotesSlideOutPanel.revalidate();
 
             if (command == null) {
                 // Ignore and continue
