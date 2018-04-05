@@ -34,10 +34,16 @@ public class Knowledge {
     private int mPlayerCount;
     private Map<Card, Map<Player, Status>> mCardPlayerStatuses = new HashMap<>();
 
-    public Knowledge(List<Card> cards, List<Player> players) {
+    public Knowledge(List<Card> cards, List<Player> players, List<Card> undistributedCards) {
         mPlayerCount = players.size();
 
         for (Card card : cards) {
+
+            if (undistributedCards.contains(card)) {
+                mCardPlayerStatuses.put(card, null);
+                continue;
+            }
+
             Map<Player, Status> playerStatusMap = new HashMap<>();
 
             for (Player player : players) {

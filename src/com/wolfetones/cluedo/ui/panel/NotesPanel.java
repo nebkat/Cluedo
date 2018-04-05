@@ -88,12 +88,14 @@ public class NotesPanel extends JPanel {
             cardLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(16)));
             add(cardLabel, c);
 
-            c.insets = new Insets(1, 20, 1, 0);
-            for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
-                c.gridx++;
-                // Padding around the check box
+            if (mKnowledge.get().get(card) != null) {
+                c.insets = new Insets(1, 20, 1, 0);
+                for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
+                    c.gridx++;
+                    // Padding around the check box
 
-                add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(16)), c);
+                    add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(16)), c);
+                }
             }
         }
     }
@@ -114,7 +116,7 @@ public class NotesPanel extends JPanel {
             mStatus = status;
             mPlayer = player;
             if (status.getValue() != null) {
-                mImage = ImageUtils.loadImage("resources/" + VALUE_ICONS.get(status.getValue()) + ".png");
+                mImage = ImageUtils.loadImage("icons/" + VALUE_ICONS.get(status.getValue()) + ".png");
                 mImage = ImageUtils.getScaledImage(mImage, width);
             }
             setBorder(BorderFactory.createLineBorder(Color.BLACK, Config.screenRelativeSize(2)));

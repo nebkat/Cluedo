@@ -153,10 +153,6 @@ public class Game {
             throw new IllegalStateException("Not enough players to start game");
         }
 
-        for (Player player : mPlayers) {
-            player.initiateKnowledge(mBoard.getCards(), mPlayers);
-        }
-
         mStarted = true;
 
         mActivePlayers = new ArrayList<>(mPlayers);
@@ -612,6 +608,10 @@ public class Game {
         mUndistributedCards = distributeCards.stream()
                 .limit(distributeCards.size() % mPlayers.size())
                 .collect(Collectors.toList());
+
+        for (Player player : mPlayers) {
+            player.initiateKnowledge(mBoard.getCards(), mPlayers, mUndistributedCards);
+        }
 
         // Remove undistributed cards from cards to be distributed
         distributeCards.removeAll(mUndistributedCards);
