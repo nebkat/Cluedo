@@ -361,7 +361,7 @@ public class GameController {
         mOutputPanel.clear();
 
         mNotesSlideOutPanel.removeAll();
-        mNotesPanel = new NotesPanel(player, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms(), mGame.getUndistributedCards());
+        mNotesPanel = new NotesPanel(player, mPlayers, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms());
         mNotesPanel.setMaximumSize(new Dimension(mNotesSlideOutPanel.getWidth(), Integer.MAX_VALUE));
         mNotesSlideOutPanel.add(mNotesPanel);
         mNotesSlideOutPanel.reposition();

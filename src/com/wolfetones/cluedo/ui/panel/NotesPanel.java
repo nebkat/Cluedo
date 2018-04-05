@@ -44,11 +44,13 @@ import java.util.Map;
 public class NotesPanel extends JPanel {
 
     private Knowledge mKnowledge;
+    private List<Player> mPlayers;
     
-    public NotesPanel(Player player, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> remainingCards){
+    public NotesPanel(Player player, List<Player> players, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms){
         super();
 
         mKnowledge = player.getKnowledge();
+        mPlayers = players;
         
         setOpaque(false);
 
@@ -72,8 +74,19 @@ public class NotesPanel extends JPanel {
         add(sectionLabel, c);
 
         c.gridwidth = 1;
+        for (Player player : mPlayers) {
+            c.gridx++;
+
+            add(new PlayerToken(player.getCharacter().getColor(), Config.screenRelativeSize(28)), c);
+        }
+
+        c.gridx = 0;
 
         for (Card card : cards) {
+            if (mKnowledge.get().get(card) == null) {
+                continue;
+            }
+
             c.anchor = GridBagConstraints.LINE_START;
 
             c.gridx = 0;
@@ -84,15 +97,31 @@ public class NotesPanel extends JPanel {
             add(cardLabel, c);
 
             c.anchor = GridBagConstraints.CENTER;
-            if (mKnowledge.get().get(card) != null) {
-                for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
-                    c.gridx++;
 
-                    add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(20)), c);
-                }
+            for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
+                c.gridx++;
+                add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(20)), c);
             }
+
         }
     }
+    private static class PlayerToken extends JComponent {
+        private Color mColor;
+
+        private PlayerToken(Color color, int width) {
+            super();
+
+            mColor = color;
+            setPreferredSize(new Dimension(width, width));
+        }
+
+        @Override
+        public void paintComponent(Graphics g) {
+            g.setColor(mColor);
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    }
+
     private static class CheckBox extends JComponent {
         private static final double MARGIN = 0.1;
         private static final Map<Knowledge.Value, String> VALUE_ICONS = new HashMap<>() {{
