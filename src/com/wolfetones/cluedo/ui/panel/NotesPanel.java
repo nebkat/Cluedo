@@ -52,12 +52,7 @@ public class NotesPanel extends JPanel {
         
         setOpaque(false);
 
-
-        setBorder(BorderFactory.createEmptyBorder(
-                0, Config.screenRelativeSize(20),
-                0, Config.screenRelativeSize(20)));
         setLayout(new GridBagLayout());
-
 
         GridBagConstraints c = new GridBagConstraints();
 
@@ -67,8 +62,7 @@ public class NotesPanel extends JPanel {
     }
 
     private void addSection(String title, List<? extends Card> cards, GridBagConstraints c){
-        c.anchor = GridBagConstraints.WEST;
-        c.insets = new Insets(2, 0, 2, 0);
+        c.anchor = GridBagConstraints.LINE_START;
         c.gridx = 0;
         c.gridwidth = 6;
 
@@ -78,28 +72,29 @@ public class NotesPanel extends JPanel {
         add(sectionLabel, c);
 
         c.gridwidth = 1;
+
         for (Card card : cards) {
-            c.insets = new Insets(1, 0, 1, 0);
+            c.anchor = GridBagConstraints.LINE_START;
+
             c.gridx = 0;
             c.gridy++;
 
-
             JLabel cardLabel = new JLabel(card.getName());
-            cardLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, Config.screenRelativeSize(16)));
+            cardLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, Config.screenRelativeSize(20)));
             add(cardLabel, c);
 
+            c.anchor = GridBagConstraints.CENTER;
             if (mKnowledge.get().get(card) != null) {
-                c.insets = new Insets(1, 20, 1, 0);
                 for (Map.Entry<Player, Knowledge.Status> entry : mKnowledge.get().get(card).entrySet()) {
                     c.gridx++;
-                    // Padding around the check box
 
-                    add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(16)), c);
+                    add(new CheckBox(entry.getKey(), entry.getValue(), Config.screenRelativeSize(20)), c);
                 }
             }
         }
     }
     private static class CheckBox extends JComponent {
+        private static final double MARGIN = 0.1;
         private static final Map<Knowledge.Value, String> VALUE_ICONS = new HashMap<>() {{
             put(Knowledge.Value.Holding, "holding");
             put(Knowledge.Value.NotHolding, "not-holding");
@@ -117,7 +112,7 @@ public class NotesPanel extends JPanel {
             mPlayer = player;
             if (status.getValue() != null) {
                 mImage = ImageUtils.loadImage("icons/" + VALUE_ICONS.get(status.getValue()) + ".png");
-                mImage = ImageUtils.getScaledImage(mImage, width);
+                mImage = ImageUtils.getScaledImage(mImage, (int) (width * (1.0 - 2 * MARGIN)));
             }
             setBorder(BorderFactory.createLineBorder(Color.BLACK, Config.screenRelativeSize(2)));
 
@@ -127,7 +122,7 @@ public class NotesPanel extends JPanel {
         @Override
         public void paintComponent(Graphics g) {
             if (mImage != null) {
-                g.drawImage(mImage, 0, 0, null);
+                g.drawImage(mImage, (int) (getWidth() * MARGIN), (int) (getHeight() * MARGIN), null);
             }
         }
     }
