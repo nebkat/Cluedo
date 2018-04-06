@@ -38,8 +38,9 @@ public class Knowledge {
         for (Card card : cards) {
             Map<Player, Status> playerStatusMap = new HashMap<>();
             Iterator<Player> iterator = players.iteratorStartingAfter(player);
-            Player p;
-            while ((p = iterator.next()) != player) {
+            while (iterator.hasNext()) {
+                Player p = iterator.next();
+
                 Status status = new Status();
                 playerStatusMap.put(p, status);
 
