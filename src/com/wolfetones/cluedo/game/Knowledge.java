@@ -27,27 +27,29 @@ package com.wolfetones.cluedo.game;
 import com.wolfetones.cluedo.card.Card;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class Knowledge {
-    private int mPlayerCount;
     private Map<Card, Map<Player, Status>> mCardPlayerStatuses = new HashMap<>();
 
-    public Knowledge(List<Card> cards, List<Player> players, List<Card> undistributedCards) {
-        mPlayerCount = players.size();
-
+    public Knowledge(Player player, PlayerList players, List<Card> cards, List<Card> playerCards, List<Card> undistributedCards) {
         for (Card card : cards) {
-
-            if (undistributedCards.contains(card)) {
-                mCardPlayerStatuses.put(card, null);
-                continue;
-            }
-
             Map<Player, Status> playerStatusMap = new HashMap<>();
+            Iterator<Player> iterator = players.iteratorStartingAfter(player);
+            Player p;
+            while ((p = iterator.next()) != player) {
+                Status status = new Status();
+                playerStatusMap.put(p, status);
 
-            for (Player player : players) {
-                playerStatusMap.put(player, new Status());
+                if (undistributedCards.contains(card)) {
+                    status.value = Value.Undistributed;
+                    status.fixed = true;
+                } else if (playerCards.contains(card)) {
+                    status.value = Value.Self;
+                    status.fixed = true;
+                }
             }
 
             mCardPlayerStatuses.put(card, playerStatusMap);
@@ -58,40 +60,30 @@ public class Knowledge {
         return mCardPlayerStatuses;
     }
 
-    public void setHolding(Card card, Player player) {
-        setValue(card, player, Value.Holding);
+    public void setHolding(Card card, Player player, boolean holding) {
+        setValue(card, player, holding ? Value.Holding : Value.NotHolding, true);
     }
 
-    public void setValue(Card card, Player player, Value value) {
+    public void setValue(Card card, Player player, Value value, boolean fixed) {
         Map<Player, Status> cardPlayerStatuses = mCardPlayerStatuses.get(card);
         Status playerStatus = cardPlayerStatuses.get(player);
 
+        // Don't modify fixed values
+        if (playerStatus.fixed) {
+            return;
+        }
+
         // Set value
         playerStatus.value = value;
+        playerStatus.fixed = fixed;
 
-        // Special cases
-        switch (value) {
-            case Holding:
-                // Set all other entries to not holding
-                cardPlayerStatuses.values().stream()
-                        .filter(s -> s != playerStatus)
-                        .forEach(s -> s.value = Value.NotHolding);
-
-                break;
-            case NotHolding:
-                int notHoldingCount = (int) cardPlayerStatuses.values().stream()
-                        .map(Status::getValue)
-                        .filter(Value.NotHolding::equals)
-                        .count();
-
-                // If all but one player are not holding then set that player to holding
-                if (notHoldingCount == mPlayerCount - 1) {
-                    cardPlayerStatuses.values().stream()
-                            .filter(s -> s.value != Value.NotHolding)
-                            .findAny().ifPresent(s -> s.value = Value.Holding);
-                }
-
-                break;
+        // Special case
+        if (value == Value.Holding) {
+            // Set all other entries to not holding
+            for (Player p : cardPlayerStatuses.keySet()) {
+                if (p == player) continue;
+                setValue(card, p, Value.NotHolding, fixed);
+            }
         }
     }
 
@@ -101,10 +93,15 @@ public class Knowledge {
 
     public class Status {
         private Value value;
-        private boolean[] hints = new boolean[5];
+        private boolean fixed = false;
+        private boolean[] hints = new boolean[4];
 
         public Value getValue() {
             return value;
+        }
+
+        public boolean getFixed() {
+            return fixed;
         }
 
         public boolean[] getHints() {
@@ -117,6 +114,6 @@ public class Knowledge {
     }
 
     public enum Value {
-        Holding, NotHolding, SuspectedHolding
+        Holding, NotHolding, SuspectedHolding, Undistributed, Self
     }
 }

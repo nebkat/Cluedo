@@ -55,7 +55,7 @@ public class Game {
     /**
      * Players
      */
-    private List<Player> mPlayers = new ArrayList<>(6);
+    private PlayerList mPlayers = new PlayerList();
     /** Players not eliminated */
     private List<Player> mActivePlayers;
     private ListIterator<Player> mActivePlayerIterator;
@@ -75,6 +75,8 @@ public class Game {
     private int mTurnRemainingMoves;
     private boolean mTurnHasMoved;
     private boolean mTurnMovementComplete;
+    private Suggestion mTurnQuestionSuggestion;
+    private Player mTurnQuestionCardHolder;
 
     /**
      * Board
@@ -97,15 +99,17 @@ public class Game {
         public Suggestion suggestion;
 
         public Player responder;
+        public Card response;
 
         public boolean correct;
 
-        private static LogEntry newQuestionEntry(Player player, Suggestion suggestion, Player responder) {
+        private static LogEntry newQuestionEntry(Player player, Suggestion suggestion, Player responder, Card response) {
             LogEntry entry = new LogEntry();
             entry.type = Type.Question;
             entry.player = player;
             entry.suggestion = suggestion;
             entry.responder = responder;
+            entry.response = response;
 
             return entry;
         }
@@ -248,6 +252,10 @@ public class Game {
         // Reset movement variables
         mTurnHasMoved = false;
         mTurnRemainingMoves = 0;
+
+        // Reset question variables
+        mTurnQuestionSuggestion = null;
+        mTurnQuestionCardHolder = null;
 
         return mCurrentPlayer;
     }
@@ -406,12 +414,9 @@ public class Game {
         }
 
         // Can't pose question using undistributed cards
-        if (!Collections.disjoint(mUndistributedCards, suggestion.asList())) {
+        if (mUndistributedCards.contains(suggestion.suspect) || mUndistributedCards.contains(suggestion.weapon)) {
             throw new IllegalArgumentException("Cannot make guess using any of the undistributed cards");
         }
-
-        // Player can finish turn once a guess has been made
-        mTurnFinished = true;
 
         // Can no longer pose question
         mTurnCanPoseQuestion = false;
@@ -427,27 +432,68 @@ public class Game {
         suggestion.weapon.setLocation(suggestion.room);
 
         // Loop through players
-        ListIterator<Player> iterator = mPlayers.listIterator((mPlayers.indexOf(mCurrentPlayer) + 1) % mPlayers.size());
-        Player checkPlayer;
         Player matchingPlayer = null;
-        while ((checkPlayer = iterator.next()) != mCurrentPlayer) {
+        Iterator<Player> iterator = mPlayers.iteratorStartingAfter(mCurrentPlayer);
+        while (iterator.hasNext()) {
+            Player checkPlayer = iterator.next();
             // Return first player that has one of the suggestion's cards
             if (checkPlayer.hasAnySuggestionCards(suggestion)) {
                 matchingPlayer = checkPlayer;
                 break;
             }
 
-            // Loop around to first player
-            if (!iterator.hasNext()) {
-                iterator = mPlayers.listIterator();
+            for (Card card : suggestion.asList()) {
+                for (Player player : mPlayers) {
+                    if (player == checkPlayer) continue;
+                    player.getKnowledge().setHolding(card, checkPlayer, false);
+                }
             }
         }
 
-        // Insert log entry
-        mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, suggestion, matchingPlayer));
-
         // If no matches found, either correct final accusation or player posing question has cards
+        if (matchingPlayer == null) {
+            // Insert log entry
+            mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, suggestion, null, null));
+
+            // Turn can finish as no response is required
+            mTurnFinished = true;
+
+            return null;
+        }
+
+        mTurnQuestionSuggestion = suggestion;
+        mTurnQuestionCardHolder = matchingPlayer;
+
         return matchingPlayer;
+    }
+
+    /**
+     * Acknowledges the response of a player who had a card in a previously asked question.
+     *
+     * @param card Response card.
+     */
+    public void questionResponse(Card card) {
+        if (mTurnQuestionCardHolder == null || mTurnQuestionSuggestion == null) {
+            throw new IllegalStateException("Not waiting for a question response");
+        }
+
+        if (!mTurnQuestionCardHolder.hasCard(card)) {
+            throw new IllegalArgumentException("Player " + mTurnQuestionCardHolder.getName() + " does not have " + card.getName());
+        }
+
+        if (!mTurnQuestionSuggestion.asList().contains(card)) {
+            throw new IllegalArgumentException(card.getName() + " is not one of the suggested cards");
+        }
+
+        mCurrentPlayer.getKnowledge().setHolding(card, mTurnQuestionCardHolder, true);
+
+        // Insert log entry
+        mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, mTurnQuestionSuggestion, null, null));
+
+        mTurnQuestionSuggestion = null;
+        mTurnQuestionCardHolder = null;
+
+        mTurnFinished = true;
     }
 
     /**
@@ -609,16 +655,17 @@ public class Game {
                 .limit(distributeCards.size() % mPlayers.size())
                 .collect(Collectors.toList());
 
-        for (Player player : mPlayers) {
-            player.initiateKnowledge(mBoard.getCards(), mPlayers, mUndistributedCards);
-        }
-
         // Remove undistributed cards from cards to be distributed
         distributeCards.removeAll(mUndistributedCards);
 
         // Distribute cards to players
         for (int i = 0; i < distributeCards.size(); i++) {
             mPlayers.get(i % mPlayers.size()).addCard(distributeCards.get(i));
+        }
+
+        // Initiate player card knowledge
+        for (Player player : mPlayers) {
+            player.initiateKnowledge(mBoard.getCards(), mPlayers, mUndistributedCards);
         }
     }
 

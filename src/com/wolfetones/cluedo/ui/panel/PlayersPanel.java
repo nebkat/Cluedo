@@ -24,6 +24,7 @@
 
 package com.wolfetones.cluedo.ui.panel;
 
+import com.wolfetones.cluedo.game.PlayerList;
 import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
@@ -41,7 +42,7 @@ import java.util.*;
 import java.util.List;
 
 public class PlayersPanel extends JPanel {
-    private List<Player> mPlayers;
+    private PlayerList mPlayers;
 
     private Map<Player, PlayerComponents> mPlayerComponents = new HashMap<>();
 
@@ -60,7 +61,7 @@ public class PlayersPanel extends JPanel {
     private JComponent mTokenHighlight;
 
     @SuppressWarnings("SuspiciousNameCombination")
-    public PlayersPanel(List<Player> players, int iconWidth) {
+    public PlayersPanel(PlayerList players, int iconWidth) {
         super();
 
         mPlayers = players;
@@ -177,20 +178,19 @@ public class PlayersPanel extends JPanel {
 
         int delayCounter = 1;
 
-        ListIterator<Player> iterator = mPlayers.listIterator((mPlayers.indexOf(poser) + 1) % mPlayers.size());
-        Player checkPlayer;
-        while ((checkPlayer = iterator.next()) != (cardPlayer == null ? poser : cardPlayer)) {
+        Iterator<Player> iterator = mPlayers.iteratorStartingAfter(poser);
+        while (iterator.hasNext()) {
+            Player checkPlayer = iterator.next();
+            if (checkPlayer == cardPlayer) {
+                break;
+            }
+
             TextBubble noCardPlayerBubble = mPlayerComponents.get(checkPlayer).bubble;
 
             noCardPlayerBubble.setText("I have no cards!");
             noCardPlayerBubble.setButton(null, null);
 
             noCardPlayerBubble.showBubble(delayCounter++ * 500);
-
-            // Loop around to first player
-            if (!iterator.hasNext()) {
-                iterator = mPlayers.listIterator();
-            }
         }
 
         if (cardPlayer != null) {

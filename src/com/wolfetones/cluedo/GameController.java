@@ -32,6 +32,7 @@ import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.game.Player;
+import com.wolfetones.cluedo.game.PlayerList;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.*;
 import com.wolfetones.cluedo.ui.component.*;
@@ -159,7 +160,7 @@ public class GameController {
      */
     private Game mGame = new Game();
 
-    private List<Player> mPlayers = new ArrayList<>();
+    private PlayerList mPlayers = new PlayerList();
 
     /**
      * Swing containers
@@ -351,6 +352,9 @@ public class GameController {
         mPlayersPanel.setActivePlayer(0);
         mPlayersPanel.hideBubbles();
 
+        mNotesSlideOutPanel.reposition();
+        mNotesPanel.setPlayer(player);
+
         passToPlayer(player, null);
 
         mPlayerCardsPanel.setCards(player.getCards());
@@ -359,12 +363,6 @@ public class GameController {
         }
 
         mOutputPanel.clear();
-
-        mNotesSlideOutPanel.removeAll();
-        mNotesPanel = new NotesPanel(player, mPlayers, mGame.getBoard().getSuspects(), mGame.getBoard().getWeapons(), mGame.getBoard().getRooms());
-        mNotesPanel.setMaximumSize(new Dimension(mNotesSlideOutPanel.getWidth(), Integer.MAX_VALUE));
-        mNotesSlideOutPanel.add(mNotesPanel);
-        mNotesSlideOutPanel.reposition();
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
@@ -586,13 +584,10 @@ public class GameController {
             suggestion = createSuggestion(args[1], args[2], null, mGame.getCurrentPlayerLocation().asRoom());
 
             boolean valid = true;
-            for (Card card : suggestion.asList()) {
-                // Can't use undistributed cards in suggestion
-                if (mGame.getUndistributedCards().contains(card)) {
-                    valid = false;
+            if (mGame.getUndistributedCards().contains(suggestion.suspect) || mGame.getUndistributedCards().contains(suggestion.weapon)) {
+                valid = false;
 
-                    System.out.println("Can't use " + card.getName() + " in question as it is visible to all players");
-                }
+                System.out.println("Can't use undistributed cards in questions as they are visible to all players");
             }
 
             if (!valid) {
@@ -609,25 +604,39 @@ public class GameController {
         if (matchingPlayer != null) {
             List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
-            mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
-            readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
+            // Update notes panel
+            mNotesPanel.updateCards(suggestion.asList());
 
+            // Show response text bubbles
+            mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
+
+            // Request that game is passed to matching player to show a card (text or UI)
+            readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
             passToPlayer(matchingPlayer, "temporarily");
 
+            // Let matching player choose card to show
             Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
-            player.getKnowledge().setHolding(shownCard, matchingPlayer);
 
+            // Report shown card to game
+            mGame.questionResponse(shownCard);
+
+            // Request that game is passed back to current player
             passToPlayer(player, "back");
 
+            // Show response card to current player
             CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
             System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
 
+            // Hide response text bubbles
             mPlayersPanel.hideBubbles();
         } else {
             mPlayersPanel.showQuestionResponses(player, suggestion, null, null);
 
             System.out.println("No players have any of the suggested cards");
         }
+
+        // Update notes panel
+        mNotesPanel.updateCards(suggestion.asList());
     }
 
     private void performAccuse(Player player, String[] args) {
@@ -1169,10 +1178,11 @@ public class GameController {
         mHistorySlideOutPanel.reposition();
 
         // Notes panel
+        mNotesPanel = new NotesPanel(mPlayers, mGame.getBoard(), mGame.getUndistributedCards());
         mNotesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
         mBoardLayeredPane.add(mNotesSlideOutPanel, BOARD_LAYER_PANELS);
         mNotesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height - slideOutPanelHandleSize);
-        mNotesSlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
+        mNotesSlideOutPanel.add(mNotesPanel);
         mNotesSlideOutPanel.reposition();
     }
 

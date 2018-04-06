@@ -44,8 +44,8 @@ public class Player {
         mName = name;
     }
 
-    public void initiateKnowledge(List<Card> cards, List<Player> players, List<Card> undistributedCards) {
-        mKnowledge = new Knowledge(cards, players, undistributedCards);
+    public void initiateKnowledge(List<Card> cards, PlayerList players, List<Card> undistributedCards) {
+        mKnowledge = new Knowledge(this, players, cards, mCards, undistributedCards);
     }
 
     public Knowledge getKnowledge() {
@@ -76,7 +76,6 @@ public class Player {
      */
     public void addCard(Card card) {
         mCards.add(card);
-        mKnowledge.setHolding(card, this);
     }
 
     /**
