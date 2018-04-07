@@ -1181,9 +1181,8 @@ public class GameController {
         mNotesPanel = new NotesPanel(mPlayers, mGame.getBoard(), mGame.getUndistributedCards());
         mNotesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
         mBoardLayeredPane.add(mNotesSlideOutPanel, BOARD_LAYER_PANELS);
-        mNotesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height - slideOutPanelHandleSize);
+        mNotesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height);
         mNotesSlideOutPanel.add(mNotesPanel);
-        mNotesSlideOutPanel.reposition();
     }
 
     private void dealCards() {
