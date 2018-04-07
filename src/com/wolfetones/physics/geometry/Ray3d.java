@@ -27,15 +27,30 @@ package com.wolfetones.physics.geometry;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+/**
+ * Infinite geometric line.
+ */
 public class Ray3d extends Point3d {
     private Vector3d direction;
 
+    /**
+     * Constructs a ray with the given direction, passing through the given point.
+     *
+     * @param origin a point on the ray, its origin
+     * @param direction the direction of the ray
+     */
     public Ray3d(Point3d origin, Vector3d direction) {
         super(origin);
         this.direction = new Vector3d(direction);
         this.direction.normalize();
     }
 
+    /**
+     * Constructs a ray passing through the given points
+     *
+     * @param start start point
+     * @param end end point
+     */
     public Ray3d(Point3d start, Point3d end) {
         super(start);
 
@@ -43,13 +58,24 @@ public class Ray3d extends Point3d {
         this.direction.sub(start, end);
     }
 
+    /**
+     * Gets the point at the given distance from the origin along the ray.
+     *
+     * @param distance the distance along the ray
+     * @return the point at the given distance from the origin along the ray
+     */
     public Point3d getPointAtDistance(double distance) {
         Point3d point = new Point3d();
         point.scaleAdd(distance, this, direction);
         return point;
     }
 
+    /**
+     * Gets the direction of the ray.
+     *
+     * @return the direction of the ray
+     */
     public Vector3d getDirection() {
-        return new Vector3d(direction);
+        return direction;
     }
 }

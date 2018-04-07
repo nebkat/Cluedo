@@ -25,22 +25,31 @@
 package com.wolfetones.physics.body;
 
 import com.wolfetones.physics.Particle;
-import com.wolfetones.physics.RenderUtils;
+import com.wolfetones.physics.geometry.Face;
 
-import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
-import javax.vecmath.Vector3d;
 
+/**
+ * Rigid cube body.
+ */
 public class Cube extends RigidBody {
     private static final int[] FACE_PARTICLE_INDEX = {0, 1, 3, 2};
 
-    protected Particle[][] faces = new Particle[6][4];
+    protected Face[] faces = Face.initiateArray(6, 4);
 
+    /**
+     * Constructs an axis-aligned cube with the given side length, centered at the given location
+     *
+     * @param center the center of the cube
+     * @param sideLength the side length of the cube
+     */
     public Cube(Point3d center, double sideLength) {
         super();
 
+        // Half side length for vertex positioning
         double s = sideLength / 2.0;
 
+        // Iterate through each combination of X/Y/Z being positive/negative
         for (int xO = 0; xO <= 1; xO++) {
             for (int yO = 0; yO <= 1; yO++) {
                 for (int zO = 0; zO <= 1; zO++) {
@@ -52,9 +61,9 @@ public class Cube extends RigidBody {
 
                     particles.add(p);
 
-                    faces[zO][faceParticleIndex(zO, xO, yO)] = p;
-                    faces[2 + yO][faceParticleIndex(yO, zO, xO)] = p;
-                    faces[4 + xO][faceParticleIndex(xO, yO, zO)] = p;
+                    faces[zO].setVertex(faceParticleIndex(zO, xO, yO), p);
+                    faces[2 + yO].setVertex(faceParticleIndex(yO, zO, xO), p);
+                    faces[4 + xO].setVertex(faceParticleIndex(xO, yO, zO), p);
                 }
             }
         }
@@ -62,7 +71,13 @@ public class Cube extends RigidBody {
         setupSticks();
     }
 
-    public Point3d[] getFace(int face) {
+    /**
+     * Gets the face of the cube at the given index
+     *
+     * @param face the face index
+     * @return the face of the cube at the given index
+     */
+    public Face getFace(int face) {
         return faces[face];
     }
 
@@ -70,19 +85,5 @@ public class Cube extends RigidBody {
         int result = FACE_PARTICLE_INDEX[a + 2 * b];
 
         return front == 1 ? result : 3 - result;
-    }
-
-    protected static boolean isFrontFace(Particle[] face) {
-        Point2d p0 = RenderUtils.projectToScreen(face[0]);
-        Point2d p1 = RenderUtils.projectToScreen(face[1]);
-        Point2d p2 = RenderUtils.projectToScreen(face[2]);
-
-        double v1x = p0.x - p1.x;
-        double v1y = p0.y - p1.y;
-        double v2x = p2.x - p1.x;
-        double v2y = p2.y - p1.y;
-        double cross = v1x * v2y - v1y * v2x;
-
-        return cross < 0;
     }
 }

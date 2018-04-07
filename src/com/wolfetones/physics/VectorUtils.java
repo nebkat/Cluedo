@@ -25,9 +25,17 @@
 package com.wolfetones.physics;
 
 import javax.vecmath.Point3d;
-import java.util.Collection;
 
+/**
+ * Vector helper methods.
+ */
 public class VectorUtils {
+    /**
+     * Returns the average value of a set of points.
+     *
+     * @param points the points for which to calculate the average
+     * @return the average value of the points provided
+     */
     public static Point3d average(Point3d[] points) {
         Point3d average = new Point3d();
         for (Point3d point : points) {
@@ -38,12 +46,20 @@ public class VectorUtils {
         return average;
     }
 
-    public static Point3d average(Collection<? extends Point3d> points) {
+    /**
+     * Returns the average value of a set of points.
+     *
+     * @param points the points for which to calculate the average
+     * @return the average value of the points provided
+     */
+    public static Point3d average(Iterable<? extends Point3d> points) {
         Point3d average = new Point3d();
+        int count = 0;
         for (Point3d point : points) {
             average.add(point);
+            count++;
         }
-        average.scale(1.0 / points.size());
+        average.scale(1.0 / count);
 
         return average;
     }

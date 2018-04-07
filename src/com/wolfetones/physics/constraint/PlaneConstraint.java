@@ -30,11 +30,21 @@ import com.wolfetones.physics.Particle;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+/**
+ * Particle constraint that keeps a particle in front of a given plane.
+ */
 public class PlaneConstraint extends Constraint {
     private Plane plane;
     private double restitution;
     private double friction;
 
+    /**
+     * Constructs a plane constraint with the given plane.
+     *
+     * @param plane plane
+     * @param restitution the coefficient of restitution, applied to perpendicular forces of objects colliding with the plane
+     * @param friction the coefficient of friction, applied to lateral forces of objects colliding with the plane
+     */
     public PlaneConstraint(Plane plane, double restitution, double friction) {
         super();
 
@@ -43,6 +53,17 @@ public class PlaneConstraint extends Constraint {
         this.friction = friction;
     }
 
+    /**
+     * Applies the constraint to the given particle.
+     * <p>
+     * If the particle is in front of the plane, nothing occurs.
+     * <p>
+     * If the particle is behind the plane, the particle is moved to the closest point on the plane. The particle's
+     * velocity perpendicular to the plane is inverted and scaled by the constraint's restitution coefficient, and
+     * the velocity parallel to the plane is scaled by the friction coefficient.
+     *
+     * @param particle the particle to apply the constraint to
+     */
     @Override
     public void apply(Particle particle) {
         if (plane.classifyPoint(particle) >= 0) return;
@@ -62,7 +83,7 @@ public class PlaneConstraint extends Constraint {
 
         // Move particle back to projection point (closest non-colliding point)
         particle.set(newProjection);
-        particle.previousPosition.set(particle);
+        particle.previousPosition.set(newProjection);
 
         // Scale perpendicular motion by restitution
         perpendicularMotion.scale(this.restitution);

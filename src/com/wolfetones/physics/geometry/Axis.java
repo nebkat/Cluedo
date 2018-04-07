@@ -26,19 +26,34 @@ package com.wolfetones.physics.geometry;
 
 import javax.vecmath.Vector3d;
 
+/**
+ * Vector representing an axis.
+ */
 public class Axis extends Vector3d {
+    /**
+     * Constant representing the X axis (1, 0, 0).
+     */
     public static final Axis X = new Axis(1, 0, 0);
+
+    /**
+     * Constant representing the Y axis (0, 1, 0).
+     */
     public static final Axis Y = new Axis(0, 1, 0);
+
+    /**
+     * Constant representing the Z axis (0, 0, 1).
+     */
     public static final Axis Z = new Axis(0, 0, 1);
 
-    public Axis(int x, int y, int z) {
+    /**
+     * Constructs a new axis in the given direction.
+     *
+     * @param x distance x
+     * @param y distance y
+     * @param z distance z
+     */
+    private Axis(int x, int y, int z) {
         super(x, y, z);
-
-        normalize();
-    }
-
-    public Axis(Vector3d axis) {
-        super(axis);
 
         normalize();
     }

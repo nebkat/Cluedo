@@ -28,15 +28,30 @@ import com.wolfetones.physics.Particle;
 
 import javax.vecmath.Vector3d;
 
+/**
+ * Particle behavior that applies a constant force in a given direction to a particle.
+ */
 public class ConstantForceBehavior extends Behavior {
     private Vector3d force;
 
+    /**
+     * Constructs a constant force behavior with the given force.
+     *
+     * @param force constant force
+     */
     public ConstantForceBehavior(Vector3d force) {
         super();
 
         this.force = new Vector3d(force);
     }
 
+    /**
+     * Applies the behavior's force to the given particle.
+     *
+     * Results in the particle gaining velocity.
+     *
+     * @param particle the particle to apply the behavior to
+     */
     @Override
     public void apply(Particle particle) {
         particle.translate(force);

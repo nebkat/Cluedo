@@ -26,6 +26,14 @@ package com.wolfetones.physics.behavior;
 
 import com.wolfetones.physics.Particle;
 
+/**
+ * Particle behavior that modifies the position of a particle after every particle simulation step.
+ */
 public abstract class Behavior {
+    /**
+     * Applies the behavior to the given particle.
+     *
+     * @param particle the particle to apply the behavior to
+     */
     public abstract void apply(Particle particle);
 }

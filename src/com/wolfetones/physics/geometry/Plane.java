@@ -27,15 +27,30 @@ package com.wolfetones.physics.geometry;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+/**
+ * Infinite geometric plane.
+ */
 public class Plane extends Point3d {
     private Vector3d normal;
 
+    /**
+     * Constructs a plane at the given point with the given normal.
+     *
+     * @param origin a point on the plane
+     * @param normal the normal of the plane
+     */
     public Plane(Point3d origin, Vector3d normal) {
         super(origin);
         this.normal = new Vector3d(normal);
         this.normal.normalize();
     }
 
+    /**
+     * Classifies a point as being in front of, behind, or on the plane.
+     *
+     * @param point the point to classify
+     * @return {@code 1} for points in front of the plane, {@code -1} for points behind the plane, and {@code 0} for points on the plane
+     */
     public int classifyPoint(Point3d point) {
         Vector3d delta = new Vector3d();
         delta.sub(point, this);
@@ -51,25 +66,41 @@ public class Plane extends Point3d {
         }
     }
 
+    /**
+     * Gets the projection of the given point on to the plane.
+     *
+     * @param point the point to project
+     * @return the projection of the given point on to the plane
+     */
     public Point3d getProjectedPoint(Point3d point) {
         Vector3d delta = new Vector3d();
         delta.sub(this, point);
 
         double perpendicularDistance = normal.dot(delta);
-        double denominator = normal.lengthSquared();
 
         Point3d intersection = new Point3d();
-        intersection.scaleAdd(perpendicularDistance / denominator, normal, point);
+        intersection.scaleAdd(perpendicularDistance, normal, point);
 
         return intersection;
     }
 
+    /**
+     * Gets the intersection point of the plane and the given ray
+     *
+     * @param ray the ray for which to calculate an intersection
+     * @return the intersection point of the plane and the given ray
+     */
     public Point3d getIntersectionPoint(Ray3d ray) {
         Vector3d delta = new Vector3d();
         delta.sub(this, ray);
 
         double perpendicularDistance = normal.dot(delta);
         double denominator = normal.dot(ray.getDirection());
+
+        // Ray and plane are parallel
+        if (denominator == 0) {
+            return null;
+        }
 
         return ray.getPointAtDistance(perpendicularDistance / denominator);
     }

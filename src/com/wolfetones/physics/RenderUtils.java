@@ -30,13 +30,29 @@ import javax.vecmath.Point2d;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
+/**
+ * Rendering helper methods.
+ */
 public class RenderUtils {
     public static final double CAMERA_HEIGHT_FROM_SCREEN = 1250;
 
+    /**
+     * Calculates the distance of a point from the center of the screen from a point at a depth in the world.
+     *
+     * @param worldDistance distance of the world point from (0, 0)
+     * @param depth depth of the point in the world
+     * @return distance of point on screen
+     */
     private static double screenDistance(double worldDistance, double depth) {
         return CAMERA_HEIGHT_FROM_SCREEN * worldDistance / (-depth + CAMERA_HEIGHT_FROM_SCREEN);
     }
 
+    /**
+     * Projects a 3d point onto the screen, returning the projected point's 2d coordinates.
+     *
+     * @param point point to project
+     * @return 2d coordinates of projected point
+     */
     public static Point2d projectToScreen(Point3d point) {
         Point2d projection = new Point2d();
 
@@ -46,6 +62,41 @@ public class RenderUtils {
         return projection;
     }
 
+    /**
+     * Creates a plane at a point with a normal facing the Z-axis,
+     * perpendicular to the line from the camera to the point.
+     * <p>
+     * Used to create planes for constraints that keep particles within the screen viewable area.
+     *
+     * <pre>
+     * Viewed in 2D:
+     *         Z-axis
+     *
+     *           D
+     *           | \
+     *           |   \               p
+     *           |     \           p
+     *           |       \       p
+     *           |         N   p
+     * ----------------------P    X/Y axis
+     *           |         p
+     *           |       p
+     *           |     p
+     *           |   p
+     *           | p
+     *           C
+     *
+     * Where
+     *     C = Camera
+     *     P = Point provided (on axis, z = 0)
+     *     p = Plane created
+     *     N = Normal
+     *     D = Point at depth on Z axis
+     * </pre>
+     *
+     * @param point point on plane
+     * @return generated plane
+     */
     public static Plane getPlaneFromCameraToPoint(Point2d point) {
         double depth = -Math.pow(point.distance(new Point2d()), 2) / CAMERA_HEIGHT_FROM_SCREEN;
 

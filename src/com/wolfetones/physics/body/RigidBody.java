@@ -25,9 +25,15 @@
 package com.wolfetones.physics.body;
 
 import com.wolfetones.physics.Particle;
-import com.wolfetones.physics.spring.Spring;
+import com.wolfetones.physics.Spring;
 
+/**
+ * An abstract body of particles connected by rigid springs.
+ */
 public abstract class RigidBody extends Body {
+    /**
+     * Creates a rigid spring between each particle in the body.
+     */
     protected void setupSticks() {
         for (Particle a : particles) {
             for (Particle b : particles) {

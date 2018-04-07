@@ -26,7 +26,17 @@ package com.wolfetones.physics.behavior;
 
 import javax.vecmath.Vector3d;
 
+/**
+ * Constant force particle behavior representing gravity, acting in the Z direction only.
+ */
 public class GravityBehavior extends ConstantForceBehavior {
+    /**
+     * Constructs a constant force behavior with the given strength in the Z direction.
+     *
+     * The {@code gravity} value is inverted to create a negative Z force.
+     *
+     * @param gravity positive value of gravity
+     */
     public GravityBehavior(double gravity) {
         super(new Vector3d(0, 0, -gravity));
     }

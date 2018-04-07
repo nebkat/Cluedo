@@ -36,14 +36,17 @@ import com.wolfetones.physics.VerletPhysics;
 import com.wolfetones.physics.behavior.GravityBehavior;
 import com.wolfetones.physics.constraint.PlaneConstraint;
 import com.wolfetones.physics.geometry.Axis;
+import com.wolfetones.physics.geometry.Face;
 import com.wolfetones.physics.geometry.Plane;
 
 import javax.swing.*;
 import javax.vecmath.*;
 import java.awt.*;
+import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.DoubleConsumer;
+import java.util.stream.IntStream;
 
 public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int FRAMES_PER_SECOND = 60;
@@ -272,25 +275,29 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     }
 
     private void getMoveToCenterTransformations(Vector3d[] moveToCenterTranslateDeltas, AxisAngle4d[] moveToCenterTransformDeltas) {
-        // Whether to put first dice on left or right
-        boolean reverseOrder = mDices[1].getCenter().x < mDices[0].getCenter().x;
+
+        int[] diceOrder = IntStream.range(0, NUM_DICE)
+                .boxed()
+                .sorted(Comparator.comparingDouble(d -> mDices[d].getCenter().x))
+                .mapToInt(i -> i)
+                .toArray();
+
         for (int i = 0; i < NUM_DICE; i++) {
-            Dice dice = mDices[i];
+            int index = diceOrder[i];
+            Dice dice = mDices[index];
 
-            Point3d[] face = dice.getFace(dice.getHighestZFace());
-
-            int positioningIndex = !reverseOrder ? i : (NUM_DICE - i - 1);
+            Face face = dice.getFace(dice.getHighestZFace());
 
             Point3d center = VectorUtils.average(face);
-            Point3d target = new Point3d((2 * positioningIndex - NUM_DICE + 1) * CUBE_SIZE, 0, 0);
+            double relativeIndex = i - ((double) (NUM_DICE - 1) / 2);
+            Point3d target = new Point3d(relativeIndex * 2 * CUBE_SIZE, 0, 0);
 
             Vector3d translate = new Vector3d();
             translate.sub(target, center);
-            moveToCenterTranslateDeltas[i] = translate;
+            moveToCenterTranslateDeltas[index] = translate;
 
             // Vector along one edge of the top face
-            Vector3d x = new Vector3d();
-            x.sub(face[1], face[0]);
+            Vector3d x = face.getVertexDelta(0, 1);
             x.normalize();
 
             // Axis around which to rotate
@@ -298,14 +305,14 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             rotationNormal.cross(x, Axis.X);
 
             // Rotate to closest axis (x/y)
-            double rotationAngle = x.angle(Axis.X) % (Math.PI / 2);
-            if (rotationAngle > Math.PI / 4) {
-                rotationAngle -= Math.PI / 2;
+            double rotationAngle = x.angle(Axis.X) % Math.toRadians(90);
+            if (rotationAngle > Math.toRadians(45)) {
+                rotationAngle -= Math.toRadians(90);
             }
 
             // Axis angle rotation to align dice with an axis
-            AxisAngle4d transform = new AxisAngle4d(rotationNormal.x, rotationNormal.y, rotationNormal.z, rotationAngle);
-            moveToCenterTransformDeltas[i] = transform;
+            AxisAngle4d transform = new AxisAngle4d(rotationNormal, rotationAngle);
+            moveToCenterTransformDeltas[index] = transform;
         }
     }
 
@@ -402,11 +409,11 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         transform.setIdentity();
 
         Matrix3d rotate = new Matrix3d();
-        rotate.rotX(Math.random() * 2 * Math.PI);
+        rotate.rotX(Math.random() * Math.toRadians(360));
         transform.mul(rotate);
-        rotate.rotY(Math.random() * 2 * Math.PI);
+        rotate.rotY(Math.random() * Math.toRadians(360));
         transform.mul(rotate);
-        rotate.rotZ(Math.random() * 2 * Math.PI);
+        rotate.rotZ(Math.random() * Math.toRadians(360));
         transform.mul(rotate);
 
         return transform;

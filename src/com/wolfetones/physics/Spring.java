@@ -22,16 +22,18 @@
  * along with Cluedo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.wolfetones.physics.spring;
-
-import com.wolfetones.physics.Particle;
-import com.wolfetones.physics.RenderUtils;
+package com.wolfetones.physics;
 
 import javax.vecmath.Point2d;
 import javax.vecmath.Vector3d;
 import java.awt.*;
 import java.awt.geom.Line2D;
 
+/**
+ * Connection between two {@link Particle}s.
+ *
+ * Acts as a rigid stick or spring depending on the strength.
+ */
 public class Spring {
     private static final double DEFAULT_STRENGTH = 1;
 
@@ -42,10 +44,27 @@ public class Spring {
 
     protected double strength;
 
+    /**
+     * Constructs a rigid stick spring between the particles provided.
+     * <p>
+     * The length of the stick is set to the current distance between the particles.
+     *
+     * @param a particle a
+     * @param b particle b
+     */
     public Spring(Particle a, Particle b) {
         this(a, b, DEFAULT_STRENGTH);
     }
 
+    /**
+     * Constructs a spring between the particles provided with variable spring strength.
+     * <p>
+     * The length of the stick is set to the current distance between the particles.
+     *
+     * @param a particle a
+     * @param b particle b
+     * @param strength the strength of the spring
+     */
     public Spring(Particle a, Particle b, double strength) {
         this.a = a;
         this.b = b;
@@ -55,22 +74,11 @@ public class Spring {
         this.strength = strength;
     }
 
-    public double getLength() {
-        return length;
-    }
-
-    public void setLength(double length) {
-        this.length = length;
-    }
-
-    public double getStrength() {
-        return strength;
-    }
-
-    public void setStrength(double strength) {
-        this.strength = strength;
-    }
-
+    /**
+     * Performs one step of physics simulation for spring.
+     *
+     * Moves the spring's particles equally towards/away from each other to attempt to satisfy target length.
+     */
     public void update() {
         Vector3d delta = new Vector3d();
         delta.sub(b, a);
@@ -84,6 +92,47 @@ public class Spring {
         if (!b.isFixed()) b.sub(delta);
     }
 
+    /**
+     * Returns the target distance between the spring's particles.
+     *
+     * @return the length of the spring
+     */
+    public double getLength() {
+        return length;
+    }
+
+    /**
+     * Sets the target distance between the spring's particles.
+     *
+     * @param length the length of the spring
+     */
+    public void setLength(double length) {
+        this.length = length;
+    }
+
+    /**
+     * Returns the strength of the spring.
+     *
+     * @return the strength of the spring
+     */
+    public double getStrength() {
+        return strength;
+    }
+
+    /**
+     * Sets the strength of the spring.
+     *
+     * @param strength the strength of the spring
+     */
+    public void setStrength(double strength) {
+        this.strength = strength;
+    }
+
+    /**
+     * Projects the spring to the screen and draws it on the provided {@code Graphics} object.
+     *
+     * @param g graphics on which to draw the spring
+     */
     public void draw(Graphics2D g) {
         Point2d pa = RenderUtils.projectToScreen(a);
         Point2d pb = RenderUtils.projectToScreen(b);

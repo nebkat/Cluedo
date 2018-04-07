@@ -26,6 +26,14 @@ package com.wolfetones.physics.constraint;
 
 import com.wolfetones.physics.Particle;
 
+/**
+ * Particle constraint that limits the position of a particle after every particle simulation step.
+ */
 public abstract class Constraint {
+    /**
+     * Applies the constraint to the given particle.
+     *
+     * @param particle the particle to apply the constraint to
+     */
     public abstract void apply(Particle particle);
 }
