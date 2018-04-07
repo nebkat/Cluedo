@@ -355,6 +355,10 @@ public class GameController {
         mNotesSlideOutPanel.reposition();
         mNotesPanel.setPlayer(player);
 
+        mHistorySlideOutPanel.removeAll();
+        mHistorySlideOutPanel.add(new LogPanel(player, mGame.getLog()));
+        mHistorySlideOutPanel.reposition();
+
         passToPlayer(player, null);
 
         mPlayerCardsPanel.setCards(player.getCards());
