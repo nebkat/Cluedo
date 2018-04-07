@@ -43,7 +43,7 @@ public class Animator {
     private static Animator sInstance;
 
     private Timer mTimer = new Timer();
-    private Set<Animation> mAnimations = new HashSet<>();
+    private final Set<Animation> mAnimations = new HashSet<>();
 
     /**
      * Returns the animator object associated with the current Java application.
@@ -73,21 +73,23 @@ public class Animator {
      * @param target the target for which to cancel animations
      */
     public void interruptAllAnimations(Object target) {
-        Iterator<Animation> iterator = mAnimations.iterator();
-        while (iterator.hasNext()) {
-            Animation animation = iterator.next();
-            if (target == null || animation.target == target) {
-                animation.cancel();
+        synchronized (mAnimations) {
+            Iterator<Animation> iterator = mAnimations.iterator();
+            while (iterator.hasNext()) {
+                Animation animation = iterator.next();
+                if (target == null || animation.target == target) {
+                    animation.cancel();
 
-                // Release all locks from this animation and its chained children
-                Animation a = animation;
-                do {
-                    synchronized (a.lock) {
-                        a.lock.notifyAll();
-                    }
-                } while ((a = a.chain) != null);
+                    // Release all locks from this animation and its chained children
+                    Animation a = animation;
+                    do {
+                        synchronized (a.lock) {
+                            a.lock.notifyAll();
+                        }
+                    } while ((a = a.chain) != null);
 
-                iterator.remove();
+                    iterator.remove();
+                }
             }
         }
     }
@@ -177,7 +179,9 @@ public class Animator {
             mTimer.scheduleAtFixedRate(this, (int) (delay * TIME_SCALE), 1000 / FRAMES_PER_SECOND);
 
             // Add to animations list
-            mAnimations.add(this);
+            synchronized (mAnimations) {
+                mAnimations.add(this);
+            }
         }
 
         private void complete() {
@@ -205,7 +209,9 @@ public class Animator {
             }
 
             // Remove from animations list
-            mAnimations.remove(this);
+            synchronized (mAnimations) {
+                mAnimations.remove(this);
+            }
         }
 
         /**
