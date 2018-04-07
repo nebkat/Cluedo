@@ -488,7 +488,7 @@ public class Game {
         mCurrentPlayer.getKnowledge().setHolding(card, mTurnQuestionCardHolder, true);
 
         // Insert log entry
-        mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, mTurnQuestionSuggestion, null, null));
+        mLog.add(LogEntry.newQuestionEntry(mCurrentPlayer, mTurnQuestionSuggestion, mTurnQuestionCardHolder, card));
 
         mTurnQuestionSuggestion = null;
         mTurnQuestionCardHolder = null;
