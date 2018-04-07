@@ -48,17 +48,17 @@ public class LogPanel extends JPanel {
     }
 
     private void addLine(Player player, Game.LogEntry entry, int suggestionNum) {
-        ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getTokenImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedSuspect = new ScaledImageComponent(entry.suggestion.suspect.getTokenImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getTokenImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
-        ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
+        ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
+        ScaledImageComponent suggestedSuspect = new ScaledImageComponent(entry.suggestion.suspect.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
+        ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
+        ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
+        ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
         ScaledImageComponent response;
 
         if (player.equals(entry.player)) {
-            response = new ScaledImageComponent(entry.response.getCardImage(), Config.screenRelativeSize(50), Config.screenRelativeSize(50));
+            response = new ScaledImageComponent(entry.response.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
         } else {
-            response = new ScaledImageComponent(Card.getCardBackImage(), Config.screenRelativeSize(30), Config.screenRelativeSize(50));
+            response = new ScaledImageComponent(Card.getCardBackImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
         }
 
         GridBagConstraints c = new GridBagConstraints();
