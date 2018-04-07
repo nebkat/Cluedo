@@ -477,7 +477,7 @@ public class CardAnimationsPanel extends JPanel {
             int imageHeight = mImage.getHeight();
             int defaultHeight = imageHeight + Config.screenRelativeSize(5) + mFont.getSize();
 
-            int maxDimension = (int) Math.sqrt(Math.pow(imageWidth, 2) + Math.pow(defaultHeight, 2));
+            int maxDimension = (int) Math.hypot(imageWidth, defaultHeight);
             mOffsetX = (maxDimension - imageWidth) / 2;
             mOffsetY = (maxDimension - imageHeight) / 2;
 
