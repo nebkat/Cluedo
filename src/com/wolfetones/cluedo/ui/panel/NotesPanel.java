@@ -232,11 +232,11 @@ public class NotesPanel extends JPanel {
         }
 
         private void updateStatus() {
-            mStrike = mKnowledge.get().get(mCard).values().stream()
+            mStrike = mKnowledge.get(mCard).values().stream()
                     .map(Knowledge.Status::getValue)
                     .anyMatch(v -> v == Knowledge.Value.Holding || v == Knowledge.Value.Undistributed || v == Knowledge.Value.Self);
 
-            mCorrect = mKnowledge.get().get(mCard).values().stream()
+            mCorrect = mKnowledge.get(mCard).values().stream()
                     .map(Knowledge.Status::getValue)
                     .allMatch(Knowledge.Value.NotHolding::equals);
 
@@ -291,7 +291,7 @@ public class NotesPanel extends JPanel {
         }
 
         private void updateStatus() {
-            mStatus = mKnowledge.get().get(mCard).get(mPlayer);
+            mStatus = mKnowledge.get(mCard).get(mPlayer);
 
             if (mStatus.getValue() != null) {
                 mImage = ImageUtils.getScaledImage(getValueIcon(mStatus.getValue()), (int) (getWidth() * (1.0 - 2 * MARGIN)));
@@ -299,7 +299,8 @@ public class NotesPanel extends JPanel {
                 mImage = null;
             }
 
-            setCursor(Cursor.getPredefinedCursor(mStatus.getFixed() ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
+            boolean popupEnabled = mStatus.getValue() == Knowledge.Value.Undistributed || mStatus.getValue() == Knowledge.Value.Self;
+            setCursor(Cursor.getPredefinedCursor(popupEnabled ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
             setBorder(mStatus.getFixed() ? CHECKBOX_FIXED_BORDER : CHECKBOX_DEFAULT_BORDER);
 
             repaint();
@@ -320,11 +321,12 @@ public class NotesPanel extends JPanel {
         }
 
         private void showPopup() {
-            // Don't show popup if status is fixed
-            if (mStatus.getFixed()) {
+            // Don't show popup on undistributed or
+            if (mStatus.getValue() == Knowledge.Value.Undistributed || mStatus.getValue() == Knowledge.Value.Self) {
                 return;
             }
 
+            // Don't show popup if status is fixed
             JPopupMenu menu = new JPopupMenu();
             Font font = new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(20));
 
@@ -341,22 +343,24 @@ public class NotesPanel extends JPanel {
             menu.add(playerItem);
 
             // Add values
-            for (Knowledge.Value value : new Knowledge.Value[] {null, Knowledge.Value.Holding, Knowledge.Value.NotHolding, Knowledge.Value.SuspectedHolding}) {
-                JMenuItem item;
-                if (value != null) {
-                    BufferedImage icon = ImageUtils.getScaledImage(getValueIcon(value), Config.screenRelativeSize(20));
-                    item = new JMenuItem(VALUE_NAMES.get(value), new ImageIcon(icon));
-                } else {
-                    item = new JMenuItem(VALUE_NAMES.get(null));
-                }
-                item.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(20)));
-                item.addActionListener(e -> {
-                    mKnowledge.setValue(mCard, mPlayer, value, false);
+            if (!mStatus.getFixed()) {
+                for (Knowledge.Value value : new Knowledge.Value[]{null, Knowledge.Value.Holding, Knowledge.Value.NotHolding, Knowledge.Value.SuspectedHolding}) {
+                    JMenuItem item;
+                    if (value != null) {
+                        BufferedImage icon = ImageUtils.getScaledImage(getValueIcon(value), Config.screenRelativeSize(20));
+                        item = new JMenuItem(VALUE_NAMES.get(value), new ImageIcon(icon));
+                    } else {
+                        item = new JMenuItem(VALUE_NAMES.get(null));
+                    }
+                    item.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(20)));
+                    item.addActionListener(e -> {
+                        mKnowledge.setValue(mCard, mPlayer, value, false);
 
-                    // Other player values may have changed, so update entire row
-                    updateCard(mCard);
-                });
-                menu.add(item);
+                        // Other player values may have changed, so update entire row
+                        updateCard(mCard);
+                    });
+                    menu.add(item);
+                }
             }
 
             menu.addSeparator();

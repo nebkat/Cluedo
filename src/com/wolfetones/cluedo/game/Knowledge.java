@@ -57,8 +57,8 @@ public class Knowledge {
         }
     }
 
-    public Map<Card, Map<Player, Status>> get() {
-        return mCardPlayerStatuses;
+    public Map<Player, Status> get(Card card) {
+        return mCardPlayerStatuses.get(card);
     }
 
     public void setHolding(Card card, Player player, boolean holding) {
