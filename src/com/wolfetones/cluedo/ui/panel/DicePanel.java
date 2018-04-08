@@ -349,9 +349,9 @@ public class DicePanel extends JPanel implements Animator.Fadable {
         }
 
         if (mTotalTextAlpha > 0) {
-            repaint(getWidth() / 2 - SCREEN_CUBE_SIZE / 2,
+            repaint(getWidth() / 2 - SCREEN_CUBE_SIZE * NUM_DICE / 2,
                     getHeight() / 2 - SCREEN_CUBE_SIZE / 2,
-                    SCREEN_CUBE_SIZE * 5, SCREEN_CUBE_SIZE);
+                    SCREEN_CUBE_SIZE * (NUM_DICE + 4), SCREEN_CUBE_SIZE);
         }
     }
 
@@ -386,9 +386,15 @@ public class DicePanel extends JPanel implements Animator.Fadable {
             g.setFont(mTextFont);
             g.setColor(Color.BLACK);
 
-            Util.drawCenteredString("+", 0, 0, 0, 0, g);
-            Util.drawCenteredString("=", 2 * SCREEN_CUBE_SIZE, 0, 0, 0, g);
-            Util.drawCenteredString(Integer.toString(mTotalValue), (int) (2.5 * SCREEN_CUBE_SIZE), 0, -1, 0, g);
+            int plusCount = NUM_DICE - 1;
+            for (int i = 0; i < plusCount; i++) {
+                double plusLocationRelative = i - ((double) (plusCount - 1) / 2);
+                int plusX = (int) (plusLocationRelative * 2 * SCREEN_CUBE_SIZE);
+                Util.drawCenteredString("+", plusX, 0, 0, 0, g);
+            }
+
+            Util.drawCenteredString("=", NUM_DICE * SCREEN_CUBE_SIZE, 0, 0, 0, g);
+            Util.drawCenteredString(Integer.toString(mTotalValue), (int) ((NUM_DICE + 0.5) * SCREEN_CUBE_SIZE), 0, -1, 0, g);
         }
     }
 
