@@ -217,9 +217,9 @@ public class Config {
         }
     }
 
-    private static final int DEFAULT_SCREEN_WIDTH = 1920;
+    private static final int DEFAULT_SCREEN_HEIGHT = 1080;
     private static Dimension sScreenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private static double sScreenRelativeSize = (double) sScreenSize.width / DEFAULT_SCREEN_WIDTH;
+    private static double sScreenRelativeSize = (double) sScreenSize.height / DEFAULT_SCREEN_HEIGHT;
 
     public static int screenRelativeSize(int size) {
         return (int) Math.ceil(size * sScreenRelativeSize);
