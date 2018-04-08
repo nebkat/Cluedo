@@ -32,15 +32,16 @@ public class CardPickerDialog extends JDialog {
 
     private boolean mSuccessful;
 
-    private CardPickerDialog(JFrame frame, String title, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
+    private CardPickerDialog(JFrame frame, JComponent board, String title, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
         super(frame, true);
 
         setUndecorated(frame != null);
 
-        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-        ((JPanel) getContentPane()).setBorder(
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createDashedBorder(Color.BLACK, 4, 5, 5, true),
+                        BorderFactory.createDashedBorder(Color.WHITE, 4, 5, 5, true),
                         BorderFactory.createEmptyBorder(Config.screenRelativeSize(10),
                                 Config.screenRelativeSize(10),
                                 Config.screenRelativeSize(10),
@@ -48,14 +49,17 @@ public class CardPickerDialog extends JDialog {
 
         if (title != null) {
             JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
+            titlePanel.setOpaque(false);
             JLabel titleLabel = new JLabel(title);
             titleLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(32)));
+            titleLabel.setForeground(Color.WHITE);
 
             titlePanel.add(titleLabel);
-            add(titlePanel);
+            panel.add(titlePanel);
         }
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+        buttonPanel.setOpaque(false);
 
         mConfirmButton = new JButton("Confirm");
         JButton cancelButton = new JButton("Cancel");
@@ -72,17 +76,18 @@ public class CardPickerDialog extends JDialog {
             mNameTextField = new JTextField();
 
             JPanel textFieldHolder = new JPanel();
+            textFieldHolder.setOpaque(false);
             textFieldHolder.setLayout(new BorderLayout());
             textFieldHolder.setBorder(BorderFactory.createTitledBorder(null, "Player Name",
                     TitledBorder.DEFAULT_JUSTIFICATION,
                     TitledBorder.DEFAULT_POSITION,
                     new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)),
-                    Color.BLACK));
+                    Color.WHITE));
             textFieldHolder.add(mNameTextField);
 
             mNameTextField.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(20)));
 
-            add(textFieldHolder);
+            panel.add(textFieldHolder);
 
             // At least two players must be added
             if (suspects.size() > 4) {
@@ -95,35 +100,46 @@ public class CardPickerDialog extends JDialog {
         if (suspects != null) {
             mSuspectCardPicker = new CardPickerPanel<>("Suspects", suspects);
 
-            add(mSuspectCardPicker);
+            panel.add(mSuspectCardPicker);
         }
 
         if (weapons != null) {
             mWeaponCardPicker = new CardPickerPanel<>("Weapons", weapons);
 
-            add(mWeaponCardPicker);
+            panel.add(mWeaponCardPicker);
         }
 
         if (rooms != null) {
             mRoomCardPicker = new CardPickerPanel<>("Rooms", rooms);
 
-            add(mRoomCardPicker);
+            panel.add(mRoomCardPicker);
         }
 
         if (cards != null) {
             mUserCardPicker = new CardPickerPanel<>("Cards", cards);
 
-            add(mUserCardPicker);
+            panel.add(mUserCardPicker);
 
             cancelButton.setVisible(false);
         }
 
-        add(buttonPanel);
+        panel.add(buttonPanel);
 
         updateConfirmButton();
 
-        pack();
-        setLocationRelativeTo(frame);
+        getContentPane().setLayout(new GridBagLayout());
+        add(panel);
+
+        if (board != null) {
+            panel.setBackground(new Color(0, 0, 0, 144));
+            setBackground(new Color(0, 0, 0, 144));
+
+            setSize(board.getSize());
+            setLocationRelativeTo(board);
+        } else {
+            pack();
+            setLocationRelativeTo(frame);
+        }
     }
 
     private void onButtonClicked(ActionEvent actionEvent) {
@@ -152,8 +168,8 @@ public class CardPickerDialog extends JDialog {
         return new Player(suspect, name);
     }
 
-    public static Player showPlayerPickerDialog(JFrame frame, List<Suspect> suspects) {
-        CardPickerDialog dialog =  new CardPickerDialog(frame, "Add player", true, suspects, null, null, null);
+    public static Player showPlayerPickerDialog(JFrame frame, JComponent board, List<Suspect> suspects) {
+        CardPickerDialog dialog =  new CardPickerDialog(frame, board, "Add player", true, suspects, null, null, null);
 
         dialog.setTitle("Add Players");
         dialog.setVisible(true);
@@ -171,8 +187,8 @@ public class CardPickerDialog extends JDialog {
         return new Suggestion(suspect, weapon, room);
     }
 
-    public static Suggestion showAccusationPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, "Make final accusation", false, suspects, weapons, rooms, null);
+    public static Suggestion showAccusationPickerDialog(JFrame frame, JComponent board, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms) {
+        CardPickerDialog dialog = new CardPickerDialog(frame, board, "Make final accusation", false, suspects, weapons, rooms, null);
 
         dialog.setVisible(true);
 
@@ -188,8 +204,8 @@ public class CardPickerDialog extends JDialog {
         return new Suggestion(suspect, weapon, room);
     }
 
-    public static Suggestion showSuggestionPickerDialog(JFrame frame, List<Suspect> suspects, List<Weapon> weapons, Room room) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, "Make suggestion in " + room.getName(), false, suspects, weapons, null, null);
+    public static Suggestion showSuggestionPickerDialog(JFrame frame, JComponent board, List<Suspect> suspects, List<Weapon> weapons, Room room) {
+        CardPickerDialog dialog = new CardPickerDialog(frame, board, "Make suggestion in " + room.getName(), false, suspects, weapons, null, null);
 
         dialog.setVisible(true);
 
@@ -202,16 +218,16 @@ public class CardPickerDialog extends JDialog {
         return mUserCardPicker.getResult();
     }
 
-    public static Card showCardPickerDialog(JFrame frame, List<? extends Card> cards) {
-        CardPickerDialog dialog = new CardPickerDialog(frame, "Choose card to show", false, null, null, null, cards);
+    public static Card showCardPickerDialog(JFrame frame, JComponent board, List<? extends Card> cards) {
+        CardPickerDialog dialog = new CardPickerDialog(frame, board, "Choose card to show", false, null, null, null, cards);
 
         dialog.setVisible(true);
 
         return dialog.getCardResult();
     }
 
-    public static void showCardResponseDialog(JFrame frame, Player player, Card card) {
-        new CardPickerDialog(frame, player.getName() + " showed", false, null, null, null, List.of(card)).setVisible(true);
+    public static void showCardResponseDialog(JFrame frame, JComponent board, Player player, Card card) {
+        new CardPickerDialog(frame, board, player.getName() + " showed", false, null, null, null, List.of(card)).setVisible(true);
     }
 
     private class CardPickerPanel<T extends Card> extends JPanel {
@@ -222,18 +238,20 @@ public class CardPickerDialog extends JDialog {
         private CardPickerPanel(String title, List<T> cards) {
             super();
 
+            setOpaque(false);
+
             // Setup border
             TitledBorder border = BorderFactory.createTitledBorder(null, title,
                     TitledBorder.DEFAULT_JUSTIFICATION,
                     TitledBorder.DEFAULT_POSITION,
                     new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)),
-                    Color.BLACK);
+                    Color.WHITE);
 
             setBorder(border);
 
             // Add components
             for (T c : cards) {
-                CardPickerCardComponent component = new CardPickerCardComponent(c);
+                CardPickerCardComponent component = new CardPickerCardComponent(c, cards.size() > 6 ? 6.0 / cards.size() : 1);
                 mComponents.add(component);
 
                 add(component);
@@ -281,12 +299,12 @@ public class CardPickerDialog extends JDialog {
             private boolean mMouseOver = false;
             private boolean mSelected = false;
 
-            private CardPickerCardComponent(T card) {
+            private CardPickerCardComponent(T card, double relativeSize) {
                 mCard = card;
 
                 mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(16));
 
-                mImage = ImageUtils.getScaledImage(mCard.getCardImage(), Config.screenRelativeSize(150));
+                mImage = ImageUtils.getScaledImage(mCard.getCardImage(), (int) Config.screenRelativeSize(150.0 * relativeSize));
 
                 setPreferredSize(new Dimension(mImage.getWidth(), mImage.getHeight() + Config.screenRelativeSize(20)));
 
@@ -325,7 +343,7 @@ public class CardPickerDialog extends JDialog {
                 } else if (mSelected) {
                     alpha = 0.9f;
                 }
-                g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
+                //g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
                 boolean rotate = mCard instanceof Suspect && (mSelected || mMouseOver);
 
@@ -344,6 +362,7 @@ public class CardPickerDialog extends JDialog {
 
                 // Draw card name
                 g.setFont(mFont);
+                g.setColor(Color.WHITE);
                 Util.drawCenteredString(mCard.getName(), 0, getHeight() - mFont.getSize(), getWidth(), mFont.getSize(), g);
             }
 

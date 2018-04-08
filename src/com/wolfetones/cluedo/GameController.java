@@ -171,6 +171,7 @@ public class GameController {
     private JPanel mBoardTilePanel;
     private DicePanel mBoardDicePanel;
     private JPanel mBoardCursorPanel;
+    private int mTileSize;
 
     private OutputPanel mOutputPanel;
     private InputPanel mInputPanel;
@@ -226,8 +227,9 @@ public class GameController {
     }
 
     private GameController() {
-        setupPlayers();
         setupFrame();
+        setupPlayers();
+        setupBoardWithPlayers();
 
         // Dice throw animation
         throwDiceForOrder();
@@ -362,9 +364,9 @@ public class GameController {
         passToPlayer(player, null);
 
         mPlayerCardsPanel.setCards(player.getCards());
-        if (!mGame.getUndistributedCards().isEmpty()) {
-            mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
-        }
+
+        mUndistributedCardsPanel.setVisible(mGame.getUndistributedCards().isEmpty());
+        mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
 
         mOutputPanel.clear();
 
@@ -619,7 +621,7 @@ public class GameController {
             passToPlayer(matchingPlayer, "temporarily");
 
             // Let matching player choose card to show
-            Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, matchingCards);
+            Card shownCard = CardPickerDialog.showCardPickerDialog(mMainFrame, mBoardLayeredPane, matchingCards);
 
             // Report shown card to game
             mGame.questionResponse(shownCard);
@@ -628,7 +630,7 @@ public class GameController {
             passToPlayer(player, "back");
 
             // Show response card to current player
-            CardPickerDialog.showCardResponseDialog(mMainFrame, matchingPlayer, shownCard);
+            CardPickerDialog.showCardResponseDialog(mMainFrame, mBoardLayeredPane, matchingPlayer, shownCard);
             System.out.println(matchingPlayer.getName() + " has " + shownCard.getName());
 
             // Hide response text bubbles
@@ -874,7 +876,7 @@ public class GameController {
 
         List<Suspect> remainingSuspects = mGame.getBoard().getSuspectsModifiable();
         while (remainingSuspects.size() > 0) {
-            Player player = CardPickerDialog.showPlayerPickerDialog(null, remainingSuspects);
+            Player player = CardPickerDialog.showPlayerPickerDialog(mMainFrame, mBoardLayeredPane, remainingSuspects);
             if (player != null) {
                 mPlayers.add(player);
                 remainingSuspects.remove(player.getCharacter());
@@ -902,7 +904,7 @@ public class GameController {
 
         panel.setBorder(
                 BorderFactory.createCompoundBorder(
-                        BorderFactory.createDashedBorder(Color.BLACK, 4, 5, 5, true),
+                        BorderFactory.createDashedBorder(Color.WHITE, 4, 5, 5, true),
                         BorderFactory.createEmptyBorder(Config.screenRelativeSize(25),
                                 Config.screenRelativeSize(25),
                                 Config.screenRelativeSize(25),
@@ -920,6 +922,7 @@ public class GameController {
 
         JLabel label = new JLabel(text);
         label.setAlignmentX(JLabel.CENTER_ALIGNMENT);
+        label.setForeground(Color.WHITE);
         label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
         panel.add(label);
 
@@ -932,9 +935,13 @@ public class GameController {
 
         button.addActionListener((e) -> dialog.dispose());
 
-        dialog.setContentPane(panel);
-        dialog.pack();
-        dialog.setLocationRelativeTo(mMainFrame);
+        panel.setBackground(new Color(0, 0, 0, 144));
+
+        dialog.getContentPane().setLayout(new GridBagLayout());
+        dialog.getContentPane().add(panel);
+        dialog.setBackground(new Color(0, 0, 0, 144));
+        dialog.setSize(mBoardLayeredPane.getSize());
+        dialog.setLocationRelativeTo(mBoardLayeredPane);
 
         dialog.setVisible(true);
     }
@@ -959,9 +966,9 @@ public class GameController {
         rooms.removeAll(mGame.getUndistributedCards());
 
         if (currentRoom != null) {
-            return CardPickerDialog.showSuggestionPickerDialog(mMainFrame, suspects, weapons, currentRoom);
+            return CardPickerDialog.showSuggestionPickerDialog(mMainFrame, mBoardLayeredPane, suspects, weapons, currentRoom);
         } else {
-            return CardPickerDialog.showAccusationPickerDialog(mMainFrame, suspects, weapons, rooms);
+            return CardPickerDialog.showAccusationPickerDialog(mMainFrame, mBoardLayeredPane, suspects, weapons, rooms);
         }
     }
 
@@ -1010,8 +1017,7 @@ public class GameController {
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
 
-        JScrollPane outputScrollPane = new JScrollPane(mOutputPanel);
-        outputScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollPane outputScrollPane = new JScrollPane(mOutputPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         terminal.add(outputScrollPane);
         terminal.add(mInputPanel);
@@ -1048,9 +1054,9 @@ public class GameController {
         int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
         Point framePosition = mMainFrame.getContentPane().getLocationOnScreen();
         Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(mMainFrame.getGraphicsConfiguration());
-        int tileSize = (screenHeight - framePosition.y - screenInsets.top - screenInsets.bottom) / Config.Board.HEIGHT;
+        mTileSize = (screenHeight - framePosition.y - screenInsets.top - screenInsets.bottom) / Config.Board.HEIGHT;
 
-        Dimension boardDimension = new Dimension(tileSize * Config.Board.WIDTH, tileSize * Config.Board.HEIGHT);
+        Dimension boardDimension = new Dimension(mTileSize * Config.Board.WIDTH, mTileSize * Config.Board.HEIGHT);
         mBoardLayeredPane.setPreferredSize(boardDimension);
 
         Rectangle boardBounds = new Rectangle(0, 0, boardDimension.width, boardDimension.height);
@@ -1070,8 +1076,8 @@ public class GameController {
             label.setVerticalAlignment(JLabel.CENTER);
             label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
 
-            int centerX = (int) (r.getCenterX() * tileSize);
-            int centerY = (int) (r.getCenterY() * tileSize);
+            int centerX = (int) (r.getCenterX() * mTileSize);
+            int centerY = (int) (r.getCenterY() * mTileSize);
 
             label.setBounds(centerX - 250, centerY - 100, 500, 200);
 
@@ -1080,12 +1086,12 @@ public class GameController {
 
         // Add suspect tokens
         for (Suspect s : mGame.getBoard().getSuspects()) {
-            mBoardLayeredPane.add(new SuspectTokenComponent(s, tileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add weapon tokens
         for (Weapon w : mGame.getBoard().getWeapons()) {
-            mBoardLayeredPane.add(new WeaponTokenComponent(w, tileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add tiles
@@ -1094,7 +1100,7 @@ public class GameController {
                 Tile tile = mGame.getBoard().getTile(x, y);
                 TileComponent component = new TileComponent(tile);
                 tile.setButton(component);
-                component.setSize(tileSize, tileSize);
+                component.setSize(mTileSize, mTileSize);
 
                 // Tile borders
                 char[] bc = BoardModel.getTileBordersAndCorners(x, y);
@@ -1104,7 +1110,7 @@ public class GameController {
 
                 // Add start tile background circle
                 if (tile instanceof StartTile) {
-                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, tileSize), BOARD_LAYER_START_TILE_CIRCLES);
+                    mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), BOARD_LAYER_START_TILE_CIRCLES);
                 }
 
                 // Set colors
@@ -1126,7 +1132,7 @@ public class GameController {
             }
         }
 
-        int sidePanelWidth = (int) (1.8 * tileSize);
+        int sidePanelWidth = (int) (1.8 * mTileSize);
 
         // Add dice panel
         mBoardDicePanel = new DicePanel();
@@ -1139,11 +1145,6 @@ public class GameController {
         mBoardLayeredPane.add(mBoardCursorPanel, BOARD_LAYER_CURSOR);
         mBoardCursorPanel.setOpaque(false);
 
-        // Add players panel
-        mPlayersPanel = new PlayersPanel(mPlayers, sidePanelWidth);
-        mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
-        mPlayersPanel.setBounds(boardBounds);
-
         // Add action panel
         mActionPanel = new ActionPanel(mInputPanel::append, sidePanelWidth);
         mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
@@ -1155,6 +1156,18 @@ public class GameController {
         mBoardLayeredPane.add(mCardAnimationsPanel, BOARD_LAYER_CARDS);
         mCardAnimationsPanel.setLocation(sidePanelWidth, 0);
         mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
+    }
+
+    private void setupBoardWithPlayers() {
+        Dimension boardDimension = mBoardLayeredPane.getSize();
+        Rectangle boardBounds = mBoardLayeredPane.getBounds();
+
+        int sidePanelWidth = (int) (1.8 * mTileSize);
+
+        // Add players panel
+        mPlayersPanel = new PlayersPanel(mPlayers, sidePanelWidth);
+        mBoardLayeredPane.add(mPlayersPanel, BOARD_LAYER_PLAYERS);
+        mPlayersPanel.setBounds(boardBounds);
 
         // Slide out panels
         int slideOutPanelHandleSize = Config.screenRelativeSize(40);
@@ -1191,8 +1204,14 @@ public class GameController {
                 boardDimension.height,
                 sidePanelWidth,
                 false);
+        mHistorySlideOutPanel.setLayout(new BorderLayout());
         mBoardLayeredPane.add(mHistorySlideOutPanel, BOARD_LAYER_PANELS);
-        mHistorySlideOutPanel.add(mHistoryPanel);
+        JScrollPane historyScrollPane = new JScrollPane(mHistoryPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        historyScrollPane.setBorder(null);
+        historyScrollPane.setOpaque(false);
+        historyScrollPane.getViewport().setOpaque(false);
+        mHistorySlideOutPanel.add(historyScrollPane);
+        mHistorySlideOutPanel.setVisible(false);
 
         // Notes panel
         mNotesPanel = new NotesPanel(mPlayers, mGame.getBoard(), mGame.getUndistributedCards());

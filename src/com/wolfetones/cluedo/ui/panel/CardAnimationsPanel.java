@@ -53,7 +53,6 @@ public class CardAnimationsPanel extends JPanel {
         super();
 
         setLayout(null);
-
         setOpaque(false);
     }
 
