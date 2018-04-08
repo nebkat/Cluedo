@@ -1058,7 +1058,7 @@ public class GameController {
         mBoardLayeredPane.add(mBoardTilePanel, BOARD_LAYER_TILES);
 
         // Add room labels
-        for (Room r : mGame.getBoard().getRooms()) {
+        for (Room r : mGame.getBoard().getRoomsWithGuessRoom()) {
             JLabel label = new JLabel(r.getName().toUpperCase());
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.CENTER);

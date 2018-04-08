@@ -46,6 +46,8 @@ public class BoardModel {
     private List<Weapon> mWeapons;
     private List<Room> mRooms;
 
+    private Room mGuessRoom;
+
     /**
      * A 2D array containing the tiles on the board, in format {@code [y][x]}.
      */
@@ -175,7 +177,7 @@ public class BoardModel {
         }
 
         // Remove guess room from rooms list
-        mRooms.remove(0);
+        mGuessRoom = mRooms.remove(0);
 
         // Add all suspects, weapons and rooms to cards list
         mCards.addAll(mSuspects);
@@ -247,6 +249,17 @@ public class BoardModel {
      */
     public List<Room> getRooms() {
         return mRooms;
+    }
+
+    /**
+     * Returns a modifiable list of all {@code Room}s, including the guess room.
+     *
+     * @return a modifiable list of all {@code Room}s, including the guess room.
+     */
+    public List<Room> getRoomsWithGuessRoom() {
+        List<Room> rooms = new ArrayList<>(mRooms);
+        rooms.add(mGuessRoom);
+        return rooms;
     }
 
     /**
