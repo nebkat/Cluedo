@@ -608,20 +608,14 @@ public class GameController {
             }
 
             suggestion = createSuggestion(args[1], args[2], null, mGame.getCurrentPlayerLocation().asRoom());
-
-            boolean valid = true;
-            if (mGame.getUndistributedCards().contains(suggestion.suspect) || mGame.getUndistributedCards().contains(suggestion.weapon)) {
-                valid = false;
-
-                System.out.println("Can't use undistributed cards in questions as they are visible to all players");
-            }
-
-            if (!valid) {
-                suggestion = null;
-            }
         }
 
         if (suggestion == null) {
+            return;
+        }
+
+        if (mGame.getUndistributedCards().contains(suggestion.suspect) || mGame.getUndistributedCards().contains(suggestion.weapon)) {
+            System.out.println("Can't use undistributed cards in questions as they are visible to all players");
             return;
         }
 
@@ -939,7 +933,7 @@ public class GameController {
      * If {@code currentRoom} is provided then that room is used, otherwise room is prompted too.
      *
      * @param currentRoom Player's current room, used in the suggestion if not null.
-     * @return Suggestion created by user.
+     * @return Suggestion created by user, or null if cancelled.
      */
     @SuppressWarnings("SuspiciousMethodCalls")
     private Suggestion createSuggestion(Room currentRoom) {
@@ -963,6 +957,12 @@ public class GameController {
      * Creates a new {@code Suggestion} from user text inputs.
      *
      * If {@code currentRoom} is provided then that room is used, otherwise {@code requestedRoom} is searched for.
+     *
+     * @param requestedSuspect the requested suspect
+     * @param requestedWeapon the requested weapon
+     * @param requestedRoom the requested room
+     * @param currentRoom Player's current room, used in the suggestion if not null.
+     * @return Suggestion created, or null if invalid.
      */
     private Suggestion createSuggestion(String requestedSuspect, String requestedWeapon, String requestedRoom, Room currentRoom) {
         List<Suspect> suspects = mGame.getBoard().getSuspects();
@@ -982,7 +982,21 @@ public class GameController {
                         .filter((r) -> Arrays.stream(r.getSearchNames()).anyMatch(requestedRoom::equalsIgnoreCase))
                         .findFirst().orElse(null);
 
-        return new Suggestion(suspect, weapon, room);
+        if (suspect == null) {
+            System.out.println("Invalid suspect " + requestedSuspect);
+        }
+        if (weapon == null) {
+            System.out.println("Invalid weapon " + requestedWeapon);
+        }
+        if (room == null) {
+            System.out.println("Invalid room " + requestedRoom);
+        }
+
+        if (suspect != null && weapon != null && room != null) {
+            return new Suggestion(suspect, weapon, room);
+        } else {
+            return null;
+        }
     }
 
     /**

@@ -30,8 +30,6 @@ import com.wolfetones.cluedo.board.PathFinder;
 import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.card.Room;
-import com.wolfetones.cluedo.card.Suspect;
-import com.wolfetones.cluedo.card.Weapon;
 
 import java.util.*;
 import java.util.List;
