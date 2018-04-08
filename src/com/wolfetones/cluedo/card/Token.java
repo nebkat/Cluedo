@@ -43,7 +43,7 @@ public abstract class Token extends Card {
         super(name, searchNames, resourceName);
 
         if (resourceName != null) {
-            String imageFile = "token-" + getCardImageSuffix() + "-" + resourceName + ".png";
+            String imageFile = "tokens/token-" + getCardImageSuffix() + "-" + resourceName + ".png";
             mTokenImage = ImageUtils.loadImage(imageFile);
         }
     }

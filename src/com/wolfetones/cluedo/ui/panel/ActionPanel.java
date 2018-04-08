@@ -50,12 +50,12 @@ public class ActionPanel extends JPanel {
     private static final int BUTTON_DONE = BUTTON_STOP + 1;
 
     private static final ButtonDescription[] BUTTON_DESCRIPTIONS = {
-            new ButtonDescription("icons/roll.png", "Roll dice", GameController.COMMAND_ROLL),
-            new ButtonDescription("icons/passage.png", "Use secret passage", GameController.COMMAND_PASSAGE),
-            new ButtonDescription("icons/suggest.png", "Pose question", GameController.COMMAND_QUESTION),
-            new ButtonDescription("icons/accuse.png", "Make final accusation", GameController.COMMAND_ACCUSE),
-            new ButtonDescription("icons/stop.png", "Stop moving", GameController.COMMAND_STOP),
-            new ButtonDescription("icons/done.png", "Finish turn", GameController.COMMAND_DONE)
+            new ButtonDescription("roll", "Roll dice", GameController.COMMAND_ROLL),
+            new ButtonDescription("passage", "Use secret passage", GameController.COMMAND_PASSAGE),
+            new ButtonDescription("suggest", "Pose question", GameController.COMMAND_QUESTION),
+            new ButtonDescription("accuse", "Make final accusation", GameController.COMMAND_ACCUSE),
+            new ButtonDescription("stop", "Stop moving", GameController.COMMAND_STOP),
+            new ButtonDescription("done", "Finish turn", GameController.COMMAND_DONE)
     };
 
     private static class ButtonDescription {
@@ -88,7 +88,7 @@ public class ActionPanel extends JPanel {
         c = new GridBagConstraints();
         c.gridy = 0;
         for (ButtonDescription description : BUTTON_DESCRIPTIONS) {
-            ActionButton button = new ActionButton(ImageUtils.loadImage(description.icon), iconWidth, iconWidth);
+            ActionButton button = new ActionButton(ImageUtils.loadImage("icons/" + description.icon + ".png"), iconSize, iconSize);
             button.clickAction(() -> actionCommandListener.accept(description.command));
 
             mButtons.add(button);

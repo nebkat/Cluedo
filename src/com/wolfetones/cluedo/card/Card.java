@@ -44,7 +44,7 @@ public abstract class Card implements Comparable<Card> {
         mSearchNames = searchNames;
 
         if (resourceName != null) {
-            mCardImage = "card-" + getCardImageSuffix() + "-" + resourceName + ".png";
+            mCardImage = "cards/card-" + getCardImageSuffix() + "-" + resourceName + ".png";
         }
     }
 
@@ -63,23 +63,23 @@ public abstract class Card implements Comparable<Card> {
     }
 
     public static BufferedImage getCardBackImage() {
-        return ImageUtils.loadImage("card-back.png");
+        return ImageUtils.loadImage("cards/card-back.png");
     }
 
     public static BufferedImage getCardHighlightOverlayImage() {
-        return ImageUtils.loadImage("card-highlight-overlay.png");
+        return ImageUtils.loadImage("cards/card-highlight-overlay.png");
     }
 
     public static BufferedImage getCardSelectedOverlayImage() {
-        return ImageUtils.loadImage("card-selected-overlay.png");
+        return ImageUtils.loadImage("cards/card-selected-overlay.png");
     }
 
     public static BufferedImage getCardCorrectOverlayImage() {
-        return ImageUtils.loadImage("card-correct-overlay.png");
+        return ImageUtils.loadImage("cards/card-correct-overlay.png");
     }
 
     public static BufferedImage getCardIncorrectOverlayImage() {
-        return ImageUtils.loadImage("card-incorrect-overlay.png");
+        return ImageUtils.loadImage("cards/card-incorrect-overlay.png");
     }
 
     private int getTypeIndex() {
