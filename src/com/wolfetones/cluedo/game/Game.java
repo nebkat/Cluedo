@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Game {
-    public static final int NUM_DICE = 2;
+    public static final int NUM_DICE = Boolean.parseBoolean(System.getProperty("debug")) ? 4 : 2;
 
     private static Random sRandom = new Random();
 
@@ -261,7 +261,7 @@ public class Game {
     /**
      * Rolls the dice randomly and returns the number of allowed moves.
      *
-     * @param dice Array of size {@value NUM_DICE} to store individual dice values.
+     * @param dice Array with {@code NUM_DICE} entries to store individual dice values.
      * @return The total number of allowed moves.
      * @throws IllegalStateException If the player has already moved or has nowhere to move to.
      */
