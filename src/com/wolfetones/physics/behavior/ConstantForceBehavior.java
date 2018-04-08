@@ -35,7 +35,7 @@ public class ConstantForceBehavior extends Behavior {
     private Vector3d force;
 
     /**
-     * Constructs a constant force behavior with the given force.
+     * Constructs a constant force behavior with the specified force.
      *
      * @param force constant force
      */
@@ -46,7 +46,7 @@ public class ConstantForceBehavior extends Behavior {
     }
 
     /**
-     * Applies the behavior's force to the given particle.
+     * Applies the behavior's force to the specified particle.
      *
      * Results in the particle gaining velocity.
      *

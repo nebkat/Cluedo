@@ -29,6 +29,10 @@ import java.util.*;
 import java.util.List;
 import java.util.function.*;
 
+/**
+ * Generic java {@link Timer} based object property animator with helper methods for graphics related properties
+ * such as translation, transparency and scale.
+ */
 public class Animator {
     /** Target number of frames/updates per second */
     private static final int FRAMES_PER_SECOND = 60;

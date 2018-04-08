@@ -31,7 +31,7 @@ import com.wolfetones.physics.Particle;
  */
 public abstract class Behavior {
     /**
-     * Applies the behavior to the given particle.
+     * Applies the behavior to the specified particle.
      *
      * @param particle the particle to apply the behavior to
      */

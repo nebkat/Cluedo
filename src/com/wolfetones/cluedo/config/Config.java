@@ -30,8 +30,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Game configuration class.
+ */
 public class Config {
-
     public static final String TITLE = "Cluedo";
     public static final String AUTHOR =
             "___________.__              __      __      .__   _____        ___________                          \n" +
@@ -41,13 +43,16 @@ public class Config {
             "  |____|   |___|  /\\___  >   \\__/\\  / \\____/|____/__|  \\___  >   |____| \\____/|___|  /\\___  >____  >\n" +
             "                \\/     \\/         \\/                       \\/                      \\/     \\/     \\/ ";
 
-    public static Font FONT = null;
+    public static Font FONT;
 
     static {
         try {
             FONT = Font.createFont(Font.TRUETYPE_FONT, Config.class.getClassLoader().getResourceAsStream("capone-cg-light.otf"));
         } catch (FontFormatException | IOException e) {
-            e.printStackTrace();
+            new Exception("Error loading font", e).printStackTrace();
+
+            // Load default font instead
+            FONT = new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(12));
         }
     }
 
@@ -63,55 +68,55 @@ public class Config {
                 "                                                         " +
                 "                      ███       ███                      " +
                 "                      █@█       █@█                      " +
-                "    ███░░░█░░░███ █████=█░░░█░░░█=█████ █░░░░░█░░░░░█    " +
-                "    █1 1 1 1 1PA█ █=====█2 2 2 2█=====█ █3 3 3 3 3 3░    " +
-                "    █         PP███=█████       █████=███           ░    " +
-                "    ░1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3░    " +
-                "    ░           █===█               █===█           █    " +
-                "    ░1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3░    " +
-                "    █           █===█               █===█           ░    " +
-                "    ░1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3░    " +
-                "    ░           █===█               █===█▲█     PP███    " +
-                "    ░1 1 1 1 1 1█===▲2 2 2 2 2 2 2 2▲=====█3 3 3PC█      " +
+                "    ███▒▒▒█▒▒▒███ █████=█▒▒▒█▒▒▒█=█████ █▒▒▒▒▒█▒▒▒▒▒█    " +
+                "    █1 1 1 1 1PA█ █=====█2 2 2 2█=====█ █3 3 3 3 3 3▒    " +
+                "    █         PP███=█████       █████=███           ▒    " +
+                "    ▒1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3▒    " +
+                "    ▒           █===█               █===█           █    " +
+                "    ▒1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3▒    " +
+                "    █           █===█               █===█           ▒    " +
+                "    ▒1 1 1 1 1 1█===█2 2 2 2 2 2 2 2█===█3 3 3 3 3 3▒    " +
+                "    ▒           █===█               █===█▲█     PP███    " +
+                "    ▒1 1 1 1 1 1█===▲2 2 2 2 2 2 2 2▲=====█3 3 3PC█      " +
                 "    ███         █===█               █=====███████████    " +
                 "      █1 1 1 1 1█===█2 2 2 2 2 2 2 2█==============@█    " +
                 "    █████████▲███===█               █=============███    " +
                 "    █===============█2 2 2 2 2 2 2 2█=============█      " +
                 "    ███=============███▲█████████▲███===█████████████    " +
-                "      █=================================█5 5 5 5 5 5░    " +
+                "      █=================================█5 5 5 5 5 5▒    " +
                 "    ███████████=========================█           █    " +
-                "    ░4 4 4 4 4█=========================▲5 5 5 5 5 5░    " +
-                "    ░         ███████===███████████=====█           █    " +
-                "    ░4 4 4 4 4 4 4 4█===█0 0 0 0 0█=====█5 5 5 5 5 5░    " +
-                "    █               █===█         █=====█           █    " +
-                "    ░4 4 4 4 4 4 4 4█===█0 0 0 0 0█=====█5 5 5 5 5 5░    " +
-                "    ░               █===█         █=====█           █    " +
-                "    ░4 4 4 4 4 4 4 4▲===█0 0 0 0 0█=====█5 5 5 5 5 5░    " +
-                "    ░               █===█         █=====█████████▲███    " +
-                "    ░4 4 4 4 4 4 4 4█===█0 0 0 0 0█===============█      " +
-                "    █               █===█         █=====█████▲█████      " +
-                "    ░4 4 4 4 4 4 4 4█===█0 0 0 0 0█=====█6 6 6 6 6█      " +
-                "    ░               █===█         █===███         █░█    " +
-                "    ░4 4 4 4 4 4 4 4█===█0 0 0 0 0█===█6 6 6 6 6 6 6░    " +
-                "    █████████████▲███===█         █===█             █    " +
-                "      █=================█0 0 0 0 0█===▲6 6 6 6 6 6 6░    " +
-                "    ███=================█████▲█████===█             █    " +
-                "    █@================================█6 6 6 6 6 6 6░    " +
-                "    ███===============█████▲▲▲█████===███         █░█    " +
+                "    ▒4 4 4 4 4█=========================▲5 5 5 5 5 5▒    " +
+                "    ▒         ███████===▓▓▓▓▓▓▓▓▓▓▓=====█           █    " +
+                "    ▒4 4 4 4 4 4 4 4█===▓0 0 0 0 0▓=====█5 5 5 5 5 5▒    " +
+                "    █               █===▓         ▓=====█           █    " +
+                "    ▒4 4 4 4 4 4 4 4█===▓0 0 0 0 0▓=====█5 5 5 5 5 5▒    " +
+                "    ▒               █===▓         ▓=====█           █    " +
+                "    ▒4 4 4 4 4 4 4 4▲===▓0 0 0 0 0▓=====█5 5 5 5 5 5▒    " +
+                "    ▒               █===▓         ▓=====█████████▲███    " +
+                "    ▒4 4 4 4 4 4 4 4█===▓0 0 0 0 0▓===============█      " +
+                "    █               █===▓         ▓=====█████▲█████      " +
+                "    ▒4 4 4 4 4 4 4 4█===▓0 0 0 0 0▓=====█6 6 6 6 6█      " +
+                "    ▒               █===▓         ▓===███         █▒█    " +
+                "    ▒4 4 4 4 4 4 4 4█===▓0 0 0 0 0▓===█6 6 6 6 6 6 6▒    " +
+                "    █████████████▲███===▓         ▓===█             █    " +
+                "      █=================▓0 0 0 0 0▓===▲6 6 6 6 6 6 6▒    " +
+                "    ███=================▓▓▓▓▓▲▓▓▓▓▓===█             █    " +
+                "    █@================================█6 6 6 6 6 6 6▒    " +
+                "    ███===============█████▲▲▲█████===███         █▒█    " +
                 "      █===============█8 8 8 8 8 8█=====█6 6 6 6 6█      " +
                 "    █████████████▲█===█           █=====█████████████    " +
                 "    █DP7 7 7 7 7 7█===█8 8 8 8 8 8█================@█    " +
                 "    █PP           █===█           █===============███    " +
-                "    ░7 7 7 7 7 7 7█===█8 8 8 8 8 8▲===============█      " +
-                "    ░             █===█           █===█▲█████████████    " +
-                "    ░7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9PB█    " +
+                "    ▒7 7 7 7 7 7 7█===█8 8 8 8 8 8▲===============█      " +
+                "    ▒             █===█           █===█▲█████████████    " +
+                "    ▒7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9PB█    " +
                 "    █             █===█           █===█           PP█    " +
-                "    ░7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9 9░    " +
-                "    ░             █===█           █===█             █    " +
-                "    ░7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9 9░    " +
-                "    █           ███=███           ███=███           ░    " +
-                "    █7 7 7 7 7 7█ █@█ █8 8 8 8 8 8█ █=█ █9 9 9 9 9 9░    " +
-                "    █░░░█░█░█░░░█ ███ █████████████ ███ ███░░░█░█░░░█    " +
+                "    ▒7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9 9▒    " +
+                "    ▒             █===█           █===█             █    " +
+                "    ▒7 7 7 7 7 7 7█===█8 8 8 8 8 8█===█9 9 9 9 9 9 9▒    " +
+                "    █           ███=███           ███=███           ▒    " +
+                "    █7 7 7 7 7 7█ █@█ █8 8 8 8 8 8█ █=█ █9 9 9 9 9 9▒    " +
+                "    █▒▒▒█▒█▒█▒▒▒█ ███ █████████████ ███ ███▒▒▒█▒█▒▒▒█    " +
                 "                                                         " +
                 "                                                         " +
                 "                                                         " +
@@ -120,7 +125,8 @@ public class Config {
         public static class Tiles {
             public static final char EMPTY = ' ';
             public static final char WALL = '█';
-            public static final char WINDOW = '░';
+            public static final char GUESS_WALL = '▓';
+            public static final char WINDOW = '▒';
             public static final char DOOR = '▲';
             public static final char START = '@';
             public static final char CORRIDOR = '=';
@@ -159,12 +165,12 @@ public class Config {
         };
 
         public static final Suspect[] SUSPECTS = {
-                new Suspect("Miss Scarlett", new String[] {"scarlett", "red"}, "miss-scarlett", Color.RED),
-                new Suspect("Colonel Mustard", new String[] {"mustard", "yellow"}, "colonel-mustard", Color.YELLOW),
-                new Suspect("Mrs. White", new String[] {"white"}, "mrs-white", Color.WHITE),
-                new Suspect("Reverend Green", new String[] {"green"}, "reverend-green", Color.GREEN),
-                new Suspect("Mrs. Peacock", new String[] {"peacock", "blue"}, "mrs-peacock", Color.BLUE),
-                new Suspect("Professor Plum", new String[] {"plum", "purple"}, "professor-plum", Color.MAGENTA)
+                new Suspect("Miss Scarlett", new String[] {"missscarlett", "scarlett", "red"}, "miss-scarlett", Color.RED),
+                new Suspect("Colonel Mustard", new String[] {"colonelmustard", "mustard", "yellow"}, "colonel-mustard", Color.YELLOW),
+                new Suspect("Mrs. White", new String[] {"mrswhite", "white"}, "mrs-white", Color.WHITE),
+                new Suspect("Reverend Green", new String[] {"reverendgreen", "green"}, "reverend-green", Color.GREEN),
+                new Suspect("Mrs. Peacock", new String[] {"mrspeacock", "peacock", "blue"}, "mrs-peacock", Color.BLUE),
+                new Suspect("Professor Plum", new String[] {"professorplum", "plum", "purple"}, "professor-plum", Color.MAGENTA)
         };
 
         public static final Weapon[] WEAPONS = {

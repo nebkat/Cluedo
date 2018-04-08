@@ -31,7 +31,7 @@ import com.wolfetones.physics.Particle;
  */
 public abstract class Constraint {
     /**
-     * Applies the constraint to the given particle.
+     * Applies the constraint to the specified particle.
      *
      * @param particle the particle to apply the constraint to
      */

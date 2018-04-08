@@ -27,8 +27,10 @@ package com.wolfetones.cluedo.card;
 import com.wolfetones.cluedo.board.tiles.PassageTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.Location;
+import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.ui.Animator;
+import com.wolfetones.cluedo.ui.component.TokenComponent;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -86,7 +88,7 @@ public class Room extends Card implements Location {
      *
      * Updates the bounding rectangle coordinates and center coordinate calculations.
      *
-     * @param tile The tile to add.
+     * @param tile the tile to add
      */
     public void addTile(RoomTile tile) {
         mTiles.add(tile);
@@ -102,7 +104,7 @@ public class Room extends Card implements Location {
     /**
      * Returns the X coordinate of the center of the room (based on average tile coordinates).
      *
-     * @return The X coordinate of the center of the room.
+     * @return the X coordinate of the center of the room
      */
     public float getCenterX() {
         return ((float) mTileSumX) / mTiles.size() + 0.5f;
@@ -111,7 +113,7 @@ public class Room extends Card implements Location {
     /**
      * Returns the Y coordinate of the center of the room (based on average tile coordinates).
      *
-     * @return The Y coordinate of the center of the room.
+     * @return the Y coordinate of the center of the room
      */
     public float getCenterY() {
         return ((float) mTileSumY) / mTiles.size() + 0.5f;
@@ -122,7 +124,7 @@ public class Room extends Card implements Location {
      *
      * A guess room is a room in which the final accusation is made.
      *
-     * @return {@code true} if this room is a guess room.
+     * @return {@code true} if this room is a guess room
      */
     public boolean isGuessRoom() {
         return mIsGuessRoom;
@@ -131,7 +133,7 @@ public class Room extends Card implements Location {
     /**
      * Returns {@code true} if this room contains a passage to another room.
      *
-     * @return {@code true} if this room contains a passage to another room.
+     * @return {@code true} if this room contains a passage to another room
      */
     public boolean hasPassage() {
         return mPassageRoom != null;
@@ -161,7 +163,7 @@ public class Room extends Card implements Location {
     /**
      * Returns a list of all tiles in the room which have a door.
      *
-     * @return A list of all tiles in the room which have a door.
+     * @return a list of all tiles in the room which have a door
      */
     public List<RoomTile> getEntranceCorridors() {
         return mEntranceCorridors;
@@ -170,29 +172,32 @@ public class Room extends Card implements Location {
     /**
      * Adds the token to the list of tokens currently in the room.
      *
-     * @param token Token being added to the room.
+     * @param token token being added to the room
+     * @param path the path being taken by the token to enter the room
      */
-    public void addToken(Token token) {
+    public void addToken(Token token, List<? extends Tile> path) {
         mTokens.add(token);
 
-        updateTokenLocations();
+        updateTokenLocations(token, path);
     }
 
     /**
      * Removes the token from the list of tokens currently in the room.
      *
-     * @param token Token being removed from the room.
+     * @param token token being removed from the room
      */
     public void removeToken(Token token) {
         mTokens.remove(token);
 
-        updateTokenLocations();
+        updateTokenLocations(null, null);
     }
 
     /**
      * Updates the coordinates of tokens in the room to be distributed centrally
+     *
+     * @
      */
-    private void updateTokenLocations() {
+    private void updateTokenLocations(Token token, List<? extends Tile> path) {
         int count = mTokens.size();
 
         float centerX = getCenterX() - 0.5f;
@@ -204,7 +209,7 @@ public class Room extends Card implements Location {
             if (mLabel != null) {
                 Animator.getInstance().animate(mLabel)
                         .translate(mLabel.getX(), (int) (centerY * mLabel.getHeight()))
-                        .setDuration(200)
+                        .setDuration(TokenComponent.ANIMATION_DURATION)
                         .start();
             }
 
@@ -217,13 +222,16 @@ public class Room extends Card implements Location {
         int tokenIndex = 0;
         int rows = layout.length;
 
+        int delay = path != null ? path.size() - 1 : 0;
+
         // Move label above top row
         if (mLabel != null) {
             float targetY = centerY - (float) (rows + 1) / 2;
 
             Animator.getInstance().animate(mLabel)
                     .translate(mLabel.getX(), (int) (targetY * mLabel.getHeight()))
-                    .setDuration(200)
+                    .setDuration(TokenComponent.ANIMATION_DURATION)
+                    .setDelay(delay * TokenComponent.ANIMATION_DURATION)
                     .start();
         }
 
@@ -233,7 +241,8 @@ public class Room extends Card implements Location {
             int columns = layout[i];
             float relativeColumn = (float) (1 - columns) / 2f;
             for (int j = 0; j < columns; j++, relativeColumn++) {
-                mTokens.get(tokenIndex++).setCoordinates(relativeColumn + centerX, relativeRow + centerY);
+                Token t = mTokens.get(tokenIndex++);
+                t.setCoordinates(relativeColumn + centerX, relativeRow + centerY, t == token ? path : null, t != token ? delay : 0);
             }
         }
     }
@@ -248,9 +257,12 @@ public class Room extends Card implements Location {
     public void setLabel(JComponent label) {
         mLabel = label;
 
-        updateTokenLocations();
+        updateTokenLocations(null, null);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected String getCardImageSuffix() {
         return "room";

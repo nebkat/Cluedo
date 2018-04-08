@@ -48,6 +48,9 @@ import java.util.TimerTask;
 import java.util.function.DoubleConsumer;
 import java.util.stream.IntStream;
 
+/**
+ * Panel showing 3D physics based dice.
+ */
 public class DicePanel extends JPanel implements Animator.Fadable {
     private static final int FRAMES_PER_SECOND = 60;
     private static final int NUM_DICE = Game.NUM_DICE;
@@ -191,6 +194,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
 
         getMoveToCenterTransformations(moveToCenterTranslateDeltas, moveToCenterTransformDeltas);
 
+        // Animate dice to the front of the screen
         Animator.getInstance().animate(this)
                 .animate(0.0, 1.0, new DoubleConsumer() {
                     double previousInterpolation = 0;
@@ -275,7 +279,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
     }
 
     private void getMoveToCenterTransformations(Vector3d[] moveToCenterTranslateDeltas, AxisAngle4d[] moveToCenterTransformDeltas) {
-
+        // Dice are aligned horizontally, so order them by their current X coordinate to avoid unusual movement
         int[] diceOrder = IntStream.range(0, NUM_DICE)
                 .boxed()
                 .sorted(Comparator.comparingDouble(d -> mDices[d].getCenter().x))
@@ -288,6 +292,7 @@ public class DicePanel extends JPanel implements Animator.Fadable {
 
             Face face = dice.getFace(dice.getHighestZFace());
 
+            // Move the center of the highest face to the front of the screen
             Point3d center = VectorUtils.average(face);
             double relativeIndex = i - ((double) (NUM_DICE - 1) / 2);
             Point3d target = new Point3d(relativeIndex * 2 * CUBE_SIZE, 0, 0);

@@ -39,18 +39,40 @@ public class Suspect extends Token {
         mColor = color;
     }
 
+    /**
+     * Gets the suspect's associated color.
+     *
+     * @return the color of the suspect
+     */
     public Color getColor() {
         return mColor;
     }
 
+    /**
+     * Sets whether the player has been moved to a different room since their last turn.
+     *
+     * @see Suspect#getMovedSinceLastTurn()
+     *
+     * @param moved whether the player has been moved since their last turn
+     */
     public void setMovedSinceLastTurn(boolean moved) {
         mMovedSinceLastTurn = moved;
     }
 
+    /**
+     * Gets whether the player has been moved to a different room since their last turn.
+     *
+     * If the player has been moved, they are allowed to pose questions in their current room without moving.
+     *
+     * @return whether the player has been moved since their last turn
+     */
     public boolean getMovedSinceLastTurn() {
         return mMovedSinceLastTurn;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected String getCardImageSuffix() {
         return "suspect";

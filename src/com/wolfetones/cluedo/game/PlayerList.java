@@ -28,6 +28,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/**
+ * List of players with helper methods.
+ */
 public class PlayerList extends ArrayList<Player> {
     public PlayerList() {
         super();

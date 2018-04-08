@@ -52,7 +52,6 @@ public class SlideOutPanel extends JPanel {
     private int mContainerSize;
     private int mContainerLocation;
 
-    private boolean mMouseOver = false;
     private boolean mShown = false;
 
     @SuppressWarnings("SuspiciousNameCombination")
@@ -98,10 +97,6 @@ public class SlideOutPanel extends JPanel {
                     slideIn();
                 }
 
-                mMouseOver = true;
-
-                repaint();
-
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
 
@@ -112,10 +107,6 @@ public class SlideOutPanel extends JPanel {
                     if (hover) {
                         slideOut();
                     }
-
-                    mMouseOver = false;
-
-                    repaint();
                 }
 
                 setCursor(Cursor.getDefaultCursor());

@@ -48,8 +48,20 @@ public abstract class Card implements Comparable<Card> {
         }
     }
 
+    /**
+     * Returns the suffix used for generating the card image filename.
+     *
+     * Overridden by subclasses.
+     *
+     * @return the suffix used for generating the card image filename
+     */
     protected abstract String getCardImageSuffix();
 
+    /**
+     * Gets the name of this card.
+     *
+     * @return the card name
+     */
     public String getName() {
         return mName;
     }
@@ -58,6 +70,11 @@ public abstract class Card implements Comparable<Card> {
         return mSearchNames;
     }
 
+    /**
+     * Loads and returns the card image associated with this card.
+     *
+     * @return the card image associated with this card
+     */
     public BufferedImage getCardImage() {
         return ImageUtils.loadImage(mCardImage);
     }
@@ -82,6 +99,13 @@ public abstract class Card implements Comparable<Card> {
         return ImageUtils.loadImage("cards/card-incorrect-overlay.png");
     }
 
+    /**
+     * Gets the index of the class of the card in the card ordering array.
+     *
+     * Used to sort cards by suspect, weapon and room.
+     *
+     * @return the ordering index of the card
+     */
     private int getTypeIndex() {
         for (int i = 0; i < TYPE_ORDER.length; i++) {
             if (TYPE_ORDER[i] == getClass()) {

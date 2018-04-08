@@ -31,9 +31,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Player {
-    private Suspect mCharacter;
-
     private String mName;
+
+    private Suspect mCharacter;
 
     private List<Card> mCards = new ArrayList<>();
 
@@ -45,21 +45,45 @@ public class Player {
     }
 
     public void initiateKnowledge(List<Card> cards, PlayerList players, List<Card> undistributedCards) {
-        mKnowledge = new Knowledge(this, players, cards, mCards, undistributedCards);
+        mKnowledge = new Knowledge(this, players, cards, undistributedCards);
     }
 
     public Knowledge getKnowledge() {
         return mKnowledge;
     }
 
+    /**
+     * Returns {@code true} if the player is holding the specified card.
+     *
+     * @param card the card to check
+     * @return {@code true} if the player is holding the specified card
+     */
     public boolean hasCard(Card card) {
         return mCards.contains(card);
     }
 
     /**
+     * Adds a card to this list of cards that this player is holding.
+     *
+     * @param card the card to add
+     */
+    public void addCard(Card card) {
+        mCards.add(card);
+    }
+
+    /**
+     * Returns a list of cards that this player is holding.
+     *
+     * @return a list of cards that this player is holding
+     */
+    public List<Card> getCards() {
+        return mCards;
+    }
+
+    /**
      * Returns the {@code Suspect} that this player is controlling.
      *
-     * @return The {@code Suspect} that this player is controlling.
+     * @return the {@code Suspect} that this player is controlling
      */
     public Suspect getCharacter() {
         return mCharacter;
@@ -70,28 +94,10 @@ public class Player {
     }
 
     /**
-     * Adds a card to this player's cards and knowledge.
-     *
-     * @param card Card to add.
-     */
-    public void addCard(Card card) {
-        mCards.add(card);
-    }
-
-    /**
-     * Returns a list of cards that this player is holding.
-     *
-     * @return a list of cards that this player is holding.
-     */
-    public List<Card> getCards() {
-        return mCards;
-    }
-
-    /**
      * Returns {@code true} if the player holds any of the cards used in the {@code suggestion}.
      *
-     * @param suggestion Suggestion to check.
-     * @return {@code true} if the player holds any of the cards used in the {@code suggestion}.
+     * @param suggestion the suggestion to check
+     * @return {@code true} if the player holds any of the cards used in the {@code suggestion}
      */
     public boolean hasAnySuggestionCards(Suggestion suggestion) {
         return !Collections.disjoint(mCards, suggestion.asList());
@@ -100,8 +106,8 @@ public class Player {
     /**
      * Returns a list of all {@code Card}s matching the cards in the {@code suggestion}.
      *
-     * @param suggestion Suggestion to check.
-     * @return A list of all {@code Card}s matching the cards in the {@code suggestion}.
+     * @param suggestion the suggestion to check
+     * @return a list of all {@code Card}s matching the cards in the {@code suggestion}
      */
     public List<Card> matchingSuggestionCards(Suggestion suggestion) {
         List<Card> suggestionCards = suggestion.asList();

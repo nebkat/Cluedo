@@ -102,7 +102,7 @@ public class BoardModel {
                         case Config.Board.Tiles.START:
                             Suspect startingSuspect = mSuspects.get(Config.Board.Tiles.STARTS[startTileSuspectIterator++]);
                             mTiles[y][x] = new StartTile(x, y, startingSuspect);
-                            startingSuspect.setLocation((CorridorTile) mTiles[y][x]);
+                            startingSuspect.setLocation((CorridorTile) mTiles[y][x], null);
                             break;
                         case Config.Board.Tiles.CORRIDOR:
                             mTiles[y][x] = new CorridorTile(x, y);
@@ -173,7 +173,7 @@ public class BoardModel {
                 .collect(Collectors.toList());
         Collections.shuffle(weaponRooms);
         for (int i = 0; i < mWeapons.size(); i++) {
-            mWeapons.get(i).setLocation(mRooms.get(weaponRooms.get(i)));
+            mWeapons.get(i).setLocation(mRooms.get(weaponRooms.get(i)), null);
         }
 
         // Remove guess room from rooms list

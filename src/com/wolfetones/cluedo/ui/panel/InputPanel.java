@@ -70,24 +70,51 @@ public class InputPanel extends JTextField implements KeyListener {
         mUnhintedText = getText();
     }
 
+    /**
+     * Clears the input panel.
+     */
     public void clear() {
         setText(null);
         mUnhintedText = "";
     }
 
+    /**
+     * Prints and injects the specified text into the input stream.
+     *
+     * @see InputPanel#inject(String)
+     *
+     * @param text the text to inject
+     */
     public void append(String text) {
         System.out.println("> " + text);
         inject(text);
     }
 
+    /**
+     * Injects the specified text into the input stream.
+     *
+     * To exit {@link com.wolfetones.cluedo.GameController#readCommand(String, String...)}, "\3" can be injected.
+     *
+     * @param text the text to inject
+     */
     public void inject(String text) {
         mInputStream.append(text + "\n");
     }
 
+    /**
+     * Gets the input stream for this input panel.
+     *
+     * @return the input stream for this input panel
+     */
     public InputStream getInputStream() {
         return mInputStream;
     }
 
+    /**
+     * Sets the available commands that can be tab auto completed by the user.
+     *
+     * @param commands the available commands for auto completion
+     */
     public void setCommandHints(List<String> commands) {
         mCommandHints = commands;
     }
@@ -106,7 +133,7 @@ public class InputPanel extends JTextField implements KeyListener {
             boolean foundCurrent = getText().toLowerCase().equals(mUnhintedText);
 
             // Whether a valid next command to hint has been found
-            // If not next command is found, the text is set to the unhinted text
+            // If no next command is found, the text is set to the unhinted text
             boolean foundNext = false;
             for (String command : mCommandHints) {
                 if (!foundCurrent) {
@@ -149,10 +176,10 @@ public class InputPanel extends JTextField implements KeyListener {
     }
 
     /**
-     * Buffered input stream that allows text to be appended
+     * Buffered input stream that allows text to be appended.
      */
     private class PanelInputStream extends InputStream {
-        private static final int BUFFER_SIZE = 128;
+        private static final int BUFFER_SIZE = 512;
 
         private byte[] mBuffer = new byte[BUFFER_SIZE];
         private int mHead = 0;

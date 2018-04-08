@@ -633,9 +633,6 @@ public class GameController {
 
             List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
-            // Update notes panel
-            mNotesPanel.updateCards(suggestion.asList());
-
             // Hide all panels that could reveal extra info
             mPlayerCardsPanel.slideOut();
             mNotesSlideOutPanel.slideOut();
@@ -770,7 +767,7 @@ public class GameController {
         // Reset backgrounds of tiles in previous path
         if (mPreviousPath != null) {
             for (Tile tile : mPreviousPath) {
-                tile.getButton().setTemporaryBackground(null);
+                tile.getButton().setPathFindingColors(false, false, false);
             }
 
             mPreviousPath = null;
@@ -809,7 +806,7 @@ public class GameController {
         if (mPreviousPath != null) {
             for (TokenOccupiableTile t : mPreviousPath) {
                 if (!path.contains(t)) {
-                    t.getButton().setTemporaryBackground(null);
+                    t.getButton().setPathFindingColors(false, false, false);
                 }
             }
         }
@@ -820,13 +817,7 @@ public class GameController {
             // Colour valid tiles in path green, invalid tiles in red
             TileComponent button = path.get(i).getButton();
             boolean active = i == (path.size() - 1);
-            Color color;
-            if (i <= mGame.getTurnRemainingMoves()) {
-                color = active ? TileComponent.COLOR_PATHFINDING_VALID_ACTIVE : TileComponent.COLOR_PATHFINDING_VALID;
-            } else {
-                color = active ? TileComponent.COLOR_PATHFINDING_INVALID_ACTIVE : TileComponent.COLOR_PATHFINDING_INVALID;
-            }
-            button.setTemporaryBackground(color);
+            button.setPathFindingColors(true, i <= mGame.getTurnRemainingMoves(), active);
         }
 
         // Tile click action
@@ -879,7 +870,6 @@ public class GameController {
      * @param type One of "back", "temporarily", null
      */
     private void passToPlayer(Player p, String type) {
-
         JDialog dialog = new JDialog(mMainFrame, true);
 
         dialog.setUndecorated(true);
@@ -895,7 +885,7 @@ public class GameController {
                                 Config.screenRelativeSize(25),
                                 Config.screenRelativeSize(25))));
 
-        panel.add(new ScaledImageComponent(p.getCharacter().getCardImage()));
+        panel.add(new ImageComponent(p.getCharacter().getCardImage()));
 
         panel.add(Box.createRigidArea(new Dimension(0, Config.screenRelativeSize(25))));
 
@@ -1123,21 +1113,6 @@ public class GameController {
                 // Add start tile background circle
                 if (tile instanceof StartTile) {
                     mBoardLayeredPane.add(new StartTileCircle((StartTile) tile, mTileSize), BOARD_LAYER_START_TILE_CIRCLES);
-                }
-
-                // Set colors
-                if (tile instanceof PassageTile) {
-                    component.setBackground(TileComponent.COLOR_PASSAGE);
-                } else if (tile instanceof RoomTile) {
-                    component.setBackground(TileComponent.COLOR_ROOM);
-                } else if (tile instanceof CorridorTile) {
-                    if ((y + x) % 2 == 0) {
-                        component.setBackground(TileComponent.COLOR_CORRIDOR_A);
-                    } else {
-                        component.setBackground(TileComponent.COLOR_CORRIDOR_B);
-                    }
-                } else if (tile instanceof EmptyTile) {
-                    component.setOpaque(false);
                 }
 
                 mBoardTilePanel.add(component);

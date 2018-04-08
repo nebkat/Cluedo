@@ -34,7 +34,7 @@ public class Ray3d extends Point3d {
     private Vector3d direction;
 
     /**
-     * Constructs a ray with the given direction, passing through the given point.
+     * Constructs a ray with the specified direction, passing through the specified point.
      *
      * @param origin a point on the ray, its origin
      * @param direction the direction of the ray
@@ -46,7 +46,7 @@ public class Ray3d extends Point3d {
     }
 
     /**
-     * Constructs a ray passing through the given points
+     * Constructs a ray passing through the specified points
      *
      * @param start start point
      * @param end end point
@@ -59,10 +59,10 @@ public class Ray3d extends Point3d {
     }
 
     /**
-     * Gets the point at the given distance from the origin along the ray.
+     * Gets the point at the specified distance from the origin along the ray.
      *
      * @param distance the distance along the ray
-     * @return the point at the given distance from the origin along the ray
+     * @return the point at the specified distance from the origin along the ray
      */
     public Point3d getPointAtDistance(double distance) {
         Point3d point = new Point3d();

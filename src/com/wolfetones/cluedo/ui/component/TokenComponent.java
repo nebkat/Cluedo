@@ -24,16 +24,20 @@
 
 package com.wolfetones.cluedo.ui.component;
 
+import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.card.Token;
 import com.wolfetones.cluedo.ui.Animator;
 import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
-import java.awt.*;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.List;
 
 public class TokenComponent extends JComponent {
+    public static final int ANIMATION_DURATION = 200;
+
     private int mTileSize;
     private Token mToken;
 
@@ -59,11 +63,26 @@ public class TokenComponent extends JComponent {
         g.drawImage(mTokenImage, 0, 0, null);
     }
 
-    private void updateCoordinates() {
-        Animator.getInstance().animateAndInterruptAll(this)
-                .translate((int) (mToken.getCoordinateX() * mTileSize),
-                        (int) (mToken.getCoordinateY() * mTileSize))
+    private void updateCoordinates(List<? extends Tile> path, int delay) {
+        int finalX = (int) (mToken.getCoordinateX() * mTileSize);
+        int finalY = (int) (mToken.getCoordinateY() * mTileSize);
+
+        Animator.Animation animation = Animator.getInstance().animateAndInterruptAll(this);
+        if (path != null) {
+            for (Tile tile : path) {
+                int targetX = tile.getX() * mTileSize;
+                int targetY = tile.getY() * mTileSize;
+
+                animation.translate(targetX, targetY)
+                        .setDuration(ANIMATION_DURATION);
+
+                animation = animation.chain();
+            }
+        }
+
+        animation.translate(finalX, finalY)
                 .setDuration(200)
+                .setDelay(delay * ANIMATION_DURATION)
                 .start();
     }
 

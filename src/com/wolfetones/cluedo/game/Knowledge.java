@@ -28,10 +28,13 @@ import com.wolfetones.cluedo.card.Card;
 
 import java.util.*;
 
+/**
+ * Player knowledge of who is holding which cards.
+ */
 public class Knowledge {
     private Map<Card, Map<Player, Status>> mCardPlayerStatuses = new HashMap<>();
 
-    public Knowledge(Player player, PlayerList players, List<Card> cards, List<Card> playerCards, List<Card> undistributedCards) {
+    public Knowledge(Player player, PlayerList players, List<Card> cards, List<Card> undistributedCards) {
         // Fill card player map
         for (Card card : cards) {
             Map<Player, Status> playerStatusMap = new HashMap<>();
@@ -44,7 +47,7 @@ public class Knowledge {
                 if (undistributedCards.contains(card)) {
                     status.value = Value.Undistributed;
                     status.fixed = true;
-                } else if (playerCards.contains(card)) {
+                } else if (player.hasCard(card)) {
                     status.value = Value.Self;
                     status.fixed = true;
                 }
@@ -54,15 +57,57 @@ public class Knowledge {
         }
     }
 
+    /**
+     * Returns the player status map for the specified card.
+     *
+     * @param card the card of interest
+     * @return the player status map for the specified card
+     */
     public Map<Player, Status> get(Card card) {
         return mCardPlayerStatuses.get(card);
     }
 
-    public void setHolding(Card card, Player player, boolean holding) {
+    /**
+     * Sets the specified player to be holding or not holding the specified card.
+     *
+     * To be used by {@link Game} only, for cards that have been shown or are known to be held by someone else.
+     *
+     * As the status is certain, the value is fixed to prevent accidental modification by the user.
+     *
+     * @param card the card that is held/not held
+     * @param player the player that is holding/not holding the card
+     * @param holding whether the player is holding the card
+     *
+     * @see Knowledge#setValue(Card, Player, Value, boolean)
+     */
+    void setHolding(Card card, Player player, boolean holding) {
         setValue(card, player, holding ? Value.Holding : Value.NotHolding, true);
     }
 
-    public void setValue(Card card, Player player, Value value, boolean fixed) {
+    /**
+     * Sets the status of the specified player for the specified card, without fixing it's value.
+     *
+     * @param card the card for which the status is being set
+     * @param player the player for which the status is being set
+     * @param value the value being set
+     *
+     * @see Knowledge#setValue(Card, Player, Value, boolean)
+     */
+    public void setValue(Card card, Player player, Value value) {
+        setValue(card, player, value, false);
+    }
+
+    /**
+     * Sets the status of the specified player for the specified card, optionally fixing its value.
+     *
+     * If the value is fixed, it can no longer be modified.
+     *
+     * @param card the card for which the status is being set
+     * @param player the player for which the status is being set
+     * @param value the value being set
+     * @param fixed whether to fix the value being set
+     */
+    private void setValue(Card card, Player player, Value value, boolean fixed) {
         Map<Player, Status> cardPlayerStatuses = mCardPlayerStatuses.get(card);
         Status playerStatus = cardPlayerStatuses.get(player);
 
@@ -96,13 +141,20 @@ public class Knowledge {
 
                 if (foundAllCards) {
                     for (Card c : mCardPlayerStatuses.keySet()) {
-                        setValue(c, player, Value.NotHolding, true);
+                        setHolding(c, player, false);
                     }
                 }
             }
         }
     }
 
+    /**
+     * Toggles one of the 4 available hints on a specified card for a specified player.
+     *
+     * @param card
+     * @param player
+     * @param hint
+     */
     public void toggleHint(Card card, Player player, int hint) {
         mCardPlayerStatuses.get(card).get(player).toggleHint(hint);
     }

@@ -38,7 +38,7 @@ public class Cube extends RigidBody {
     protected Face[] faces = Face.initiateArray(6, 4);
 
     /**
-     * Constructs an axis-aligned cube with the given side length, centered at the given location
+     * Constructs an axis-aligned cube with the specified side length, centered at the specified location
      *
      * @param center the center of the cube
      * @param sideLength the side length of the cube
@@ -72,10 +72,10 @@ public class Cube extends RigidBody {
     }
 
     /**
-     * Gets the face of the cube at the given index
+     * Gets the face of the cube at the specified index
      *
      * @param face the face index
-     * @return the face of the cube at the given index
+     * @return the face of the cube at the specified index
      */
     public Face getFace(int face) {
         return faces[face];

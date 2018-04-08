@@ -24,8 +24,7 @@
 
 package com.wolfetones.cluedo.ui.component;
 
-import com.wolfetones.cluedo.board.tiles.PassageTile;
-import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.board.tiles.*;
 import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.util.ImageUtils;
@@ -36,17 +35,17 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 
 public class TileComponent extends JComponent {
-    public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
-    public static final Color COLOR_CORRIDOR_B = Color.decode("#e0c070");
+    private static final Color COLOR_CORRIDOR_A = Color.decode("#efcf7f");
+    private static final Color COLOR_CORRIDOR_B = Color.decode("#e0c070");
 
     public static final Color COLOR_ROOM = Color.decode("#ab9e85");
-    public static final Color COLOR_PASSAGE = Color.decode("#756e5c");
+    private static final Color COLOR_PASSAGE = Color.decode("#756e5c");
     public static final Color COLOR_EMPTY = Color.decode("#4f8967");
 
-    public static final Color COLOR_PATHFINDING_VALID = Color.GREEN.darker();
-    public static final Color COLOR_PATHFINDING_VALID_ACTIVE = Color.GREEN;
-    public static final Color COLOR_PATHFINDING_INVALID = Color.RED.darker();
-    public static final Color COLOR_PATHFINDING_INVALID_ACTIVE = Color.RED;
+    private static final Color COLOR_PATHFINDING_VALID = Color.GREEN.darker();
+    private static final Color COLOR_PATHFINDING_VALID_ACTIVE = Color.GREEN;
+    private static final Color COLOR_PATHFINDING_INVALID = Color.RED.darker();
+    private static final Color COLOR_PATHFINDING_INVALID_ACTIVE = Color.RED;
 
     private static final Font DOOR_HINT_FONT = new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20));
 
@@ -62,6 +61,22 @@ public class TileComponent extends JComponent {
 
         setOpaque(true);
 
+        // Set colors
+        if (tile instanceof PassageTile) {
+            setBackground(TileComponent.COLOR_PASSAGE);
+        } else if (tile instanceof RoomTile) {
+            setBackground(TileComponent.COLOR_ROOM);
+        } else if (tile instanceof CorridorTile) {
+            if ((tile.getY() + tile.getX()) % 2 == 0) {
+                setBackground(TileComponent.COLOR_CORRIDOR_A);
+            } else {
+                setBackground(TileComponent.COLOR_CORRIDOR_B);
+            }
+        } else if (tile instanceof EmptyTile) {
+            setOpaque(false);
+        }
+
+        // Add passage tile tooltip
         if (tile instanceof PassageTile) {
             Room passageRoom = ((PassageTile) tile).getRoom().getPassageRoom();
 
@@ -75,7 +90,19 @@ public class TileComponent extends JComponent {
         return mTile;
     }
 
-    public void setTemporaryBackground(Color color) {
+    public void setPathFindingColors(boolean pathFinding, boolean valid, boolean active) {
+        if (!pathFinding) {
+            setTemporaryBackground(null);
+        } else {
+            if (valid) {
+                setTemporaryBackground(active ? TileComponent.COLOR_PATHFINDING_VALID_ACTIVE : TileComponent.COLOR_PATHFINDING_VALID);
+            } else {
+                setTemporaryBackground(active ? TileComponent.COLOR_PATHFINDING_INVALID_ACTIVE : TileComponent.COLOR_PATHFINDING_INVALID);
+            }
+        }
+    }
+
+    private void setTemporaryBackground(Color color) {
         if (mTemporaryBackground == color) {
             return;
         }

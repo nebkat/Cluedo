@@ -357,7 +357,7 @@ public class NotesPanel extends JPanel {
                     }
                     item.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(20)));
                     item.addActionListener(e -> {
-                        mKnowledge.setValue(mCard, mPlayer, value, false);
+                        mKnowledge.setValue(mCard, mPlayer, value);
 
                         // Other player values may have changed, so update entire row
                         updateCard(mCard);

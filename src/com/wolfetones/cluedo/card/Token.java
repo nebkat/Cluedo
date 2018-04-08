@@ -24,27 +24,32 @@
 
 package com.wolfetones.cluedo.card;
 
+import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.ui.component.TokenComponent;
 
 import java.awt.image.BufferedImage;
+import java.util.List;
+import java.util.function.Consumer;
 
+/**
+ * Base token class, representing cards that also have a token on the board.
+ */
 public abstract class Token extends Card {
     private Location mLocation;
 
-    private Runnable mCoordinatesUpdateListener;
+    private CoordinatesUpdateListener mCoordinatesUpdateListener;
     private float mCoordinateX;
     private float mCoordinateY;
 
-    private BufferedImage mTokenImage;
+    private String mTokenImage;
 
     Token(String name, String[] searchNames, String resourceName) {
         super(name, searchNames, resourceName);
 
         if (resourceName != null) {
-            String imageFile = "tokens/token-" + getCardImageSuffix() + "-" + resourceName + ".png";
-            mTokenImage = ImageUtils.loadImage(imageFile);
+            mTokenImage = "tokens/token-" + getCardImageSuffix() + "-" + resourceName + ".png";
         }
     }
 
@@ -54,9 +59,9 @@ public abstract class Token extends Card {
      * If the {@code Location} is a {@code Room}, the token is added to the room.
      * If the {@code Location} is a {@code CorridorTile}, the tile's token is set.
      *
-     * @param location The {@code Location} of the {@code Token}.
+     * @param location the {@code Location} of the {@code Token}
      */
-    public void setLocation(Location location) {
+    public void setLocation(Location location, List<? extends Tile> path) {
         if (mLocation != null) {
             if (mLocation.isRoom()) {
                 mLocation.asRoom().removeToken(this);
@@ -68,20 +73,20 @@ public abstract class Token extends Card {
         mLocation = location;
 
         if (location.isRoom()) {
-            location.asRoom().addToken(this);
+            location.asRoom().addToken(this, path);
 
             // Coordinates will be handled by room
         } else {
             location.asTile().setToken(this);
 
-            setCoordinates(location.asTile().getX(), location.asTile().getY());
+            setCoordinates(location.asTile().getX(), location.asTile().getY(), path, 0);
         }
     }
 
     /**
      * Gets the {@link Location} of the {@code Token}.
      *
-     * @return The {@code Location} of the {@code Token}.
+     * @return the {@code Location} of the {@code Token}
      */
     public Location getLocation() {
         return mLocation;
@@ -90,15 +95,15 @@ public abstract class Token extends Card {
     /**
      * Sets the board coordinates of the {@code Token}.
      *
-     * @param x X coordinate.
-     * @param y Y coordinate.
+     * @param x X coordinate
+     * @param y Y coordinate
      */
-    public void setCoordinates(float x, float y) {
+    public void setCoordinates(float x, float y, List<? extends Tile> path, int delay) {
         mCoordinateX = x;
         mCoordinateY = y;
 
         if (mCoordinatesUpdateListener != null) {
-            mCoordinatesUpdateListener.run();
+            mCoordinatesUpdateListener.update(path, delay);
         }
     }
 
@@ -113,15 +118,25 @@ public abstract class Token extends Card {
     /**
      * Sets the coordinates update listener.
      *
-     * Allows the token to notify its respective {@link TokenComponent} of coordinate changes.
+     * Allows the token to notify its respective {@link TokenComponent} of coordinate changes, and the path taken
+     * to those coordinates.
      *
-     * @param listener Runnable to run.
+     * @param listener the coordinate update listener
      */
-    public void setCoordinatesListener(Runnable listener) {
+    public void setCoordinatesListener(CoordinatesUpdateListener listener) {
         mCoordinatesUpdateListener = listener;
     }
 
+    /**
+     * Loads and returns the token image associated with this card.
+     *
+     * @return the token image associated with this card
+     */
     public BufferedImage getTokenImage() {
-        return mTokenImage;
+        return ImageUtils.loadImage(mTokenImage);
+    }
+
+    public interface CoordinatesUpdateListener {
+        void update(List<? extends Tile> path, int delay);
     }
 }

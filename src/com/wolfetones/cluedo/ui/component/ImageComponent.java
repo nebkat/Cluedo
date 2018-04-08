@@ -32,18 +32,39 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public class ScaledImageComponent extends JComponent {
+/**
+ * Component for displaying images.
+ */
+public class ImageComponent extends JComponent {
     protected BufferedImage mImage;
 
-    public ScaledImageComponent(BufferedImage image) {
+    /**
+     * Constructs a new {@code ImageComponent} with the image's default width/height scaled relative to the screen size.
+     *
+     * @param image the image to display
+     */
+    public ImageComponent(BufferedImage image) {
         this(image, Config.screenRelativeSize(image.getWidth()), Config.screenRelativeSize(image.getHeight()));
     }
 
-    public ScaledImageComponent(BufferedImage image, int width) {
+    /**
+     * Constructs a new {@code ImageComponent}, scaling the image to the specified width and maintaining aspect ratio.
+     *
+     * @param image the image to display
+     * @param width the width of the image
+     */
+    public ImageComponent(BufferedImage image, int width) {
         this(image, width, width * image.getHeight() / image.getWidth());
     }
 
-    public ScaledImageComponent(BufferedImage image, int width, int height) {
+    /**
+     * Constructs a new {@code ImageComponent}, scaling the image to the specified dimensions.
+     *
+     * @param image the image to display
+     * @param width the width of the image
+     * @param height the height of the image
+     */
+    public ImageComponent(BufferedImage image, int width, int height) {
         super();
 
         mImage = ImageUtils.getScaledImage(image, width, height);

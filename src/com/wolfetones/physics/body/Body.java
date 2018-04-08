@@ -121,7 +121,7 @@ public abstract class Body {
     }
 
     /**
-     * Applies a transformation to every particle in the body around the given point, optionally updating the previous position of the particle.
+     * Applies a transformation to every particle in the body around the specified point, optionally updating the previous position of the particle.
      *
      * @see Particle#transform(Matrix3d, boolean, Point3d)
      *

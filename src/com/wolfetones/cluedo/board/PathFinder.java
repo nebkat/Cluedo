@@ -39,9 +39,9 @@ public class PathFinder {
     /**
      * Returns the distance between two tiles along axes at right angles.
      *
-     * @param a Tile A
-     * @param b Tile B
-     * @return The Manhattan distance between the two tiles
+     * @param a tile A
+     * @param b tile B
+     * @return the Manhattan distance between the two tiles
      */
     private static int tileManhattanDistance(Tile a, Tile b) {
         return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
@@ -50,10 +50,10 @@ public class PathFinder {
     /**
      * Finds the shortest path available between two locations, taking into account room entrance corridors
      *
-     * @param start From location.
-     * @param target To location.
-     * @param maxMoves The maximum number of moves allowed to reach the target.
-     * @return A list of tiles containing the shortest path from {@code start} to {@code target}.
+     * @param start from location.
+     * @param target to location.
+     * @param maxMoves the maximum number of moves allowed to reach the target.
+     * @return a list of tiles containing the shortest path from {@code start} to {@code target}.
      */
     public static List<TokenOccupiableTile> findShortestPathAdvanced(Location start, Location target, int maxMoves) {
         List<TokenOccupiableTile> path;

@@ -30,7 +30,7 @@ import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.Animator;
-import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.ImageComponent;
 import com.wolfetones.cluedo.ui.SimpleLayoutManager;
 import com.wolfetones.cluedo.ui.component.TextBubble;
 import com.wolfetones.cluedo.util.Util;
@@ -39,7 +39,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.*;
-import java.util.List;
 
 public class PlayersPanel extends JPanel {
     private PlayerList mPlayers;
@@ -99,7 +98,7 @@ public class PlayersPanel extends JPanel {
             mPlayerComponents.put(player, components);
         }
 
-        mTokenHighlight = new ScaledImageComponent(ImageUtils.loadImage("tokens/token-highlight.png"),
+        mTokenHighlight = new ImageComponent(ImageUtils.loadImage("tokens/token-highlight.png"),
                 (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconSize),
                 (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconSize));
         mTokenHighlightOffset = (int)((TOKEN_HIGHLIGHT_TOKEN_RATIO - 1.0) * iconSize / 2);
@@ -208,7 +207,7 @@ public class PlayersPanel extends JPanel {
         return mItemHeight;
     }
 
-    private static class PlayerIconComponent extends ScaledImageComponent {
+    private static class PlayerIconComponent extends ImageComponent {
         private boolean mEliminated = false;
 
         public PlayerIconComponent(BufferedImage image, int width, int height) {

@@ -91,15 +91,15 @@ public class Game {
             Question, FinalAccusation
         }
 
-        public Type type;
+        private Type type;
 
-        public Player player;
-        public Suggestion suggestion;
+        private Player player;
+        private Suggestion suggestion;
 
-        public Player responder;
-        public Card response;
+        private Player responder;
+        private Card response;
 
-        public boolean correct;
+        private boolean correct;
 
         private static LogEntry newQuestionEntry(Player player, Suggestion suggestion, Player responder, Card response) {
             LogEntry entry = new LogEntry();
@@ -120,6 +120,30 @@ public class Game {
             entry.correct = correct;
 
             return entry;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public Player getPlayer() {
+            return player;
+        }
+
+        public Suggestion getSuggestion() {
+            return suggestion;
+        }
+
+        public Player getResponder() {
+            return responder;
+        }
+
+        public Card getResponse() {
+            return response;
+        }
+
+        public boolean isCorrect() {
+            return correct;
         }
     }
 
@@ -314,8 +338,13 @@ public class Game {
             throw new IllegalStateException("Player cannot use passage, either not in a room or in a room that does not contain a secret passage");
         }
 
+        Room passageRoom = mCurrentPlayerLocation.asRoom().getPassageRoom();
+
+        PassageTile currentRoomPassageTile = mCurrentPlayerLocation.asRoom().getPassageTile();
+        PassageTile passageRoomPassageTile = passageRoom.getPassageTile();
+
         // Move to new room
-        completeMove(mCurrentPlayerLocation.asRoom().getPassageRoom());
+        completeMove(mCurrentPlayerLocation.asRoom().getPassageRoom(), List.of(currentRoomPassageTile, passageRoomPassageTile));
 
         // Can no longer move
         mTurnMovementComplete = true;
@@ -324,7 +353,7 @@ public class Game {
     /**
      * Moves the player's {@code Token} to a {@link Location} and subtracts the number of moves required.
      *
-     * @param location Location to move to.
+     * @param location the player's new location
      * @return The number of moves remaining.
      * @throws IllegalStateException If there are not enough moves available or there is no path to the target location.
      */
@@ -346,8 +375,15 @@ public class Game {
         // Subtract the number of moves used
         mTurnRemainingMoves -= shortestPath.size() - 1;
 
+        if (!mCurrentPlayerLocation.isRoom()) {
+            shortestPath.remove(0);
+        }
+        if (!location.isRoom()) {
+            shortestPath.remove(shortestPath.size() - 1);
+        }
+
         // Update states
-        completeMove(location);
+        completeMove(location, shortestPath);
 
         return mTurnRemainingMoves;
     }
@@ -376,22 +412,23 @@ public class Game {
     /**
      * Completes movement to a new {@code Location} and updates states.
      *
-     * @param newLocation New location.
+     * @param location the player's new location
+     * @param path the path taken to the new location
      */
-    private void completeMove(Location newLocation) {
+    private void completeMove(Location location, List<? extends Tile> path) {
         // Update whether the player has moved to allow stopping movement before all moves get used up
-        if (newLocation != mCurrentPlayerLocation) {
+        if (location != mCurrentPlayerLocation) {
             mTurnHasMoved = true;
         }
 
         // Set new location
-        mCurrentPlayer.getCharacter().setLocation(newLocation);
-        mCurrentPlayerLocation = newLocation;
+        mCurrentPlayer.getCharacter().setLocation(location, path);
+        mCurrentPlayerLocation = location;
 
         // Update states
-        if (newLocation.isRoom()) {
-            mTurnCanPoseQuestion = !newLocation.asRoom().isGuessRoom();
-            mTurnCanMakeFinalAccusation = newLocation.asRoom().isGuessRoom();
+        if (location.isRoom()) {
+            mTurnCanPoseQuestion = !location.asRoom().isGuessRoom();
+            mTurnCanMakeFinalAccusation = location.asRoom().isGuessRoom();
             mTurnRemainingMoves = 0;
         } else if (mTurnRemainingMoves <= 0) {
             mTurnFinished = true;
@@ -423,11 +460,13 @@ public class Game {
         mTurnMovementComplete = true;
 
         // Check whether the suspect is being moved (to allow for guess without movement at next turn)
-        suggestion.suspect.setMovedSinceLastTurn(suggestion.suspect.getLocation() != suggestion.room);
+        if (!suggestion.suspect.getMovedSinceLastTurn()) {
+            suggestion.suspect.setMovedSinceLastTurn(suggestion.suspect.getLocation() != suggestion.room);
+        }
 
         // Move the suspect and weapon in question to the room
-        suggestion.suspect.setLocation(suggestion.room);
-        suggestion.weapon.setLocation(suggestion.room);
+        suggestion.suspect.setLocation(suggestion.room, null);
+        suggestion.weapon.setLocation(suggestion.room, null);
 
         // Loop through players
         Player matchingPlayer = null;

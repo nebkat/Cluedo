@@ -46,7 +46,7 @@ public class Axis extends Vector3d {
     public static final Axis Z = new Axis(0, 0, 1);
 
     /**
-     * Constructs a new axis in the given direction.
+     * Constructs a new axis in the specified direction.
      *
      * @param x distance x
      * @param y distance y

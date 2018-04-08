@@ -29,7 +29,7 @@ import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.game.Player;
 import com.wolfetones.cluedo.game.PlayerList;
-import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.ImageComponent;
 import com.wolfetones.cluedo.ui.component.TextBubble;
 import com.wolfetones.cluedo.util.ImageUtils;
 
@@ -71,24 +71,23 @@ public class LogPanel extends JPanel {
 
             int tokenSize = Config.screenRelativeSize(35);
             int cardWidth = tokenSize * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
-            int tooltipHeight = Config.screenRelativeSize(35);
 
             // Asker
-            ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getTokenImage(), tokenSize);
-            TextBubble.createToolTip(asker, TextBubble.ABOVE, entry.player.getName());
+            ImageComponent asker = new ImageComponent(entry.getPlayer().getCharacter().getTokenImage(), tokenSize);
+            TextBubble.createToolTip(asker, TextBubble.ABOVE, entry.getPlayer().getName());
             GridBagConstraints c = new GridBagConstraints();
             c.gridy = i;
             c.insets = new Insets(0, 0, Config.screenRelativeSize(2), 0);
             add(asker, c);
 
             // Suggestion cards
-            ScaledImageComponent suggestedSuspect = new ScaledImageComponent(entry.suggestion.suspect.getCardImage(), cardWidth);
-            ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getCardImage(), cardWidth);
-            ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), cardWidth);
+            ImageComponent suggestedSuspect = new ImageComponent(entry.getSuggestion().suspect.getCardImage(), cardWidth);
+            ImageComponent suggestedWeapon = new ImageComponent(entry.getSuggestion().weapon.getCardImage(), cardWidth);
+            ImageComponent suggestedRoom = new ImageComponent(entry.getSuggestion().room.getCardImage(), cardWidth);
 
-            TextBubble.createToolTip(suggestedSuspect, TextBubble.ABOVE, entry.suggestion.suspect.getName());
-            TextBubble.createToolTip(suggestedWeapon, TextBubble.ABOVE, entry.suggestion.weapon.getName());
-            TextBubble.createToolTip(suggestedRoom, TextBubble.ABOVE, entry.suggestion.room.getName());
+            TextBubble.createToolTip(suggestedSuspect, TextBubble.ABOVE, entry.getSuggestion().suspect.getName());
+            TextBubble.createToolTip(suggestedWeapon, TextBubble.ABOVE, entry.getSuggestion().weapon.getName());
+            TextBubble.createToolTip(suggestedRoom, TextBubble.ABOVE, entry.getSuggestion().room.getName());
 
             c = new GridBagConstraints();
             c.gridy = i;
@@ -105,8 +104,8 @@ public class LogPanel extends JPanel {
 
             int lastXIndex = 5 + mPlayers.size();
 
-            if (entry.type == Game.LogEntry.Type.FinalAccusation) {
-                ScaledImageComponent incorrect = new ScaledImageComponent(ImageUtils.loadImage("icons/accuse.png"), tokenSize);
+            if (entry.getType() == Game.LogEntry.Type.FinalAccusation) {
+                ImageComponent incorrect = new ImageComponent(ImageUtils.loadImage("icons/accuse.png"), tokenSize);
                 TextBubble.createToolTip(incorrect, TextBubble.ABOVE, "Incorrect accusation");
                 c = new GridBagConstraints();
                 c.gridy = i;
@@ -117,16 +116,16 @@ public class LogPanel extends JPanel {
             }
 
             // Responder
-            if (entry.responder != null) {
-                ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), tokenSize);
-                TextBubble.createToolTip(responder, TextBubble.ABOVE, entry.responder.getName());
+            if (entry.getResponder() != null) {
+                ImageComponent responder = new ImageComponent(entry.getResponder().getCharacter().getTokenImage(), tokenSize);
+                TextBubble.createToolTip(responder, TextBubble.ABOVE, entry.getResponder().getName());
 
-                ScaledImageComponent response;
-                if (mCurrentPlayer == entry.player) {
-                    response = new ScaledImageComponent(entry.response.getCardImage(), cardWidth);
-                    TextBubble.createToolTip(response, TextBubble.ABOVE, entry.response.getName());
+                ImageComponent response;
+                if (mCurrentPlayer == entry.getPlayer()) {
+                    response = new ImageComponent(entry.getResponse().getCardImage(), cardWidth);
+                    TextBubble.createToolTip(response, TextBubble.ABOVE, entry.getResponse().getName());
                 } else {
-                    response = new ScaledImageComponent(Card.getCardBackImage(), cardWidth);
+                    response = new ImageComponent(Card.getCardBackImage(), cardWidth);
                     TextBubble.createToolTip(response, TextBubble.ABOVE, "Unknown card");
                 }
 
@@ -139,11 +138,11 @@ public class LogPanel extends JPanel {
             }
 
             // Non-responders
-            Player player = entry.responder;
-            while ((player = mPlayers.getRelative(-1, player)) != entry.player) {
+            Player player = entry.getResponder();
+            while ((player = mPlayers.getRelative(-1, player)) != entry.getPlayer()) {
                 c.gridx--;
 
-                ScaledImageComponent nonResponder = new ScaledImageComponent(
+                ImageComponent nonResponder = new ImageComponent(
                         ImageUtils.getColorConvertedImage(player.getCharacter().getTokenImage(), ColorSpace.CS_GRAY),
                         tokenSize
                 );

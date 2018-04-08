@@ -39,7 +39,7 @@ public class PlaneConstraint extends Constraint {
     private double friction;
 
     /**
-     * Constructs a plane constraint with the given plane.
+     * Constructs a plane constraint with the specified plane.
      *
      * @param plane plane
      * @param restitution the coefficient of restitution, applied to perpendicular forces of objects colliding with the plane
@@ -54,7 +54,7 @@ public class PlaneConstraint extends Constraint {
     }
 
     /**
-     * Applies the constraint to the given particle.
+     * Applies the constraint to the specified particle.
      * <p>
      * If the particle is in front of the plane, nothing occurs.
      * <p>

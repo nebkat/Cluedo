@@ -34,7 +34,7 @@ public class Plane extends Point3d {
     private Vector3d normal;
 
     /**
-     * Constructs a plane at the given point with the given normal.
+     * Constructs a plane at the specified point with the specified normal.
      *
      * @param origin a point on the plane
      * @param normal the normal of the plane
@@ -67,10 +67,10 @@ public class Plane extends Point3d {
     }
 
     /**
-     * Gets the projection of the given point on to the plane.
+     * Gets the projection of the specified point on to the plane.
      *
      * @param point the point to project
-     * @return the projection of the given point on to the plane
+     * @return the projection of the specified point on to the plane
      */
     public Point3d getProjectedPoint(Point3d point) {
         Vector3d delta = new Vector3d();
@@ -85,10 +85,10 @@ public class Plane extends Point3d {
     }
 
     /**
-     * Gets the intersection point of the plane and the given ray
+     * Gets the intersection point of the plane and the specified ray.
      *
      * @param ray the ray for which to calculate an intersection
-     * @return the intersection point of the plane and the given ray
+     * @return the intersection point of the plane and the specified ray
      */
     public Point3d getIntersectionPoint(Ray3d ray) {
         Vector3d delta = new Vector3d();

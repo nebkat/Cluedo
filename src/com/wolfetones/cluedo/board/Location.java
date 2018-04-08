@@ -30,7 +30,7 @@ import com.wolfetones.cluedo.board.tiles.Tile;
 import com.wolfetones.cluedo.card.Room;
 
 /**
- * Interface representing possible locations for a token
+ * Interface representing possible locations for a token.
  */
 public interface Location {
     /**

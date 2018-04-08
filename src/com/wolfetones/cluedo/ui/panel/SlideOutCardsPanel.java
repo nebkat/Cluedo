@@ -26,7 +26,7 @@ package com.wolfetones.cluedo.ui.panel;
 
 import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.config.Config;
-import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.ImageComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -80,7 +80,7 @@ public class SlideOutCardsPanel extends SlideOutPanel {
         }
 
         for (Card card : cards) {
-            ScaledImageComponent image = new ScaledImageComponent(card.getCardImage(), cardWidth);
+            ImageComponent image = new ImageComponent(card.getCardImage(), cardWidth);
 
             JLabel label = new JLabel(card.getName());
             label.setForeground(Color.BLACK);

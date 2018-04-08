@@ -34,7 +34,7 @@ import com.wolfetones.cluedo.card.Weapon;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Suggestion;
 import com.wolfetones.cluedo.ui.Animator;
-import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.ImageComponent;
 
 import javax.swing.*;
 import java.awt.*;
@@ -176,7 +176,7 @@ public class CardAnimationsPanel extends JPanel {
         List<AnimatableCard> chosenCards = List.of(chosenSuspect, chosenWeapon, chosenRoom);
 
         // Add secret folder component
-        ScaledImageComponent secretFolder = new ScaledImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
+        ImageComponent secretFolder = new ImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
         add(secretFolder);
         setComponentZOrder(secretFolder, 0);
         secretFolder.setLocation(getWidth() / 3 - secretFolder.getWidth() / 2, getHeight());
@@ -381,7 +381,7 @@ public class CardAnimationsPanel extends JPanel {
         }
 
         // Add secret folder component
-        ScaledImageComponent secretFolder = new ScaledImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
+        ImageComponent secretFolder = new ImageComponent(ImageUtils.loadImage("envelope.png"), getWidth() / 4);
         add(secretFolder);
         setComponentZOrder(secretFolder, 0);
         secretFolder.setLocation(getWidth() / 2 - secretFolder.getWidth() / 2, getHeight());

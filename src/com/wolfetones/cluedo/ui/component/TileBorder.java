@@ -34,6 +34,7 @@ public class TileBorder implements Border {
     private final char[] mBordersAndCorners;
 
     public static final Color COLOR_WALL = Color.decode("#832f32");
+    private static final Color COLOR_GUESS_WALL = Color.decode("#ffd700");
     private static final Color COLOR_WINDOW = Color.WHITE;
     private static final Color COLOR_CORRIDOR = Color.decode("#666666");
     private static final Color COLOR_PASSAGE = Color.BLACK;
@@ -67,6 +68,10 @@ public class TileBorder implements Border {
                     g.setColor(COLOR_WALL);
                     paintEdge(g, true, x, y, width, height, SIZE_WALL, border);
                     break;
+                case Config.Board.Tiles.GUESS_WALL:
+                    g.setColor(COLOR_GUESS_WALL);
+                    paintEdge(g, true, x, y, width, height, SIZE_WALL, border);
+                    break;
                 case Config.Board.Tiles.WINDOW:
                     g.setColor(COLOR_WINDOW);
                     paintEdge(g, true, x, y, width, height, SIZE_WINDOW, border);
@@ -88,6 +93,10 @@ public class TileBorder implements Border {
             switch (mBordersAndCorners[corner]) {
                 case Config.Board.Tiles.WALL:
                     g.setColor(COLOR_WALL);
+                    paintCorner(g, x, y, width, height, SIZE_WALL, corner);
+                    break;
+                case Config.Board.Tiles.GUESS_WALL:
+                    g.setColor(COLOR_GUESS_WALL);
                     paintCorner(g, x, y, width, height, SIZE_WALL, corner);
                     break;
                 case Config.Board.Tiles.PASSAGE:

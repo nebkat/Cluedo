@@ -40,7 +40,7 @@ public class Dice extends Cube {
     /**
      * Number of dots on each face of the cube.
      */
-    private static final int[] FACE_VALUES = {1, 6, 3, 4, 2, 5};
+    public static final int[] FACE_VALUES = {1, 6, 3, 4, 2, 5};
 
     private Color faceColor = Color.WHITE;
     private Color borderColor = Color.BLACK;

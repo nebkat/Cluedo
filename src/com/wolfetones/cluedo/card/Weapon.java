@@ -32,6 +32,9 @@ public class Weapon extends Token {
         super(name, searchNames, cardImage);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     protected String getCardImageSuffix() {
         return "weapon";

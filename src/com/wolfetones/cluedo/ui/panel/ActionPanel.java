@@ -28,7 +28,7 @@ import com.wolfetones.cluedo.GameController;
 import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.ui.Animator;
-import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.ImageComponent;
 import com.wolfetones.cluedo.ui.component.TextBubble;
 import com.wolfetones.cluedo.util.Util;
 
@@ -114,7 +114,7 @@ public class ActionPanel extends JPanel {
         mButtons.forEach(b -> b.setVisible(b == mButtons.get(BUTTON_DONE)));
     }
 
-    private static class ActionButton extends ScaledImageComponent implements Animator.Scalable {
+    private static class ActionButton extends ImageComponent implements Animator.Scalable {
         private boolean mEnabled = true;
 
         private double mScale = 0.75;

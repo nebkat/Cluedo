@@ -39,7 +39,7 @@ public class Face implements Iterable<Point3d> {
     private Point3d[] vertices;
 
     /**
-     * Constructs a face with the given amount of vertices.
+     * Constructs a face with the specified amount of vertices.
      *
      * @param vertexCount the number of vertices in the face
      */
@@ -51,11 +51,11 @@ public class Face implements Iterable<Point3d> {
     }
 
     /**
-     * Creates an array of faces with the given vertex count.
+     * Creates an array of faces with the specified vertex count.
      *
      * @param faceCount the number of faces
      * @param vertexCount the number of vertices in each face
-     * @return an array of faces with the given vertex count
+     * @return an array of faces with the specified vertex count
      */
     public static Face[] initiateArray(int faceCount, int vertexCount) {
         Face[] faces = new Face[faceCount];
@@ -67,20 +67,20 @@ public class Face implements Iterable<Point3d> {
     }
 
     /**
-     * Sets the vertex at the given index to the vertex provided.
+     * Sets the vertex at the specified index to the vertex provided.
      *
      * @param index index of the vertex to set
-     * @param vertex the vertex to be stored at the given index
+     * @param vertex the vertex to be stored at the specified index
      */
     public void setVertex(int index, Point3d vertex) {
         vertices[index] = vertex;
     }
 
     /**
-     * Gets the vertex at the given index.
+     * Gets the vertex at the specified index.
      *
      * @param index the index of the vertex to set
-     * @return the vertex at the given index
+     * @return the vertex at the specified index
      */
     public Point3d getVertex(int index) {
         return vertices[index];
