@@ -42,6 +42,8 @@ public class SlideOutCardsPanel extends SlideOutPanel {
     }
 
     public void setCards(List<? extends Card> cards) {
+        setVisible(!cards.isEmpty());
+
         removeAll();
 
         Collections.sort(cards);

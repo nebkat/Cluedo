@@ -63,7 +63,7 @@ public class LogPanel extends JPanel {
         update();
     }
 
-    private void update() {
+    public void update() {
         removeAll();
 
         for (int i = 0; i < mLog.size(); i++) {
@@ -105,25 +105,38 @@ public class LogPanel extends JPanel {
 
             int lastXIndex = 5 + mPlayers.size();
 
-            // Responder
-            ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), tokenSize);
-            TextBubble.createToolTip(responder, tooltipHeight, TextBubble.ABOVE, entry.responder.getName());
+            if (entry.type == Game.LogEntry.Type.FinalAccusation) {
+                ScaledImageComponent incorrect = new ScaledImageComponent(ImageUtils.loadImage("icons/accuse.png"), tokenSize);
+                TextBubble.createToolTip(incorrect, tooltipHeight, TextBubble.ABOVE, "Incorrect accusation");
+                c = new GridBagConstraints();
+                c.gridy = i;
+                c.gridx = lastXIndex;
+                add(incorrect);
 
-            ScaledImageComponent response;
-            if (mCurrentPlayer == entry.player) {
-                response = new ScaledImageComponent(entry.response.getCardImage(), cardWidth);
-                TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, entry.response.getName());
-            } else {
-                response = new ScaledImageComponent(Card.getCardBackImage(), cardWidth);
-                TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, "Unknown card");
+                continue;
             }
 
-            c = new GridBagConstraints();
-            c.gridy = i;
-            c.gridx = lastXIndex;
-            add(response, c);
-            c.gridx--;
-            add(responder, c);
+            // Responder
+            if (entry.responder != null) {
+                ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), tokenSize);
+                TextBubble.createToolTip(responder, tooltipHeight, TextBubble.ABOVE, entry.responder.getName());
+
+                ScaledImageComponent response;
+                if (mCurrentPlayer == entry.player) {
+                    response = new ScaledImageComponent(entry.response.getCardImage(), cardWidth);
+                    TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, entry.response.getName());
+                } else {
+                    response = new ScaledImageComponent(Card.getCardBackImage(), cardWidth);
+                    TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, "Unknown card");
+                }
+
+                c = new GridBagConstraints();
+                c.gridy = i;
+                c.gridx = lastXIndex;
+                add(response, c);
+                c.gridx--;
+                add(responder, c);
+            }
 
             // Non-responders
             Player player = entry.responder;
@@ -138,11 +151,6 @@ public class LogPanel extends JPanel {
                 add(nonResponder, c);
             }
         }
-
-        // Resize to fit parent
-        Insets parentInsets = getParent().getInsets();
-        int targetWidth = getParent().getWidth() - parentInsets.left - parentInsets.right;
-        setPreferredSize(new Dimension(targetWidth, getPreferredSize().height));
     }
 }
 

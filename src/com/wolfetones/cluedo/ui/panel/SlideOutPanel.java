@@ -171,7 +171,7 @@ public class SlideOutPanel extends JPanel {
     }
 
     public void reposition() {
-        setSize(mVertical ? getWidth() : getPreferredSize().width, !mVertical ? getHeight() : getPreferredSize().height);
+        setSize(mVertical ? getWidth() : getPreferredSize().width, !mVertical ? getHeight() : Math.min(Config.screenHeightPercentage(0.75f), getPreferredSize().height));
         setLocation(getTargetX(false), getTargetY(false));
     }
 
@@ -188,10 +188,6 @@ public class SlideOutPanel extends JPanel {
     public void paintComponent(Graphics gg) {
         Graphics2D g = (Graphics2D) gg;
         Util.setHighQualityRenderingHints(g);
-
-        if (mShown && !mMouseOver) {
-            g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        }
 
         int arcSize = Config.screenRelativeSize(10);
         int borderSize = Config.screenRelativeSize(5);

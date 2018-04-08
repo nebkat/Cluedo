@@ -37,7 +37,13 @@ public class CardPickerDialog extends JDialog {
 
         setUndecorated(frame != null);
 
-        JPanel panel = new JPanel();
+        JPanel panel = new JPanel() {
+            @Override
+            public void paintComponent(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(
                 BorderFactory.createCompoundBorder(
@@ -46,6 +52,7 @@ public class CardPickerDialog extends JDialog {
                                 Config.screenRelativeSize(10),
                                 Config.screenRelativeSize(10),
                                 Config.screenRelativeSize(10))));
+        panel.setOpaque(false);
 
         if (title != null) {
             JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
@@ -335,15 +342,6 @@ public class CardPickerDialog extends JDialog {
             public void paintComponent(Graphics gg) {
                 Graphics2D g = (Graphics2D) gg;
                 Util.setHighQualityRenderingHints(g);
-
-                // Set alpha
-                float alpha = 0.5f;
-                if (mMouseOver) {
-                    alpha = 1.0f;
-                } else if (mSelected) {
-                    alpha = 0.9f;
-                }
-                //g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, alpha));
 
                 boolean rotate = mCard instanceof Suspect && (mSelected || mMouseOver);
 

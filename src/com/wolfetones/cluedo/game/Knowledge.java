@@ -26,21 +26,18 @@ package com.wolfetones.cluedo.game;
 
 import com.wolfetones.cluedo.card.Card;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Knowledge {
     private Map<Card, Map<Player, Status>> mCardPlayerStatuses = new HashMap<>();
 
     public Knowledge(Player player, PlayerList players, List<Card> cards, List<Card> playerCards, List<Card> undistributedCards) {
+        // Fill card player map
         for (Card card : cards) {
             Map<Player, Status> playerStatusMap = new HashMap<>();
             Iterator<Player> iterator = players.iteratorStartingAfter(player);
             while (iterator.hasNext()) {
-                Player p = iterator.next();
-
+            Player p = iterator.next();
                 Status status = new Status();
                 playerStatusMap.put(p, status);
 
@@ -85,6 +82,24 @@ public class Knowledge {
                 if (p == player) continue;
                 setValue(card, p, Value.NotHolding, fixed);
             }
+
+            // When all of a player's cards have been found, the other cards can be set to not held
+            if (fixed) {
+                int playerCards = mCardPlayerStatuses.size() / (cardPlayerStatuses.size() + 1);
+
+                boolean foundAllCards = mCardPlayerStatuses.keySet().stream()
+                        .map(c -> mCardPlayerStatuses.get(c).get(player))
+                        .filter(Status::isFixed)
+                        .map(Status::getValue)
+                        .filter(Value.Holding::equals)
+                        .count() == playerCards;
+
+                if (foundAllCards) {
+                    for (Card c : mCardPlayerStatuses.keySet()) {
+                        setValue(c, player, Value.NotHolding, true);
+                    }
+                }
+            }
         }
     }
 
@@ -101,7 +116,7 @@ public class Knowledge {
             return value;
         }
 
-        public boolean getFixed() {
+        public boolean isFixed() {
             return fixed;
         }
 
@@ -115,6 +130,6 @@ public class Knowledge {
     }
 
     public enum Value {
-        Holding, NotHolding, SuspectedHolding, Undistributed, Self
+        Holding, NotHolding, SuspectedHolding, SuspectedNotHolding, Undistributed, Self
     }
 }

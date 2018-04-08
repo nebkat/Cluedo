@@ -187,6 +187,7 @@ public class NotesPanel extends JPanel {
         put(Knowledge.Value.Holding, "holding");
         put(Knowledge.Value.NotHolding, "not-holding");
         put(Knowledge.Value.SuspectedHolding, "suspected-holding");
+        put(Knowledge.Value.SuspectedNotHolding, "suspected-not-holding");
         put(Knowledge.Value.Undistributed, "undistributed");
         put(Knowledge.Value.Self, "self");
     }};
@@ -196,6 +197,7 @@ public class NotesPanel extends JPanel {
         put(Knowledge.Value.Holding, "Holding Card");
         put(Knowledge.Value.NotHolding, "Not Holding Card");
         put(Knowledge.Value.SuspectedHolding, "Suspected Holding");
+        put(Knowledge.Value.SuspectedNotHolding, "Suspected Not Holding");
     }};
 
     private static BufferedImage getValueIcon(Knowledge.Value value) {
@@ -300,7 +302,7 @@ public class NotesPanel extends JPanel {
 
             boolean popupEnabled = mStatus.getValue() == Knowledge.Value.Undistributed || mStatus.getValue() == Knowledge.Value.Self;
             setCursor(Cursor.getPredefinedCursor(popupEnabled ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR));
-            setBorder(mStatus.getFixed() ? CHECKBOX_FIXED_BORDER : CHECKBOX_DEFAULT_BORDER);
+            setBorder(mStatus.isFixed() ? CHECKBOX_FIXED_BORDER : CHECKBOX_DEFAULT_BORDER);
 
             repaint();
         }
@@ -342,8 +344,8 @@ public class NotesPanel extends JPanel {
             menu.add(playerItem);
 
             // Add values
-            if (!mStatus.getFixed()) {
-                for (Knowledge.Value value : new Knowledge.Value[]{null, Knowledge.Value.Holding, Knowledge.Value.NotHolding, Knowledge.Value.SuspectedHolding}) {
+            if (!mStatus.isFixed()) {
+                for (Knowledge.Value value : VALUE_NAMES.keySet()) {
                     JMenuItem item;
                     if (value != null) {
                         BufferedImage icon = ImageUtils.getScaledImage(getValueIcon(value), Config.screenRelativeSize(20));
@@ -388,7 +390,7 @@ public class NotesPanel extends JPanel {
 
                 @Override
                 public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    setBorder(mStatus.getFixed() ? CHECKBOX_FIXED_BORDER : CHECKBOX_DEFAULT_BORDER);
+                    setBorder(mStatus.isFixed() ? CHECKBOX_FIXED_BORDER : CHECKBOX_DEFAULT_BORDER);
                 }
 
                 @Override

@@ -92,18 +92,29 @@ public class ImageUtils {
             }
         }
 
-        // Scale to target dimensions
-        AffineTransform scaleTransform = AffineTransform.getScaleInstance(
-                (double) width / image.getWidth(),
-                (double) height / image.getHeight());
+        int originalWidth = image.getWidth();
+        int originalHeight = image.getHeight();
+        int widthDifference = image.getWidth() - width;
+        int heightDifference = image.getHeight() - height;
 
-        AffineTransformOp scaleTransformOp = new AffineTransformOp(scaleTransform,
-                AffineTransformOp.TYPE_BICUBIC);
+        int steps = 5;
+        for (int i = 1; i <= steps; i++) {
+            width = originalWidth - widthDifference * i / steps;
+            height = originalHeight - heightDifference * i / steps;
 
-        BufferedImage scaledImage = scaleTransformOp.filter(image, new BufferedImage(width, height, image.getType()));
+            // Scale to target dimensions
+            AffineTransform scaleTransform = AffineTransform.getScaleInstance(
+                    (double) width / image.getWidth(),
+                    (double) height / image.getHeight());
+
+            AffineTransformOp scaleTransformOp = new AffineTransformOp(scaleTransform,
+                    AffineTransformOp.TYPE_BICUBIC);
+
+            image = scaleTransformOp.filter(image, new BufferedImage(width, height, image.getType()));
+        }
 
         // Ensure optimal color model
-        scaledImage = getCompatibleImage(scaledImage);
+        BufferedImage scaledImage = getCompatibleImage(image);
 
         // Place in cache
         sCache.put(cacheName, new SoftReference<>(scaledImage));

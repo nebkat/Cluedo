@@ -355,18 +355,23 @@ public class GameController {
         mPlayersPanel.setActivePlayer(0);
         mPlayersPanel.hideBubbles();
 
+        passToPlayer(player, null);
+
+        // Update player cards panel
+        mPlayerCardsPanel.setCards(player.getCards());
+
+        // Update undistributed cards panel
+        mUndistributedCardsPanel.setVisible(mGame.getUndistributedCards().isEmpty());
+        mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
+
+        // Update notes panel
         mNotesPanel.setCurrentPlayer(player);
         mNotesSlideOutPanel.reposition();
 
+        // Update history panel
         mHistoryPanel.setCurrentPlayer(player);
+        mHistorySlideOutPanel.setVisible(!mGame.getLog().isEmpty());
         mHistorySlideOutPanel.reposition();
-
-        passToPlayer(player, null);
-
-        mPlayerCardsPanel.setCards(player.getCards());
-
-        mUndistributedCardsPanel.setVisible(mGame.getUndistributedCards().isEmpty());
-        mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
 
         mOutputPanel.clear();
 
@@ -392,8 +397,12 @@ public class GameController {
             commands.add(HIDDEN_COMMAND_PREFIX + COMMAND_HELP);
 
             mActionPanel.updateStatus(mGame);
+
+            // Read command
             String[] args = readCommand("Choose action", commands);
             String command = args[0];
+
+            // Hide all actions except done
             mActionPanel.hideAllExceptDone();
 
             if (command == null) {
@@ -416,11 +425,17 @@ public class GameController {
             } else if (command.equals(COMMAND_ACCUSE)) {
                 performAccuse(player, args);
             } else if (command.equals(COMMAND_NOTES)) {
-                performNotes(player);
+                performNotes();
             } else if (command.equals(COMMAND_LOG)) {
-                performLog(player);
+                performLog();
             }
         }
+
+        // Hide all panels
+        mPlayerCardsPanel.slideOut();
+        mUndistributedCardsPanel.slideOut();
+        mNotesSlideOutPanel.slideOut();
+        mHistorySlideOutPanel.slideOut();
     }
 
     private void performQuit() {
@@ -577,6 +592,11 @@ public class GameController {
     }
 
     private void performQuestion(Player player, String[] args) {
+        // Can only question in a room
+        if (!mGame.getCurrentPlayerLocation().isRoom()) {
+            return;
+        }
+
         Suggestion suggestion;
         if (args.length == 1) {
             suggestion = createSuggestion(mGame.getCurrentPlayerLocation().asRoom());
@@ -607,17 +627,34 @@ public class GameController {
 
         Player matchingPlayer = mGame.poseQuestion(suggestion);
 
+        mOutputPanel.clear();
+        System.out.println(player.getName() + " suggested " + suggestion.asHumanReadableString());
+
         if (matchingPlayer != null) {
+            System.out.println(matchingPlayer.getName() + " has one of the suggestion cards");
+
             List<Card> matchingCards = matchingPlayer.matchingSuggestionCards(suggestion);
 
             // Update notes panel
             mNotesPanel.updateCards(suggestion.asList());
+
+            // Hide all panels that could reveal extra info
+            mPlayerCardsPanel.slideOut();
+            mNotesSlideOutPanel.slideOut();
+            mHistorySlideOutPanel.slideOut();
 
             // Show response text bubbles
             mPlayersPanel.showQuestionResponses(player, suggestion, matchingPlayer, () -> mInputPanel.append(COMMAND_SHOW));
 
             // Request that game is passed to matching player to show a card (text or UI)
             readCommand("Pass to " + matchingPlayer.getName() + " to show a card", COMMAND_SHOW);
+
+            // Hide all panels again in case user opened them while waiting to show
+            mPlayerCardsPanel.slideOut();
+            mNotesSlideOutPanel.slideOut();
+            mHistorySlideOutPanel.slideOut();
+
+            // Pass to player
             passToPlayer(matchingPlayer, "temporarily");
 
             // Let matching player choose card to show
@@ -643,6 +680,11 @@ public class GameController {
 
         // Update notes panel
         mNotesPanel.updateCards(suggestion.asList());
+
+        // Update history panel
+        mHistoryPanel.update();
+        mHistoryPanel.setVisible(true);
+        mHistorySlideOutPanel.reposition();
     }
 
     private void performAccuse(Player player, String[] args) {
@@ -675,71 +717,16 @@ public class GameController {
         }
     }
 
-    private void performLog(Player player) {
-        List<Game.LogEntry> log = mGame.getLog();
-
-        if (log.isEmpty()) {
+    private void performLog() {
+        if (mGame.getLog().isEmpty()) {
             System.out.println("No entries in log");
-        }
-
-        for (int i = 0; i < log.size(); i++) {
-            Game.LogEntry entry = log.get(i);
-            String text = (i + 1) + ". ";
-            if (entry.player == player) {
-                text += "You";
-            }
-            if (entry.type == Game.LogEntry.Type.Question) {
-                text += " suggested " + entry.suggestion.asHumanReadableString() + ", ";
-                if (entry.responder != null) {
-                    if (entry.responder == player) {
-                        text += "you";
-                    } else {
-                        text += entry.responder.getName();
-                    }
-                    text += " showed a card";
-                } else {
-                    text += "nobody had any card";
-                }
-            } else if (entry.type == Game.LogEntry.Type.FinalAccusation) {
-                text += " made a final accusation of " + entry.suggestion.asHumanReadableString() + " ";
-                String was = entry.player == player ? "were" : "was";
-                if (entry.correct) {
-                    text += "and " + was + " correct";
-                } else {
-                    text += "but" + was + " incorrect";
-                }
-            }
-
-            System.out.println(text);
+        } else {
+            mHistorySlideOutPanel.slideIn();
         }
     }
 
-    private void performNotes(Player player) {
-        System.out.println("N O T E S");
-        System.out.println("---------");
-
-        System.out.println();
-
-        printKnowledge(mGame.getBoard().getSuspects(), player, "SUSPECTS");
-        printKnowledge(mGame.getBoard().getWeapons(), player, "WEAPONS");
-        printKnowledge(mGame.getBoard().getRooms(), player, "ROOMS");
-    }
-
-    private void printKnowledge(List<? extends Card> cards, Player player, String name) {
-        System.out.println(name);
-        for (Card card : cards) {
-            System.out.print(card.getName());
-
-            System.out.print(new String(new char[18 - card.getName().length()]).replace("\0", " "));
-
-            if (mGame.getUndistributedCards().contains(card)) {
-                System.out.print("A");
-            } else if (player.hasCard(card)) {
-                System.out.print("X");
-            }
-            System.out.println();
-        }
-        System.out.println();
+    private void performNotes() {
+        mNotesSlideOutPanel.slideIn();
     }
 
     private void setClickAction(Runnable clickAction, Component clickArea, Cursor cursor) {
@@ -1017,7 +1004,8 @@ public class GameController {
         mOutputPanel = new OutputPanel();
         mInputPanel = new InputPanel();
 
-        JScrollPane outputScrollPane = new JScrollPane(mOutputPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane outputScrollPane = new JScrollPane(mOutputPanel,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         terminal.add(outputScrollPane);
         terminal.add(mInputPanel);
