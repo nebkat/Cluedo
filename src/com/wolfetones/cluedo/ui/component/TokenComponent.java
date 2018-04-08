@@ -33,13 +33,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
-public abstract class TokenComponent extends JComponent {
+public class TokenComponent extends JComponent {
     private int mTileSize;
-    protected Token mToken;
+    private Token mToken;
 
     private BufferedImage mTokenImage;
 
-    protected TokenComponent(Token token, int tileSize) {
+    public TokenComponent(Token token, int tileSize) {
         mToken = token;
         mTileSize = tileSize;
         setSize(tileSize, tileSize);
@@ -48,6 +48,8 @@ public abstract class TokenComponent extends JComponent {
         token.setCoordinatesListener(this::updateCoordinates);
 
         mTokenImage = ImageUtils.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
+
+        TextBubble.createToolTip(this, tileSize, TextBubble.ABOVE, token.getName());
     }
 
     @Override

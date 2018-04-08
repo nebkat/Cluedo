@@ -99,6 +99,10 @@ public class NotesPanel extends JPanel {
         }
     }
 
+    public void update() {
+        updateCards(mCards);
+    }
+
     public void updateCards(List<Card> cards) {
         cards.forEach(this::updateCard);
     }

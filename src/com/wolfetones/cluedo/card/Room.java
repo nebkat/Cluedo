@@ -26,7 +26,10 @@ package com.wolfetones.cluedo.card;
 
 import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.Location;
+import com.wolfetones.cluedo.config.Config;
+import com.wolfetones.cluedo.ui.Animator;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +64,8 @@ public class Room extends Card implements Location {
 
     private List<RoomTile> mTiles = new ArrayList<>();
     private List<RoomTile> mEntranceCorridors = new ArrayList<>();
+
+    private JComponent mLabel;
 
     /**
      * Center coordinates calculations
@@ -135,15 +140,6 @@ public class Room extends Card implements Location {
     }
 
     /**
-     * A list of all of the tiles in the room.
-     *
-     * @return A list of all the tiles in the room.
-     */
-    public List<RoomTile> getRoomTiles() {
-        return mTiles;
-    }
-
-    /**
      * Adds a {@code RoomTile} which has a door/leads to an adjacent {@code CorridorTile}.
      *
      * @param tile Tile which has a door.
@@ -189,8 +185,19 @@ public class Room extends Card implements Location {
     private void updateTokenLocations() {
         int count = mTokens.size();
 
+        float centerX = getCenterX() - 0.5f;
+        float centerY = getCenterY() - 0.5f;
+
         // No tokens to update
         if (count == 0) {
+            // Move label back to center
+            if (mLabel != null) {
+                Animator.getInstance().animate(mLabel)
+                        .translate(mLabel.getX(), (int) (centerY * mLabel.getHeight()))
+                        .setDuration(200)
+                        .start();
+            }
+
             return;
         }
 
@@ -198,11 +205,19 @@ public class Room extends Card implements Location {
         int[] layout = TOKEN_LAYOUTS[count - 1];
 
         int tokenIndex = 0;
-
-        float centerX = getCenterX() - 0.5f;
-        float centerY = getCenterY() - 0.5f;
-
         int rows = layout.length;
+
+        // Move label above top row
+        if (mLabel != null) {
+            float targetY = centerY - (float) (rows + 1) / 2;
+
+            Animator.getInstance().animate(mLabel)
+                    .translate(mLabel.getX(), (int) (targetY * mLabel.getHeight()))
+                    .setDuration(200)
+                    .start();
+        }
+
+        // Move tokens
         float relativeRow = (float) (1 - rows) / 2f;
         for (int i = 0; i < rows; i++, relativeRow++) {
             int columns = layout[i];
@@ -211,6 +226,19 @@ public class Room extends Card implements Location {
                 mTokens.get(tokenIndex++).setCoordinates(relativeColumn + centerX, relativeRow + centerY);
             }
         }
+    }
+
+    /**
+     * Sets the label component associated with this room.
+     *
+     * Used to move the label when tokens enter the room.
+     *
+     * @param label the label component associated with this room.
+     */
+    public void setLabel(JComponent label) {
+        mLabel = label;
+
+        updateTokenLocations();
     }
 
     @Override

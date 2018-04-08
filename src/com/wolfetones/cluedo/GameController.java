@@ -1062,24 +1062,26 @@ public class GameController {
             JLabel label = new JLabel(r.getName().toUpperCase());
             label.setHorizontalAlignment(JLabel.CENTER);
             label.setVerticalAlignment(JLabel.CENTER);
-            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20)));
+            label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, mTileSize * 3 / 5));
 
             int centerX = (int) (r.getCenterX() * mTileSize);
             int centerY = (int) (r.getCenterY() * mTileSize);
 
-            label.setBounds(centerX - 250, centerY - 100, 500, 200);
+            label.setBounds(centerX - 250, centerY - mTileSize / 2, 500, mTileSize);
 
             mBoardLayeredPane.add(label, BOARD_LAYER_ROOM_NAMES);
+
+            r.setLabel(label);
         }
 
         // Add suspect tokens
         for (Suspect s : mGame.getBoard().getSuspects()) {
-            mBoardLayeredPane.add(new SuspectTokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new TokenComponent(s, mTileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add weapon tokens
         for (Weapon w : mGame.getBoard().getWeapons()) {
-            mBoardLayeredPane.add(new WeaponTokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
+            mBoardLayeredPane.add(new TokenComponent(w, mTileSize), BOARD_LAYER_TOKENS);
         }
 
         // Add tiles
