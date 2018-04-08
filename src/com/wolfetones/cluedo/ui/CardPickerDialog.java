@@ -160,6 +160,8 @@ public class CardPickerDialog extends JDialog {
                 (mRoomCardPicker == null || mRoomCardPicker.getResult() != null) &&
                 (mUserCardPicker == null || mUserCardPicker.getResult() != null)
         );
+
+        mConfirmButton.requestFocus();
     }
 
     private Player getPlayerResult() {
