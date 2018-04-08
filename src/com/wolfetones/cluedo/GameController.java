@@ -315,7 +315,8 @@ public class GameController {
 
             // Interrupt/end of text
             if (line.equals("\3")) {
-                return new String[] {null};
+                command = new String[] {null};
+                break;
             }
 
             // Trim, remove duplicate spaces, and use lower case
@@ -520,7 +521,7 @@ public class GameController {
             corridorTiles.forEach(t -> t.getButton().setDoorHint(0));
         }
 
-        // May have moved directly to another move using path finding/UI
+        // May have moved directly to another room using path finding/UI
         if (mGame.getTurnRemainingMoves() == 0) {
             return;
         }
