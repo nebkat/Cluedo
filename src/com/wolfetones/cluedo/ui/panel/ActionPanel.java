@@ -73,7 +73,7 @@ public class ActionPanel extends JPanel {
     private List<ActionButton> mButtons = new ArrayList<>();
 
     @SuppressWarnings("SuspiciousNameCombination")
-    public ActionPanel(Consumer<String> actionCommandListener, int iconWidth) {
+    public ActionPanel(Consumer<String> actionCommandListener, int iconSize) {
         super();
 
         setOpaque(false);
@@ -82,7 +82,7 @@ public class ActionPanel extends JPanel {
         // Push everything to bottom and ensure text bubble column width
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 1;
-        add(Box.createHorizontalStrut(iconWidth), c);
+        add(Box.createGlue(), c);
 
         // Add buttons
         c = new GridBagConstraints();
@@ -96,7 +96,7 @@ public class ActionPanel extends JPanel {
             c.gridy++;
             add(button, c);
 
-            button.setTextBubble(TextBubble.createToolTip(button, iconWidth * 3 / 4, TextBubble.RIGHT, description.text));
+            button.setTextBubble(TextBubble.createToolTip(button, iconSize * 3 / 4, TextBubble.RIGHT, description.text));
         }
     }
 

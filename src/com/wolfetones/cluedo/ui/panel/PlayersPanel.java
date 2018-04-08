@@ -60,8 +60,7 @@ public class PlayersPanel extends JPanel {
     private int mTokenHighlightOffset;
     private JComponent mTokenHighlight;
 
-    @SuppressWarnings("SuspiciousNameCombination")
-    public PlayersPanel(PlayerList players, int iconWidth) {
+    public PlayersPanel(PlayerList players, int iconSize) {
         super();
 
         mPlayers = players;
@@ -79,7 +78,7 @@ public class PlayersPanel extends JPanel {
             components.panel = panel;
             panel.setOpaque(false);
 
-            PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(), iconWidth, iconWidth);
+            PlayerIconComponent icon = new PlayerIconComponent(player.getCharacter().getTokenImage(), iconSize, iconSize);
             components.icon = icon;
             panel.add(icon);
 
@@ -98,10 +97,10 @@ public class PlayersPanel extends JPanel {
             mPlayerComponents.put(player, components);
         }
 
-        mTokenHighlight = new ScaledImageComponent(ImageUtils.loadImage("token-highlight.png"),
-                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth),
-                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconWidth));
-        mTokenHighlightOffset = (int)((TOKEN_HIGHLIGHT_TOKEN_RATIO - 1.0) * iconWidth / 2);
+        mTokenHighlight = new ScaledImageComponent(ImageUtils.loadImage("tokens/token-highlight.png"),
+                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconSize),
+                (int) (TOKEN_HIGHLIGHT_TOKEN_RATIO * iconSize));
+        mTokenHighlightOffset = (int)((TOKEN_HIGHLIGHT_TOKEN_RATIO - 1.0) * iconSize / 2);
         mTokenHighlight.setLocation(-mTokenHighlightOffset, -mTokenHighlightOffset + Config.screenRelativeSize(2));
 
         add(mTokenHighlight);
