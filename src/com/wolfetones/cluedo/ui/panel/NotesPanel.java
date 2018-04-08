@@ -40,10 +40,8 @@ import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 public class NotesPanel extends JPanel {
     private PlayerList mPlayers;
@@ -196,7 +194,7 @@ public class NotesPanel extends JPanel {
         put(Knowledge.Value.Self, "self");
     }};
 
-    private static final Map<Knowledge.Value, String> VALUE_NAMES = new HashMap<>() {{
+    private static final Map<Knowledge.Value, String> VALUE_NAMES = new LinkedHashMap<>() {{
         put(null, "Unknown");
         put(Knowledge.Value.Holding, "Holding Card");
         put(Knowledge.Value.NotHolding, "Not Holding Card");
