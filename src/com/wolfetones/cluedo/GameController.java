@@ -506,6 +506,7 @@ public class GameController {
             corridorTiles.sort(Comparator.comparingInt(Tile::getX));
             String[] validCommands = new String[corridorTiles.size()];
             for (int i = 0; i < corridorTiles.size(); i++) {
+                corridorTiles.get(i).getButton().setDoorHint(i + 1);
                 validCommands[i] = Integer.toString(i + 1);
             }
             String entranceCommand = readCommand("Choose room exit (or use board tiles)", validCommands)[0];
@@ -515,6 +516,8 @@ public class GameController {
 
                 mGame.moveTo(corridorTiles.get(entranceCorridor).getDoorTile());
             }
+
+            corridorTiles.forEach(t -> t.getButton().setDoorHint(0));
         }
 
         // May have moved directly to another move using path finding/UI

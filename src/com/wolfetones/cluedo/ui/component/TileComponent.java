@@ -25,11 +25,11 @@
 package com.wolfetones.cluedo.ui.component;
 
 import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 
 public class TileComponent extends JComponent {
     public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
@@ -44,9 +44,12 @@ public class TileComponent extends JComponent {
     public static final Color COLOR_PATHFINDING_INVALID = Color.RED.darker();
     public static final Color COLOR_PATHFINDING_INVALID_ACTIVE = Color.RED;
 
+    private static final Font DOOR_HINT_FONT = new Font(Font.SANS_SERIF, Font.BOLD, Config.screenRelativeSize(20));
+
     private final Tile mTile;
 
     private Color mTemporaryBackground;
+    private int mDoorHint;
 
     public TileComponent(Tile tile) {
         super();
@@ -70,17 +73,28 @@ public class TileComponent extends JComponent {
         repaint();
     }
 
+    public void setDoorHint(int hint) {
+        mDoorHint = hint;
+        repaint();
+    }
+
     @Override
     public void paintComponent(Graphics g) {
+        if (!isOpaque()) return;
+
         Util.setHighQualityRenderingHints(g);
 
-        if (isOpaque()) {
-            if (mTemporaryBackground == null) {
-                g.setColor(getBackground());
-            } else {
-                g.setColor(mTemporaryBackground);
-            }
-            g.fillRect(0, 0, getWidth(), getHeight());
+        if (mTemporaryBackground == null) {
+            g.setColor(getBackground());
+        } else {
+            g.setColor(mTemporaryBackground);
+        }
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        if (mDoorHint > 0) {
+            g.setColor(Color.BLACK);
+            g.setFont(DOOR_HINT_FONT);
+            Util.drawCenteredString(Integer.toString(mDoorHint), 0, 0, getWidth(), getHeight(), g);
         }
     }
 }
