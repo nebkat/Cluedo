@@ -49,7 +49,7 @@ public class TokenComponent extends JComponent {
 
         mTokenImage = ImageUtils.getScaledImage(mToken.getTokenImage(), getWidth(), getHeight());
 
-        TextBubble.createToolTip(this, tileSize, TextBubble.ABOVE, token.getName());
+        TextBubble.createToolTip(this, TextBubble.ABOVE, token.getName());
     }
 
     @Override

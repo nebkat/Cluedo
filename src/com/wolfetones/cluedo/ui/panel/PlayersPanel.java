@@ -82,7 +82,9 @@ public class PlayersPanel extends JPanel {
             components.icon = icon;
             panel.add(icon);
 
-            TextBubble bubble = new TextBubble(icon.getHeight() * 3 / 4, TextBubble.RIGHT);
+            TextBubble.createToolTip(icon, TextBubble.BELOW, player.getName());
+
+            TextBubble bubble = new TextBubble(TextBubble.RIGHT);
             components.bubble = bubble;
             panel.add(bubble);
 

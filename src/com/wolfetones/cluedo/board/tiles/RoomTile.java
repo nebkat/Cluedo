@@ -31,14 +31,10 @@ import com.wolfetones.cluedo.card.Token;
  * Tile within a {@link Room}
  */
 public class RoomTile extends TokenOccupiableTile {
-    /**
-     * The {@code Room} that this tile is in.
-     */
+    /** The {@code Room} that this tile is in. */
     private Room mRoom;
 
-    /**
-     * The {@link CorridorTile} this {@code RoomTile} leads to through a door
-     */
+    /** The {@link CorridorTile} this {@code RoomTile} leads to through a door */
     private CorridorTile mDoorTile;
 
     public RoomTile(int x, int y, Room room) {
@@ -50,6 +46,7 @@ public class RoomTile extends TokenOccupiableTile {
 
     /**
      * The {@code Room} that this tile is in.
+     *
      * @return the {@code Room} that this tile is in.
      */
     public Room getRoom() {

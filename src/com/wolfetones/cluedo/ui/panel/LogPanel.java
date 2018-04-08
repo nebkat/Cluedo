@@ -75,7 +75,7 @@ public class LogPanel extends JPanel {
 
             // Asker
             ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getTokenImage(), tokenSize);
-            TextBubble.createToolTip(asker, tooltipHeight, TextBubble.ABOVE, entry.player.getName());
+            TextBubble.createToolTip(asker, TextBubble.ABOVE, entry.player.getName());
             GridBagConstraints c = new GridBagConstraints();
             c.gridy = i;
             c.insets = new Insets(0, 0, Config.screenRelativeSize(2), 0);
@@ -86,9 +86,9 @@ public class LogPanel extends JPanel {
             ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getCardImage(), cardWidth);
             ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), cardWidth);
 
-            TextBubble.createToolTip(suggestedSuspect, tooltipHeight, TextBubble.ABOVE, entry.suggestion.suspect.getName());
-            TextBubble.createToolTip(suggestedWeapon, tooltipHeight, TextBubble.ABOVE, entry.suggestion.weapon.getName());
-            TextBubble.createToolTip(suggestedRoom, tooltipHeight, TextBubble.ABOVE, entry.suggestion.room.getName());
+            TextBubble.createToolTip(suggestedSuspect, TextBubble.ABOVE, entry.suggestion.suspect.getName());
+            TextBubble.createToolTip(suggestedWeapon, TextBubble.ABOVE, entry.suggestion.weapon.getName());
+            TextBubble.createToolTip(suggestedRoom, TextBubble.ABOVE, entry.suggestion.room.getName());
 
             c = new GridBagConstraints();
             c.gridy = i;
@@ -107,7 +107,7 @@ public class LogPanel extends JPanel {
 
             if (entry.type == Game.LogEntry.Type.FinalAccusation) {
                 ScaledImageComponent incorrect = new ScaledImageComponent(ImageUtils.loadImage("icons/accuse.png"), tokenSize);
-                TextBubble.createToolTip(incorrect, tooltipHeight, TextBubble.ABOVE, "Incorrect accusation");
+                TextBubble.createToolTip(incorrect, TextBubble.ABOVE, "Incorrect accusation");
                 c = new GridBagConstraints();
                 c.gridy = i;
                 c.gridx = lastXIndex;
@@ -119,15 +119,15 @@ public class LogPanel extends JPanel {
             // Responder
             if (entry.responder != null) {
                 ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), tokenSize);
-                TextBubble.createToolTip(responder, tooltipHeight, TextBubble.ABOVE, entry.responder.getName());
+                TextBubble.createToolTip(responder, TextBubble.ABOVE, entry.responder.getName());
 
                 ScaledImageComponent response;
                 if (mCurrentPlayer == entry.player) {
                     response = new ScaledImageComponent(entry.response.getCardImage(), cardWidth);
-                    TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, entry.response.getName());
+                    TextBubble.createToolTip(response, TextBubble.ABOVE, entry.response.getName());
                 } else {
                     response = new ScaledImageComponent(Card.getCardBackImage(), cardWidth);
-                    TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, "Unknown card");
+                    TextBubble.createToolTip(response, TextBubble.ABOVE, "Unknown card");
                 }
 
                 c = new GridBagConstraints();
@@ -147,7 +147,7 @@ public class LogPanel extends JPanel {
                         ImageUtils.getColorConvertedImage(player.getCharacter().getTokenImage(), ColorSpace.CS_GRAY),
                         tokenSize
                 );
-                TextBubble.createToolTip(nonResponder, tooltipHeight, TextBubble.ABOVE, player.getName());
+                TextBubble.createToolTip(nonResponder, TextBubble.ABOVE, player.getName());
                 add(nonResponder, c);
             }
         }

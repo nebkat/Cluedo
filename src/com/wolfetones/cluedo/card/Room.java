@@ -24,6 +24,7 @@
 
 package com.wolfetones.cluedo.card;
 
+import com.wolfetones.cluedo.board.tiles.PassageTile;
 import com.wolfetones.cluedo.board.tiles.RoomTile;
 import com.wolfetones.cluedo.board.Location;
 import com.wolfetones.cluedo.config.Config;
@@ -61,6 +62,7 @@ public class Room extends Card implements Location {
 
     private boolean mIsGuessRoom;
     private Room mPassageRoom;
+    private PassageTile mPassageTile;
 
     private List<RoomTile> mTiles = new ArrayList<>();
     private List<RoomTile> mEntranceCorridors = new ArrayList<>();
@@ -91,6 +93,10 @@ public class Room extends Card implements Location {
 
         mTileSumX += tile.getX();
         mTileSumY += tile.getY();
+
+        if (tile instanceof PassageTile) {
+            mPassageTile = (PassageTile) tile;
+        }
     }
 
     /**
@@ -137,6 +143,10 @@ public class Room extends Card implements Location {
 
     public Room getPassageRoom() {
         return mPassageRoom;
+    }
+
+    public PassageTile getPassageTile() {
+        return mPassageTile;
     }
 
     /**

@@ -38,6 +38,7 @@ public class CorridorTile extends TokenOccupiableTile implements Location {
     public void setNeighbours(Tile left, Tile up, Tile right, Tile down) {
         super.setNeighbours(left, up, right, down);
 
+        // All neighbouring corridor tiles are traversable
         if (left instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) left);
         if (up instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) up);
         if (right instanceof CorridorTile) mTokenTraversableNeighbours.add((TokenOccupiableTile) right);
@@ -107,6 +108,11 @@ public class CorridorTile extends TokenOccupiableTile implements Location {
                 (t instanceof RoomTile && mTokenTraversableNeighbours.contains(t));
     }
 
+    /**
+     * Adds a room tile connected to this tile by a door to the list of traversable neighbours.
+     *
+     * @param t room tile connected to this tile by a door
+     */
     public void addDoor(RoomTile t) {
         mTokenTraversableNeighbours.add(t);
     }

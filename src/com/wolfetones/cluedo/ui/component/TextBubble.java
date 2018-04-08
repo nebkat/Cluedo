@@ -36,6 +36,7 @@ import java.awt.event.MouseEvent;
 public class TextBubble extends JComponent implements Animator.Scalable {
     private static final float FONT_PERCENTAGE = 0.45f;
     private static final float POINTER_SIZE_PERCENTAGE = 0.2f;
+    private static final int DEFAULT_HEIGHT = Config.screenRelativeSize(40);
 
     public static final int LEFT = 0;
     public static final int ABOVE = 1;
@@ -51,15 +52,15 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
     private double mScale = 0.0;
 
-    public TextBubble(int height, int direction) {
+    public TextBubble(int direction) {
         super();
 
         mDirection = direction;
-        mPointerSize = (int) (height * POINTER_SIZE_PERCENTAGE);
+        mPointerSize = (int) (DEFAULT_HEIGHT * POINTER_SIZE_PERCENTAGE);
 
         setLayout(new FlowLayout(FlowLayout.LEFT, Config.screenRelativeSize(5), 0));
 
-        int fontHeight = (int) (height * FONT_PERCENTAGE);
+        int fontHeight = (int) (DEFAULT_HEIGHT * FONT_PERCENTAGE);
 
         mLabel = new JLabel();
         mButton = new JButton();
@@ -81,8 +82,8 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         add(mButton);
 
         int textHeight = mLabel.getPreferredSize().height;
-        int textMargin = (height - textHeight) / 2;
-        int pointerWidth = (int) (height * POINTER_SIZE_PERCENTAGE);
+        int textMargin = (DEFAULT_HEIGHT - textHeight) / 2;
+        int pointerWidth = (int) (DEFAULT_HEIGHT * POINTER_SIZE_PERCENTAGE);
 
         setBorder(BorderFactory.createEmptyBorder(
                 textMargin + (direction == BELOW ? pointerWidth : 0),
@@ -98,8 +99,8 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         updateSize();
     }
 
-    public static TextBubble createToolTip(JComponent component, int height, int direction, String text) {
-        TextBubble bubble = new TextBubble(height, direction);
+    public static TextBubble createToolTip(JComponent component, int direction, String text) {
+        TextBubble bubble = new TextBubble(direction);
         bubble.setText(text);
         JWindow window = new JWindow();
         window.add(bubble);

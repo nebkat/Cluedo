@@ -24,12 +24,16 @@
 
 package com.wolfetones.cluedo.ui.component;
 
+import com.wolfetones.cluedo.board.tiles.PassageTile;
 import com.wolfetones.cluedo.board.tiles.Tile;
+import com.wolfetones.cluedo.card.Room;
 import com.wolfetones.cluedo.config.Config;
+import com.wolfetones.cluedo.util.ImageUtils;
 import com.wolfetones.cluedo.util.Util;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 
 public class TileComponent extends JComponent {
     public static final Color COLOR_CORRIDOR_A = Color.decode("#e4c17f");
@@ -57,6 +61,14 @@ public class TileComponent extends JComponent {
         mTile = tile;
 
         setOpaque(true);
+
+        if (tile instanceof PassageTile) {
+            Room passageRoom = ((PassageTile) tile).getRoom().getPassageRoom();
+
+            int direction = mTile.getY() > Config.Board.HEIGHT / 2 ? TextBubble.BELOW : TextBubble.ABOVE;
+
+            TextBubble.createToolTip(this, direction, "Passage to " + passageRoom.getName());
+        }
     }
 
     public Tile getTile() {
@@ -79,8 +91,10 @@ public class TileComponent extends JComponent {
     }
 
     @Override
-    public void paintComponent(Graphics g) {
+    public void paintComponent(Graphics gg) {
         if (!isOpaque()) return;
+
+        Graphics2D g = (Graphics2D) gg;
 
         Util.setHighQualityRenderingHints(g);
 
@@ -95,6 +109,22 @@ public class TileComponent extends JComponent {
             g.setColor(Color.BLACK);
             g.setFont(DOOR_HINT_FONT);
             Util.drawCenteredString(Integer.toString(mDoorHint), 0, 0, getWidth(), getHeight(), g);
+        }
+
+        if (mTile instanceof PassageTile) {
+            Room passageRoom = ((PassageTile) mTile).getRoom().getPassageRoom();
+
+            AffineTransform oldTransform = g.getTransform();
+
+            // Calculate angle to other room
+            double angle = Math.atan2(passageRoom.getCenterY() - mTile.getY(), passageRoom.getCenterX() - mTile.getX());
+            g.rotate(angle, getWidth() / 2, getHeight() / 2);
+
+            // Draw arrow
+            g.drawImage(ImageUtils.getScaledImage(ImageUtils.loadImage("passage-arrow.png"), getWidth()), 0, 0, null);
+
+            // Reset transform
+            g.setTransform(oldTransform);
         }
     }
 }

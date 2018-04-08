@@ -96,7 +96,7 @@ public class ActionPanel extends JPanel {
             c.gridy++;
             add(button, c);
 
-            button.setTextBubble(TextBubble.createToolTip(button, iconSize * 3 / 4, TextBubble.RIGHT, description.text));
+            button.setTextBubble(TextBubble.createToolTip(button, TextBubble.RIGHT, description.text));
         }
     }
 
