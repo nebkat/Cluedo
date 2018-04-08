@@ -311,7 +311,7 @@ public class CardPickerDialog extends JDialog {
 
                 mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(16));
 
-                mImage = ImageUtils.getScaledImage(mCard.getCardImage(), (int) Config.screenRelativeSize(150.0 * relativeSize));
+                mImage = ImageUtils.getScaledImage(mCard.getCardImage(), (int) Config.screenRelativeSize(125.0 * relativeSize));
 
                 setPreferredSize(new Dimension(mImage.getWidth(), mImage.getHeight() + Config.screenRelativeSize(20)));
 
