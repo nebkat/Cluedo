@@ -679,7 +679,7 @@ public class GameController {
         }
 
         // Update notes panel
-        mNotesPanel.updateCards(suggestion.asList());
+        mNotesPanel.update();
 
         // Update history panel
         mHistoryPanel.update();
