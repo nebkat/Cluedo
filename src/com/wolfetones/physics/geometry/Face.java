@@ -110,14 +110,9 @@ public class Face implements Iterable<Point3d> {
      * @return the normal vector of the face
      */
     public Vector3d getNormal() {
-        Vector3d v1 = new Vector3d();
-        Vector3d v2 = new Vector3d();
-
-        v1.sub(vertices[1], vertices[0]);
-        v2.sub(vertices[2], vertices[1]);
-
         Vector3d normal = new Vector3d();
-        normal.cross(v1, v2);
+        normal.cross(getVertexDelta(0, 1), getVertexDelta(1, 2));
+        normal.normalize();
 
         return normal;
     }
