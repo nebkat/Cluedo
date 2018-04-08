@@ -83,7 +83,7 @@ public class PlayersPanel extends JPanel {
             components.icon = icon;
             panel.add(icon);
 
-            TextBubble bubble = new TextBubble(icon.getHeight());
+            TextBubble bubble = new TextBubble(icon.getHeight() * 3 / 4, TextBubble.RIGHT);
             components.bubble = bubble;
             panel.add(bubble);
 

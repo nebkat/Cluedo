@@ -33,8 +33,12 @@ public class PlayerList extends ArrayList<Player> {
         super();
     }
 
+    public Player getRelative(int index, Player relative) {
+        return get(Math.floorMod(index + indexOf(relative), size()));
+    }
+
     public Player getAfter(int index, Player after) {
-        return get((index + indexOf(after) + 1) % size());
+        return getRelative(index + 1, after);
     }
 
     public Iterator<Player> iteratorStartingAfter(Player player) {

@@ -30,11 +30,20 @@ import com.wolfetones.cluedo.ui.Animator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class TextBubble extends JComponent implements Animator.Scalable {
-    private static final float FONT_PERCENTAGE = 0.30f;
-    private static final float BACKGROUND_PADDING_PERCENTAGE = 0.20f;
-    private static final float POINTER_WIDTH_PERCENTAGE = 0.15f;
+    private static final float FONT_PERCENTAGE = 0.45f;
+    private static final float POINTER_SIZE_PERCENTAGE = 0.2f;
+
+    public static final int LEFT = 0;
+    public static final int ABOVE = 1;
+    public static final int RIGHT = 2;
+    public static final int BELOW = 3;
+
+    private int mDirection;
+    private int mPointerSize;
 
     private JLabel mLabel;
     private JButton mButton;
@@ -42,8 +51,11 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
     private double mScale = 0.0;
 
-    public TextBubble(int height) {
+    public TextBubble(int height, int direction) {
         super();
+
+        mDirection = direction;
+        mPointerSize = (int) (height * POINTER_SIZE_PERCENTAGE);
 
         setLayout(new FlowLayout(FlowLayout.LEFT, Config.screenRelativeSize(5), 0));
 
@@ -70,13 +82,13 @@ public class TextBubble extends JComponent implements Animator.Scalable {
 
         int textHeight = mLabel.getPreferredSize().height;
         int textMargin = (height - textHeight) / 2;
-        int pointerWidth = (int) (height * POINTER_WIDTH_PERCENTAGE);
+        int pointerWidth = (int) (height * POINTER_SIZE_PERCENTAGE);
 
         setBorder(BorderFactory.createEmptyBorder(
-                textMargin,
-                pointerWidth + textMargin,
-                textMargin,
-                textMargin
+                textMargin + (direction == BELOW ? pointerWidth : 0),
+                textMargin + (direction == RIGHT ? pointerWidth : 0),
+                textMargin + (direction == ABOVE ? pointerWidth : 0),
+                textMargin + (direction == LEFT ? pointerWidth : 0)
         ));
 
         setVisible(false);
@@ -84,6 +96,49 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         setBackground(new Color(255, 255, 255, 200));
 
         updateSize();
+    }
+
+    public static TextBubble createToolTip(JComponent component, int height, int direction, String text) {
+        TextBubble bubble = new TextBubble(height, direction);
+        bubble.setText(text);
+        JWindow window = new JWindow();
+        window.add(bubble);
+        window.setBackground(new Color(0, true));
+        window.setSize(bubble.getPreferredSize());
+
+        component.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                Point location = component.getLocationOnScreen();
+
+                if (direction == ABOVE || direction == BELOW) {
+                    location.x += component.getWidth() / 2 - bubble.getWidth() / 2;
+                } else if (direction == LEFT || direction == RIGHT) {
+                    location.y += component.getHeight() / 2 - bubble.getHeight() / 2;
+                }
+
+                if (direction == ABOVE) {
+                    location.y -= bubble.getHeight();
+                } else if (direction == LEFT) {
+                    location.x -= bubble.getWidth();
+                } else if (direction == BELOW) {
+                    location.y += component.getHeight();
+                } else if (direction == RIGHT) {
+                    location.x += component.getWidth();
+                }
+
+                window.setLocation(location);
+                window.setVisible(true);
+                bubble.showBubble();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                bubble.hideBubble(() -> window.setVisible(false));
+            }
+        });
+
+        return bubble;
     }
 
     public void setText(String text) {
@@ -124,12 +179,19 @@ public class TextBubble extends JComponent implements Animator.Scalable {
     }
 
     public void hideBubble() {
+        hideBubble(null);
+    }
+
+    public void hideBubble(Runnable runnable) {
         Animator.getInstance().animateAndInterruptAll(this)
                 .setDuration(250)
                 .scale(0.0)
                 .after(() -> {
                     setVisible(false);
                     setButton(null, null);
+                    if (runnable != null) {
+                        runnable.run();
+                    }
                 })
                 .start();
     }
@@ -149,27 +211,66 @@ public class TextBubble extends JComponent implements Animator.Scalable {
         if (mScale == 0) {
             g.translate(-Integer.MAX_VALUE, -Integer.MAX_VALUE);
         } else if (mScale != 1) {
-            g.translate(0, getHeight() / 2);
-            g.scale(mScale, mScale);
-            g.translate(0, -getHeight() / 2);
-        }
+            int pointerX = 0;
+            int pointerY = 0;
 
-        int backgroundPadding = (int) (getHeight() * BACKGROUND_PADDING_PERCENTAGE);
-        int pointerWidth = (int) (getHeight() * POINTER_WIDTH_PERCENTAGE);
+            if (mDirection == ABOVE || mDirection == BELOW) {
+                pointerX = getWidth() / 2;
+            } else if (mDirection == LEFT || mDirection == RIGHT) {
+                pointerY = getHeight() / 2;
+            }
+
+            if (mDirection == LEFT) {
+                pointerX = getWidth();
+            } else if (mDirection == ABOVE) {
+                pointerY = getHeight();
+            }
+
+
+            g.translate(pointerX, pointerY);
+            g.scale(mScale, mScale);
+            g.translate(-pointerX, -pointerY);
+        }
 
         g.setColor(getBackground());
 
-        // Draw rounded rectangle
-        g.fillRoundRect(pointerWidth,
-                backgroundPadding,
-                getWidth() - pointerWidth,
-                getHeight() - 2 * backgroundPadding,
-                getHeight() / 3, getHeight() / 3);
+        // Draw background rectangle
+        int x = 0;
+        int y = 0;
+        int width = getWidth();
+        int height = getHeight();
+        if (mDirection == ABOVE || mDirection == BELOW) {
+            height -= mPointerSize;
+        } else if (mDirection == LEFT || mDirection == RIGHT) {
+            width -= mPointerSize;
+        }
+        if (mDirection == RIGHT) {
+            x = mPointerSize;
+        } else if (mDirection == BELOW) {
+            y = mPointerSize;
+        }
+        g.fillRoundRect(x, y, width, height, mPointerSize * 2, mPointerSize * 2);
 
         // Draw pointer
-        g.fillPolygon(new int[]{0, pointerWidth, pointerWidth},
-                new int[]{getHeight() / 2, getHeight() / 2 - pointerWidth / 2, getHeight() / 2 + pointerWidth / 2},
-                3);
+        Polygon polygon = new Polygon();
+        if (mDirection == ABOVE) {
+            polygon.addPoint(getWidth() / 2, getHeight());
+            polygon.addPoint(getWidth() / 2 - mPointerSize / 2, getHeight() - mPointerSize);
+            polygon.addPoint(getWidth() / 2 + mPointerSize / 2, getHeight() - mPointerSize);
+        } else if (mDirection == LEFT) {
+            polygon.addPoint(getWidth(), getHeight() / 2);
+            polygon.addPoint(getWidth() - mPointerSize, getHeight() / 2 - mPointerSize / 2);
+            polygon.addPoint(getWidth() - mPointerSize, getHeight() / 2 + mPointerSize / 2);
+        } else if (mDirection == BELOW) {
+            polygon.addPoint(getWidth() / 2, 0);
+            polygon.addPoint(getWidth() / 2 - mPointerSize / 2, mPointerSize);
+            polygon.addPoint(getWidth() / 2 + mPointerSize / 2, mPointerSize);
+        } else if (mDirection == RIGHT) {
+            polygon.addPoint(0, getHeight() / 2);
+            polygon.addPoint(mPointerSize, getHeight() / 2 - mPointerSize / 2);
+            polygon.addPoint(mPointerSize, getHeight() / 2 + mPointerSize / 2);
+        }
+        g.fillPolygon(polygon);
     }
 
     @Override

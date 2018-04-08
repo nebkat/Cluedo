@@ -50,12 +50,13 @@ public class SlideOutPanel extends JPanel {
     private int mLocation;
     private int mHandleSize;
     private int mContainerSize;
+    private int mContainerLocation;
 
     private boolean mMouseOver = false;
     private boolean mShown = false;
 
     @SuppressWarnings("SuspiciousNameCombination")
-    public SlideOutPanel(int location, String title, int handleSize, int handleWidth, int containerSize, boolean hover) {
+    public SlideOutPanel(int location, String title, int handleSize, int handleWidth, int containerSize, int containerLocation, boolean hover) {
         super();
 
         int handlePadding = Config.screenRelativeSize(10);
@@ -81,6 +82,7 @@ public class SlideOutPanel extends JPanel {
         mFont = new Font(Font.SANS_SERIF, Font.BOLD, handleSize / 2);
         mHandleSize = handleSize;
         mContainerSize = containerSize;
+        mContainerLocation = containerLocation;
 
         addMouseListener(new MouseAdapter() {
             @Override
@@ -146,7 +148,7 @@ public class SlideOutPanel extends JPanel {
 
     private int getTargetX(boolean visible) {
         if (mVertical) {
-            return getX();
+            return mContainerLocation;
         } else {
             if (visible) {
                 return mLocation == LEFT ? 0 : mContainerSize - getWidth();
@@ -158,7 +160,7 @@ public class SlideOutPanel extends JPanel {
 
     private int getTargetY(boolean visible) {
         if (!mVertical) {
-            return getY();
+            return mContainerLocation;
         } else {
             if (visible) {
                 return mLocation == TOP ? 0 : mContainerSize - getHeight();

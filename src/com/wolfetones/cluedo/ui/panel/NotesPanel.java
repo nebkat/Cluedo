@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 
 public class NotesPanel extends JPanel {
-
     private PlayerList mPlayers;
     private List<Card> mCards;
 
@@ -82,7 +81,7 @@ public class NotesPanel extends JPanel {
         addMouseListener(new MouseAdapter() {});
     }
 
-    public void setPlayer(Player player) {
+    public void setCurrentPlayer(Player player) {
         mKnowledge = player.getKnowledge();
 
         for (int i = 0; i < mPlayerTokens.size(); i++) {

@@ -28,61 +28,121 @@ import com.wolfetones.cluedo.card.Card;
 import com.wolfetones.cluedo.config.Config;
 import com.wolfetones.cluedo.game.Game;
 import com.wolfetones.cluedo.game.Player;
+import com.wolfetones.cluedo.game.PlayerList;
 import com.wolfetones.cluedo.ui.component.ScaledImageComponent;
+import com.wolfetones.cluedo.ui.component.TextBubble;
+import com.wolfetones.cluedo.util.ImageUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.color.ColorSpace;
+import java.awt.event.MouseAdapter;
 import java.util.List;
 
 public class LogPanel extends JPanel {
-    public LogPanel(Player player, List<Game.LogEntry> log) {
+    private List<Game.LogEntry> mLog;
+    private PlayerList mPlayers;
+    private Player mCurrentPlayer;
+
+    public LogPanel(PlayerList players, List<Game.LogEntry> log) {
         super();
+
+        mPlayers = players;
+        mLog = log;
 
         setOpaque(false);
         setLayout(new GridBagLayout());
 
-        for (int i = 0; i < log.size(); i++) {
-            addLine(player, log.get(i), i);
-        }
-
+        // Intercept mouse clicks
+        addMouseListener(new MouseAdapter() {});
     }
 
-    private void addLine(Player player, Game.LogEntry entry, int suggestionNum) {
-        ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedSuspect = new ScaledImageComponent(entry.suggestion.suspect.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        ScaledImageComponent response;
+    public void setCurrentPlayer(Player player) {
+        mCurrentPlayer = player;
 
-        if (player.equals(entry.player)) {
-            response = new ScaledImageComponent(entry.response.getCardImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        } else {
-            response = new ScaledImageComponent(Card.getCardBackImage(), Config.screenRelativeSize(40), Config.screenRelativeSize(50));
-        }
-
-        GridBagConstraints c = new GridBagConstraints();
-        c.gridy = 2 * suggestionNum;
-
-        c.gridx = 0;
-        c.anchor = GridBagConstraints.WEST;
-        add(asker, c);
-
-        c.gridy++;
-        c.insets = new Insets(0, 0, 0, 5);
-        add(suggestedSuspect, c);
-        c.gridx++;
-        add(suggestedWeapon, c);
-        c.gridx++;
-        add(suggestedRoom, c);
-
-        c.insets = new Insets(0,0,0,0);
-        c.gridx++;
-        c.anchor = GridBagConstraints.EAST;
-        add(responder, c);
-        c.gridx++;
-        add(response, c);
+        update();
     }
 
+    private void update() {
+        removeAll();
+
+        for (int i = 0; i < mLog.size(); i++) {
+            Game.LogEntry entry = mLog.get(i);
+
+            int tokenSize = Config.screenRelativeSize(35);
+            int cardWidth = tokenSize * Card.getCardBackImage().getWidth() / Card.getCardBackImage().getHeight();
+            int tooltipHeight = Config.screenRelativeSize(35);
+
+            // Asker
+            ScaledImageComponent asker = new ScaledImageComponent(entry.player.getCharacter().getTokenImage(), tokenSize);
+            TextBubble.createToolTip(asker, tooltipHeight, TextBubble.ABOVE, entry.player.getName());
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridy = i;
+            c.insets = new Insets(0, 0, Config.screenRelativeSize(2), 0);
+            add(asker, c);
+
+            // Suggestion cards
+            ScaledImageComponent suggestedSuspect = new ScaledImageComponent(entry.suggestion.suspect.getCardImage(), cardWidth);
+            ScaledImageComponent suggestedWeapon = new ScaledImageComponent(entry.suggestion.weapon.getCardImage(), cardWidth);
+            ScaledImageComponent suggestedRoom = new ScaledImageComponent(entry.suggestion.room.getCardImage(), cardWidth);
+
+            TextBubble.createToolTip(suggestedSuspect, tooltipHeight, TextBubble.ABOVE, entry.suggestion.suspect.getName());
+            TextBubble.createToolTip(suggestedWeapon, tooltipHeight, TextBubble.ABOVE, entry.suggestion.weapon.getName());
+            TextBubble.createToolTip(suggestedRoom, tooltipHeight, TextBubble.ABOVE, entry.suggestion.room.getName());
+
+            c = new GridBagConstraints();
+            c.gridy = i;
+            c.insets = new Insets(0, Config.screenRelativeSize(2), 0, Config.screenRelativeSize(2));
+            add(suggestedSuspect, c);
+            add(suggestedWeapon, c);
+            add(suggestedRoom, c);
+
+            // Fill empty space
+            c = new GridBagConstraints();
+            c.gridy = i;
+            c.weightx = 1.0;
+            add(Box.createHorizontalGlue(), c);
+
+            int lastXIndex = 5 + mPlayers.size();
+
+            // Responder
+            ScaledImageComponent responder = new ScaledImageComponent(entry.responder.getCharacter().getTokenImage(), tokenSize);
+            TextBubble.createToolTip(responder, tooltipHeight, TextBubble.ABOVE, entry.responder.getName());
+
+            ScaledImageComponent response;
+            if (mCurrentPlayer == entry.player) {
+                response = new ScaledImageComponent(entry.response.getCardImage(), cardWidth);
+                TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, entry.response.getName());
+            } else {
+                response = new ScaledImageComponent(Card.getCardBackImage(), cardWidth);
+                TextBubble.createToolTip(response, tooltipHeight, TextBubble.ABOVE, "Unknown card");
+            }
+
+            c = new GridBagConstraints();
+            c.gridy = i;
+            c.gridx = lastXIndex;
+            add(response, c);
+            c.gridx--;
+            add(responder, c);
+
+            // Non-responders
+            Player player = entry.responder;
+            while ((player = mPlayers.getRelative(-1, player)) != entry.player) {
+                c.gridx--;
+
+                ScaledImageComponent nonResponder = new ScaledImageComponent(
+                        ImageUtils.getColorConvertedImage(player.getCharacter().getTokenImage(), ColorSpace.CS_GRAY),
+                        tokenSize
+                );
+                TextBubble.createToolTip(nonResponder, tooltipHeight, TextBubble.ABOVE, player.getName());
+                add(nonResponder, c);
+            }
+        }
+
+        // Resize to fit parent
+        Insets parentInsets = getParent().getInsets();
+        int targetWidth = getParent().getWidth() - parentInsets.left - parentInsets.right;
+        setPreferredSize(new Dimension(targetWidth, getPreferredSize().height));
+    }
 }
 

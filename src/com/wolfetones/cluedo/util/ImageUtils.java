@@ -26,9 +26,11 @@ package com.wolfetones.cluedo.util;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.HashMap;
@@ -107,6 +109,28 @@ public class ImageUtils {
         sCache.put(cacheName, new SoftReference<>(scaledImage));
 
         return scaledImage;
+    }
+
+    public static BufferedImage getColorConvertedImage(BufferedImage image, int colorSpace) {
+        // Check if cache exists
+        String cacheName = getCacheName(image) + "." + colorSpace;
+        if (sCache.containsKey(cacheName)) {
+            BufferedImage cachedImage = sCache.get(cacheName).get();
+            if (cachedImage != null) {
+                return cachedImage;
+            }
+        }
+
+        ColorConvertOp colorConvertOp = new ColorConvertOp(ColorSpace.getInstance(colorSpace), null);
+
+        BufferedImage convertedImage = colorConvertOp.filter(image, new BufferedImage(image.getWidth(), image.getHeight(), image.getType()));
+
+        // Ensure optimal color model
+        convertedImage = getCompatibleImage(convertedImage);
+
+        sCache.put(cacheName, new SoftReference<>(convertedImage));
+
+        return convertedImage;
     }
 
     private static BufferedImage getCompatibleImage(BufferedImage image) {

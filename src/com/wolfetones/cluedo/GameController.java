@@ -179,6 +179,7 @@ public class GameController {
     private ActionPanel mActionPanel;
     private CardAnimationsPanel mCardAnimationsPanel;
     private NotesPanel mNotesPanel;
+    private LogPanel mHistoryPanel;
 
     private SlideOutCardsPanel mPlayerCardsPanel;
     private SlideOutCardsPanel mUndistributedCardsPanel;
@@ -352,11 +353,10 @@ public class GameController {
         mPlayersPanel.setActivePlayer(0);
         mPlayersPanel.hideBubbles();
 
+        mNotesPanel.setCurrentPlayer(player);
         mNotesSlideOutPanel.reposition();
-        mNotesPanel.setPlayer(player);
 
-        mHistorySlideOutPanel.removeAll();
-        mHistorySlideOutPanel.add(new LogPanel(player, mGame.getLog()));
+        mHistoryPanel.setCurrentPlayer(player);
         mHistorySlideOutPanel.reposition();
 
         passToPlayer(player, null);
@@ -1147,7 +1147,7 @@ public class GameController {
         // Add action panel
         mActionPanel = new ActionPanel(mInputPanel::append, sidePanelWidth);
         mBoardLayeredPane.add(mActionPanel, BOARD_LAYER_ACTIONS);
-        mActionPanel.setBounds(boardBounds);
+        mActionPanel.setBounds(0, 0, sidePanelWidth, boardDimension.height);
         mActionPanel.updateStatus(mGame);
 
         // Add card distribution panel
@@ -1161,31 +1161,49 @@ public class GameController {
         int slideOutPanelHandleWidth = Config.screenHeightPercentage(0.2f);
 
         // Player cards slide out panel
-        mPlayerCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT, "Your cards".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.width);
+        mPlayerCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
+                "Your cards".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.width,
+                boardDimension.height / 4 - slideOutPanelHandleWidth / 2);
         mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_PANELS);
-        mPlayerCardsPanel.setLocation(boardDimension.width, boardDimension.height / 4 - slideOutPanelHandleWidth / 2);
 
         // Undistributed cards slide out panel
-        mUndistributedCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT, "Public cards".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.width);
+        mUndistributedCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
+                "Public cards".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.width,
+                boardDimension.height * 3 / 4 - slideOutPanelHandleWidth / 2);
         mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_PANELS);
-        mUndistributedCardsPanel.setLocation(boardDimension.width, boardDimension.height * 3 / 4 - slideOutPanelHandleWidth / 2);
 
         // Wider panels at bottom
         int slideOutPanelAvailableWidth = boardDimension.width - 2 * sidePanelWidth;
         slideOutPanelHandleWidth = (slideOutPanelAvailableWidth - sidePanelWidth) / 2;
 
         // Log panel
-        mHistorySlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "History".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mHistoryPanel = new LogPanel(mPlayers, mGame.getLog());
+        mHistorySlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM,
+                "History".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.height,
+                sidePanelWidth,
+                false);
         mBoardLayeredPane.add(mHistorySlideOutPanel, BOARD_LAYER_PANELS);
-        mHistorySlideOutPanel.setLocation(sidePanelWidth, boardDimension.height - slideOutPanelHandleSize);
-        mHistorySlideOutPanel.add(Box.createRigidArea(new Dimension(100, 500)));
-        mHistorySlideOutPanel.reposition();
+        mHistorySlideOutPanel.add(mHistoryPanel);
 
         // Notes panel
         mNotesPanel = new NotesPanel(mPlayers, mGame.getBoard(), mGame.getUndistributedCards());
-        mNotesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM, "Notes".toUpperCase(), slideOutPanelHandleSize, slideOutPanelHandleWidth, boardDimension.height, false);
+        mNotesSlideOutPanel = new SlideOutPanel(SlideOutPanel.BOTTOM,
+                "Notes".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.height,
+                sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth,
+                false);
         mBoardLayeredPane.add(mNotesSlideOutPanel, BOARD_LAYER_PANELS);
-        mNotesSlideOutPanel.setLocation(sidePanelWidth + slideOutPanelAvailableWidth - slideOutPanelHandleWidth, boardDimension.height);
         mNotesSlideOutPanel.add(mNotesPanel);
     }
 

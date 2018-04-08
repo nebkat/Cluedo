@@ -77,48 +77,26 @@ public class ActionPanel extends JPanel {
         super();
 
         setOpaque(false);
-
         setLayout(new GridBagLayout());
 
         // Push everything to bottom and ensure text bubble column width
         GridBagConstraints c = new GridBagConstraints();
         c.weighty = 1;
         add(Box.createHorizontalStrut(iconWidth), c);
-        c.gridx = 1;
-        c.weightx = 1;
-        add(Box.createHorizontalStrut(0), c);
 
         // Add buttons
         c = new GridBagConstraints();
         c.gridy = 0;
-        c.anchor = GridBagConstraints.LINE_START;
         for (ButtonDescription description : BUTTON_DESCRIPTIONS) {
-            TextBubble bubble = new TextBubble(iconWidth);
-
-            ActionButton button = new ActionButton(ImageUtils.loadImage(description.icon), iconWidth, iconWidth, bubble);
+            ActionButton button = new ActionButton(ImageUtils.loadImage(description.icon), iconWidth, iconWidth);
             button.clickAction(() -> actionCommandListener.accept(description.command));
 
             mButtons.add(button);
 
             c.gridy++;
-            c.gridx = 0;
             add(button, c);
 
-            bubble.setText(description.text);
-            button.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    bubble.showBubble();
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    bubble.hideBubble();
-                }
-            });
-
-            c.gridx = 1;
-            add(bubble, c);
+            button.setTextBubble(TextBubble.createToolTip(button, iconWidth * 3 / 4, TextBubble.RIGHT, description.text));
         }
     }
 
@@ -143,10 +121,8 @@ public class ActionPanel extends JPanel {
 
         private TextBubble mTextBubble;
 
-        private ActionButton(BufferedImage image, int width, int height, TextBubble bubble) {
+        private ActionButton(BufferedImage image, int width, int height) {
             super(image, width, height);
-
-            mTextBubble = bubble;
 
             addMouseListener(new MouseAdapter() {
                 @Override
@@ -161,6 +137,10 @@ public class ActionPanel extends JPanel {
             });
 
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        }
+
+        private void setTextBubble(TextBubble bubble) {
+            mTextBubble = bubble;
         }
 
         @Override
@@ -194,7 +174,9 @@ public class ActionPanel extends JPanel {
         public void setVisible(boolean visible) {
             super.setVisible(visible);
 
-            mTextBubble.resetBubble();
+            if (mTextBubble != null) {
+                mTextBubble.resetBubble();
+            }
         }
 
         private void clickAction(Runnable runnable) {

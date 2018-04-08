@@ -35,8 +35,8 @@ import java.util.List;
 
 public class SlideOutCardsPanel extends SlideOutPanel {
 
-    public SlideOutCardsPanel(int location, String title, int handleSize, int handleWidth, int containerSize) {
-        super(location, title, handleSize, handleWidth, containerSize, true);
+    public SlideOutCardsPanel(int location, String title, int handleSize, int handleWidth, int containerSize, int containerLocation) {
+        super(location, title, handleSize, handleWidth, containerSize, containerLocation, true);
 
         setLayout(new GridBagLayout());
     }
