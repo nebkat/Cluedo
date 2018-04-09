@@ -66,7 +66,7 @@ public class LogPanel extends JPanel {
     public void update() {
         removeAll();
 
-        for (int i = 0; i < mLog.size(); i++) {
+        for (int i = Math.max(0, mLog.size() - 24); i < mLog.size(); i++) {
             Game.LogEntry entry = mLog.get(i);
 
             int tokenSize = Config.screenRelativeSize(35);
@@ -74,7 +74,7 @@ public class LogPanel extends JPanel {
 
             // Asker
             ImageComponent asker = new ImageComponent(entry.getPlayer().getCharacter().getTokenImage(), tokenSize);
-            TextBubble.createToolTip(asker, TextBubble.ABOVE, entry.getPlayer().getName());
+            TextBubble.createToolTip(asker, TextBubble.ABOVE, entry.getPlayer().getName() + " suggested");
             GridBagConstraints c = new GridBagConstraints();
             c.gridy = i;
             c.insets = new Insets(0, 0, Config.screenRelativeSize(2), 0);
@@ -118,7 +118,7 @@ public class LogPanel extends JPanel {
             // Responder
             if (entry.getResponder() != null) {
                 ImageComponent responder = new ImageComponent(entry.getResponder().getCharacter().getTokenImage(), tokenSize);
-                TextBubble.createToolTip(responder, TextBubble.ABOVE, entry.getResponder().getName());
+                TextBubble.createToolTip(responder, TextBubble.ABOVE, entry.getResponder().getName() + " responded");
 
                 ImageComponent response;
                 if (mCurrentPlayer == entry.getPlayer()) {
@@ -146,7 +146,7 @@ public class LogPanel extends JPanel {
                         ImageUtils.getColorConvertedImage(player.getCharacter().getTokenImage(), ColorSpace.CS_GRAY),
                         tokenSize
                 );
-                TextBubble.createToolTip(nonResponder, TextBubble.ABOVE, player.getName());
+                TextBubble.createToolTip(nonResponder, TextBubble.ABOVE, player.getName() + " had no cards");
                 add(nonResponder, c);
             }
         }

@@ -822,7 +822,7 @@ public class GameController {
 
         // Update history panel
         mHistoryPanel.update();
-        mHistoryPanel.setVisible(true);
+        mHistorySlideOutPanel.setVisible(true);
         mHistorySlideOutPanel.reposition();
     }
 
@@ -871,6 +871,11 @@ public class GameController {
         }
 
         mPlayersPanel.showBubble(player, bubbleLines.get(sRandom.nextInt(bubbleLines.size())));
+
+        // Update history panel
+        mHistoryPanel.update();
+        mHistorySlideOutPanel.setVisible(true);
+        mHistorySlideOutPanel.reposition();
 
         return correct;
     }
@@ -1377,13 +1382,12 @@ public class GameController {
                 boardDimension.height,
                 sidePanelWidth,
                 false);
-        mHistorySlideOutPanel.setLayout(new BorderLayout());
+        mHistorySlideOutPanel.setLayout(new GridBagLayout());
         mBoardLayeredPane.add(mHistorySlideOutPanel, BOARD_LAYER_PANELS);
-        JScrollPane historyScrollPane = new JScrollPane(mHistoryPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        historyScrollPane.setBorder(null);
-        historyScrollPane.setOpaque(false);
-        historyScrollPane.getViewport().setOpaque(false);
-        mHistorySlideOutPanel.add(historyScrollPane);
+        GridBagConstraints c = new GridBagConstraints();
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.weightx = 1.0;
+        mHistorySlideOutPanel.add(mHistoryPanel, c);
         mHistorySlideOutPanel.setVisible(false);
 
         // Notes panel

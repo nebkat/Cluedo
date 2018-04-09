@@ -162,7 +162,7 @@ public class SlideOutPanel extends JPanel {
     }
 
     public void reposition() {
-        setSize(mVertical ? getWidth() : getPreferredSize().width, !mVertical ? getHeight() : Math.min(Config.screenHeightPercentage(0.75f), getPreferredSize().height));
+        setSize(mVertical ? getWidth() : getPreferredSize().width, !mVertical ? getHeight() : getPreferredSize().height);
         setLocation(getTargetX(false), getTargetY(false));
     }
 
