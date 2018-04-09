@@ -1278,6 +1278,26 @@ public class GameController {
         mBoardLayeredPane.add(mCardAnimationsPanel, BOARD_LAYER_CARDS);
         mCardAnimationsPanel.setLocation(sidePanelWidth, 0);
         mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
+
+        // Add quit panel
+        SlideOutPanel quitPanel = new SlideOutCardsPanel(SlideOutPanel.TOP,
+                "Quit".toUpperCase(),
+                Config.screenRelativeSize(30),
+                sidePanelWidth,
+                boardDimension.width,
+                boardDimension.width - sidePanelWidth + Config.screenRelativeSize(8));
+        quitPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (JOptionPane.showConfirmDialog(null,
+                        "Are you sure you want to quit?",
+                        "Quit Cluedo?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    System.exit(0);
+                }
+            }
+        });
+        mBoardLayeredPane.add(quitPanel, BOARD_LAYER_PANELS);
+        quitPanel.reposition();
     }
 
     private void setupBoardWithPlayers() {
