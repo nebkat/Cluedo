@@ -373,6 +373,7 @@ public class GameController {
 
         // Update notes panel
         mNotesPanel.setCurrentPlayer(player);
+        mNotesSlideOutPanel.setVisible(true);
         mNotesSlideOutPanel.reposition();
 
         // Update history panel
@@ -1402,6 +1403,7 @@ public class GameController {
                 false);
         mBoardLayeredPane.add(mNotesSlideOutPanel, BOARD_LAYER_PANELS);
         mNotesSlideOutPanel.add(mNotesPanel);
+        mNotesSlideOutPanel.setVisible(false);
     }
 
     private void dealCards() {
