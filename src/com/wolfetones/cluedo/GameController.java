@@ -55,6 +55,7 @@ import java.util.stream.IntStream;
 
 public class GameController {
     private static final boolean DEMO_MODE = Boolean.parseBoolean(System.getProperty("debug"));
+    private static final boolean ALLOW_SKIPPING_ANIMATIONS = Boolean.parseBoolean(System.getProperty("debug"));
 
     private static Random sRandom = new Random();
 
@@ -1408,13 +1409,16 @@ public class GameController {
             return;
         }
 
+        System.out.println("Dealing cards to players...");
+        if (ALLOW_SKIPPING_ANIMATIONS) System.out.println("Click on board to skip");
+
         // Show cursor panel to allow force finishing dice roll
-        setClickAction(mCardAnimationsPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(mCardAnimationsPanel::forceFinish, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         mCardAnimationsPanel.dealCards(mPlayers.size(), mPlayersPanel.getItemHeight(), mGame.getUndistributedCards(), mGame.getBoard());
 
         // Hide cursor panel
-        setClickAction(null, null, null);
+        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(null, null, null);
     }
 
     private void throwDiceForOrder() {
@@ -1423,10 +1427,10 @@ public class GameController {
         }
 
         System.out.println("Rolling dice to decide player order...");
-        System.out.println("Click on board to skip");
+        if (ALLOW_SKIPPING_ANIMATIONS) System.out.println("Click on board to skip");
 
         // Show cursor panel to allow force finishing dice roll
-        setClickAction(() -> {
+        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(() -> {
             mBoardDicePanel.forceFinish();
             Animator.getInstance().interruptAllAnimations(mBoardDicePanel);
         }, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1523,6 +1527,6 @@ public class GameController {
         }
 
         // Hide cursor panel
-        setClickAction(null, null, null);
+        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(null, null, null);
     }
 }
