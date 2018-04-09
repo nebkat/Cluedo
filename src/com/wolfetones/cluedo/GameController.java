@@ -1427,10 +1427,10 @@ public class GameController {
         }
 
         System.out.println("Rolling dice to decide player order...");
-        if (ALLOW_SKIPPING_ANIMATIONS) System.out.println("Click on board to skip");
+        System.out.println("Click on board to skip");
 
         // Show cursor panel to allow force finishing dice roll
-        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(() -> {
+        setClickAction(() -> {
             mBoardDicePanel.forceFinish();
             Animator.getInstance().interruptAllAnimations(mBoardDicePanel);
         }, mBoardTilePanel, Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -1527,6 +1527,6 @@ public class GameController {
         }
 
         // Hide cursor panel
-        if (ALLOW_SKIPPING_ANIMATIONS) setClickAction(null, null, null);
+        setClickAction(null, null, null);
     }
 }
