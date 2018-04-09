@@ -56,6 +56,8 @@ import java.util.stream.IntStream;
 public class GameController {
     private static final boolean DEMO_MODE = Boolean.parseBoolean(System.getProperty("debug"));
 
+    private static Random sRandom = new Random();
+
     /**
      * Setting to enable cheat command that gives the solution.
      */
@@ -132,9 +134,6 @@ public class GameController {
     public static final String COMMAND_STOP = "stop";
 
     private static final String COMMAND_SHOW = "show";
-
-    private static final String COMMAND_YES = "y";
-    private static final String COMMAND_NO = "n";
 
     private static final Map<Integer, String> KEY_COMMAND_MAP = new HashMap<>() {{
         // Commands
@@ -378,6 +377,50 @@ public class GameController {
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
+        List<String> bubbleLines = new ArrayList<>();
+        if (mGame.canPoseQuestion()) {
+            // Moved since last turn
+            bubbleLines.add("Looks like somebody has moved me here, I can question right away!");
+            bubbleLines.add("I don't remember being here at the end of my last turn... anyway, let's as some questions!");
+            bubbleLines.add("Somebody accusing me of murder... unbelievable! They'll see when I uncover the murderer!");
+            bubbleLines.add("Ugh, just as I was about to uncover the murderer they've thrown me off the trail...");
+        } else if (mGame.canUsePassage()) {
+            Room room = mGame.getCurrentPlayerLocation().asRoom();
+            String passageRoomName = room.getPassageRoom().getName().toLowerCase();
+
+            bubbleLines.add("Hmm, I could use the secret passage to the " + passageRoomName + " from here..");
+            bubbleLines.add("I heard there's a secret passage around here, I wonder where it leads to?");
+            bubbleLines.add("That wall looks weird.. is that.. a secret door?!");
+            bubbleLines.add("The old passage to the " + passageRoomName + ".. I bet the murderer used it to escape!");
+
+            if (passageRoomName.equals("kitchen")) {
+                bubbleLines.add("A secret passage to the kitchen?! Well, I am quite hungry...");
+                bubbleLines.add("All this questioning is making me hungry, let's go to the kitchen through this passage");
+            }
+
+            // Room has secret passage
+            mPlayersPanel.showBubble(player, "I could use the secret passage to the " + room.getPassageRoom().getName().toLowerCase() + " here?!");
+        } else if (mGame.getCurrentPlayerLocation().isRoom()) {
+            bubbleLines.add("Let's try get to a different room for some more questions.");
+            bubbleLines.add("That's enough investigation in this room, time to check out another room.");
+            bubbleLines.add("I've inspected every corner of the room, on to the next one!");
+            bubbleLines.add("I've gathered some useful evidence in here, let's see if I can get some more elsewhere!");
+        } else if (mGame.getCurrentPlayerLocation().asTile() instanceof StartTile) {
+            bubbleLines.add("Let's get started with this investigation. Roll the dice!");
+            bubbleLines.add("I better start investigating, let's roll the dice and get to a room");
+            bubbleLines.add("This mystery is about to be solved! Let's roll the dice and get to a room");
+            bubbleLines.add("Hoping for a good dice roll so I can get to a room");
+            bubbleLines.add("I should get to a room to start asking some questions, let's roll the dice!");
+        } else {
+            bubbleLines.add("I should get to a room to start asking some questions, let's roll the dice!");
+            bubbleLines.add("These corridors creep me out.. let's try get to a room and ask some questions!");
+            bubbleLines.add("Guess all I can do is roll the dice and see where it gets me..");
+            bubbleLines.add("I better get a double 6 this time!");
+            bubbleLines.add("I wouldn't want to get caught alone with the murderer in the corridors..");
+        }
+
+        mPlayersPanel.showBubble(player, bubbleLines.get(sRandom.nextInt(bubbleLines.size())));
+
         List<String> commands = new ArrayList<>();
         while (true) {
             // Remove previous commands
@@ -590,7 +633,83 @@ public class GameController {
             mGame.moveTo(targetLocation);
         }
 
-        mPlayersPanel.hideBubbles();
+        List<String> bubbleLines = new ArrayList<>();
+        if (!mGame.getCurrentPlayerLocation().isRoom()) {
+            bubbleLines.add("I couldn't make it in to a room, this investigation will have to wait");
+            bubbleLines.add("Those dice are out to get me, now I'm stuck in the corridors..");
+            bubbleLines.add("Looks like I won't be doing any investigating right now, let's see what the others come up with.");
+            bubbleLines.add("Well, this certainly isn't getting me any closer figuring this murder out...");
+            bubbleLines.add("Could the murder have been done out here? Surely not, there's too many people walking around.");
+            bubbleLines.add("I may not have figured out this murder just yet, but I'll have it next time!");
+        } else {
+            Room room = mGame.getCurrentPlayerLocation().asRoom();
+            if (room.isGuessRoom()) {
+                bubbleLines.add("I think I know who committed the murder!! It was...");
+                bubbleLines.add("I have concluded my investigations and am ready to announce the murderer. It was...");
+                bubbleLines.add("If my calculations are correct, the murderer was...");
+                bubbleLines.add(player.getCharacter().getName() + ", the master detective, has solved the murder! It was...");
+                bubbleLines.add("I'm not quite sure, but I'll take a guess. The murderer was...");
+                bubbleLines.add("Everyone!! I have it! The murder was done by...");
+            } else {
+                String roomName = room.getName().toLowerCase();
+                String playerName = player.getCharacter().getName();
+                bubbleLines.add("It's time for some questioning in the " + roomName + "!");
+                bubbleLines.add("The " + roomName + " could give me some important clues, let's ask some questions");
+                switch (roomName) {
+                    case "kitchen":
+                        if (!playerName.equals("Mrs. White")) {
+                            bubbleLines.add("Mrs. White is normally cooking in here, I wonder if she was involved..");
+                        }
+                        bubbleLines.add("A a meal time murder? At least he would have been full... Let's ask about these knives!");
+                        bubbleLines.add("I'm getting awfully hungry, but this murder must be solved.. On to the questions!");
+                        bubbleLines.add("These knives are very sharp, but they're all clean. I'll have to take a closer look");
+                        break;
+                    case "living room":
+                        bubbleLines.add("This fireplace is nice and warm.. but so is that fire poker!!");
+                        bubbleLines.add("I heard he would sometimes fall asleep on the couch, a perfect opportunity for the murderer!");
+                        break;
+                    case "billiard room":
+                        bubbleLines.add("A game of billiards gone wrong? Perhaps someone is very competitive...");
+                        bubbleLines.add("That ice pick on the ground seems very suspicious, I'm going to need some answers");
+                        break;
+                    case "trophy room":
+                        if (!playerName.equals("Colonel Mustard")) {
+                            bubbleLines.add("He always talked about his trophies with Colonel Mustard.. He must know something!");
+                        }
+                        bubbleLines.add("A murder in the trophy room? Someone must have been jealous...");
+                        bubbleLines.add("Was someone jealous of all his trophies? I certainly am, but not _that_ jealous...");
+                        break;
+                    case "conservatory":
+                        if (!player.getCharacter().getName().equals("Reverend Green")) {
+                            bubbleLines.add("I heard Reverend Green does some gardening here, I wonder if he was involved..");
+                        }
+                        bubbleLines.add("These garden shears are very sharp, could they have been the murder weapon?");
+                        break;
+                    case "studio":
+                        if (!player.getCharacter().getName().equals("Mrs. Peacock")) {
+                            bubbleLines.add("Mrs. Peacock loves painting in here, let's ask her what she knows");
+                        }
+                        bubbleLines.add("I heard he kept a revolver in one of the desk drawers..");
+                        break;
+                    case "bedroom":
+                        bubbleLines.add("The poor man, I hope he was asleep when it happened...");
+                        bubbleLines.add("I've never been in here before, there's a lot to be discovered.. Let's ask some questions");
+                        break;
+                    case "hall":
+                        bubbleLines.add("I heard they had to use rat poison in here, I wonder where they kept it..");
+                        bubbleLines.add("Did someone push him down the stairs?");
+                        break;
+                    case "library":
+                        if (!playerName.equals("Professor Plum")) {
+                            bubbleLines.add("Professor Plum is always in here, he's going to have to give me some answers!");
+                        }
+                        bubbleLines.add("That candlestick seems out of place.. why is it at the edge of the table?!");
+                        break;
+                }
+            }
+        }
+
+        mPlayersPanel.showBubble(player, bubbleLines.get(sRandom.nextInt(bubbleLines.size())));
 
         setPathFindingEnabled(false);
     }
@@ -700,16 +819,32 @@ public class GameController {
             return;
         }
 
+        mPlayersPanel.showBubble(player, "It was... " + suggestion.asHumanReadableString() + "!");
+
         boolean correct = mGame.makeFinalAccusation(suggestion);
 
         mCardAnimationsPanel.finalAccusation(suggestion, mGame.getSolution());
 
+        List<String> bubbleLines = new ArrayList<>();
+
         if (correct) {
             System.out.println("Congratulations! You were correct!");
+
+            bubbleLines.add("My suspicions were correct!");
+            bubbleLines.add("I knew I was right!");
+            bubbleLines.add("I knew it all along!");
+            bubbleLines.add("Case closed, mystery solved.");
         } else {
             System.out.println("Your guess was incorrect. You have been eliminated.");
+
+            bubbleLines.add("Oh dear, looks like I got something wrong");
+            bubbleLines.add("That's embarrassing.. I'll leave this one for somebody else to solve...");
+            bubbleLines.add("Oops, that didn't go as planned");
+
             mPlayersPanel.setPlayerEliminated(player, true);
         }
+
+        mPlayersPanel.showBubble(player, bubbleLines.get(sRandom.nextInt(bubbleLines.size())));
     }
 
     private void performLog() {

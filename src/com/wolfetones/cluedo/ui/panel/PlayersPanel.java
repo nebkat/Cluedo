@@ -155,7 +155,6 @@ public class PlayersPanel extends JPanel {
 
     public void setPlayerEliminated(Player player, boolean eliminated) {
         mPlayerComponents.get(player).icon.setEliminated(eliminated);
-        mPlayerComponents.get(player).bubble.hideBubble();
     }
 
     public void showBubble(Player player, String text) {
