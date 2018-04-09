@@ -243,9 +243,15 @@ public class GameController {
         mInputScanner = new Scanner(System.in);
 
         // Keep performing new turns until the game is over
-        while (!mGame.isFinished()) {
-            performTurn();
+        while (true) {
+            if (!performTurn()) {
+                break;
+            }
         }
+
+        // Once game is over prevent user from interacting
+        mActionPanel.setVisible(false);
+        mInputPanel.setEnabled(false);
     }
 
     /**
@@ -348,12 +354,13 @@ public class GameController {
     /**
      * Performs all necessary steps for a player turn
      */
-    private void performTurn() {
+    private boolean performTurn() {
         Player player = mGame.nextTurn();
 
         mPlayersPanel.setTopPlayer(player);
         mPlayersPanel.setActivePlayer(0);
-        mPlayersPanel.hideBubbles();
+
+        mOutputPanel.clear();
 
         passToPlayer(player, null);
 
@@ -361,7 +368,6 @@ public class GameController {
         mPlayerCardsPanel.setCards(player.getCards());
 
         // Update undistributed cards panel
-        mUndistributedCardsPanel.setVisible(mGame.getUndistributedCards().isEmpty());
         mUndistributedCardsPanel.setCards(mGame.getUndistributedCards());
 
         // Update notes panel
@@ -373,7 +379,14 @@ public class GameController {
         mHistorySlideOutPanel.setVisible(!mGame.getLog().isEmpty());
         mHistorySlideOutPanel.reposition();
 
-        mOutputPanel.clear();
+        // If game is finished, everyone else was eliminated and this user wins by default
+        if (mGame.isFinished()) {
+            System.out.println("All other players have been eliminated, you win by default!");
+
+            mCardAnimationsPanel.finalAccusation(mGame.getSolution(), mGame.getSolution());
+
+            return false;
+        }
 
         System.out.println(player.getName() + "'s move (" + player.getCharacter().getName() + ")");
 
@@ -467,7 +480,10 @@ public class GameController {
             } else if (command.equals(COMMAND_QUESTION)) {
                 performQuestion(player, args);
             } else if (command.equals(COMMAND_ACCUSE)) {
-                performAccuse(player, args);
+                if (performAccuse(player, args)) {
+                    // Don't continue if accusation was correct
+                    return false;
+                }
             } else if (command.equals(COMMAND_NOTES)) {
                 performNotes();
             } else if (command.equals(COMMAND_LOG)) {
@@ -475,11 +491,19 @@ public class GameController {
             }
         }
 
+        // Hide bubbles
+        mPlayersPanel.hideBubbles();
+
         // Hide all panels
         mPlayerCardsPanel.slideOut();
         mUndistributedCardsPanel.slideOut();
         mNotesSlideOutPanel.slideOut();
         mHistorySlideOutPanel.slideOut();
+
+        // End all animations
+        mCardAnimationsPanel.forceFinish();
+
+        return true;
     }
 
     private void performQuit() {
@@ -564,73 +588,72 @@ public class GameController {
             corridorTiles.forEach(t -> t.getButton().setDoorHint(0));
         }
 
-        // May have moved directly to another room using path finding/UI
-        if (mGame.getTurnRemainingMoves() == 0) {
-            return;
-        }
+        // Make sure we haven't moved directly to another room using path finding/UI
+        if (mGame.getTurnRemainingMoves() != 0) {
+            Tile moveTile = null;
+            CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
+            List<String> validCommands = new ArrayList<>(5);
+            while ((remainingMoves = mGame.getTurnRemainingMoves()) > 0) {
+                validCommands.clear();
+                if (currentTile == null) {
+                    throw new IllegalStateException("Current tile cannot be null");
+                }
+                if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
+                if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
+                if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
+                if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
+                if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
 
-        Tile moveTile = null;
-        CorridorTile currentTile = mGame.getCurrentPlayerLocation().asTile();
-        List<String> validCommands = new ArrayList<>(5);
-        while ((remainingMoves = mGame.getTurnRemainingMoves()) > 0) {
-            validCommands.clear();
-            if (currentTile == null) {
-                throw new IllegalStateException("Current tile cannot be null");
-            }
-            if (currentTile.canMoveLeft()) validCommands.add(COMMAND_LEFT);
-            if (currentTile.canMoveUp()) validCommands.add(COMMAND_UP);
-            if (currentTile.canMoveRight()) validCommands.add(COMMAND_RIGHT);
-            if (currentTile.canMoveDown()) validCommands.add(COMMAND_DOWN);
-            if (mGame.canStopMoving()) validCommands.add(HIDDEN_COMMAND_PREFIX + COMMAND_STOP);
+                // Update valid actions for stop button
+                mActionPanel.updateStatus(mGame);
 
-            // Update valid actions for stop button
-            mActionPanel.updateStatus(mGame);
+                // Update bubble if moved at least once
+                if (mGame.canStopMoving())
+                    mPlayersPanel.showBubble(player, "I have " + remainingMoves + " move" + (remainingMoves != 1 ? "s" : "") + " remaining");
 
-            // Update bubble if moved at least once
-            if (mGame.canStopMoving()) mPlayersPanel.showBubble(player, "I have " + remainingMoves + " move" + (remainingMoves != 1 ? "s" : "") + " remaining");
-
-            String direction = readCommand("Choose direction (remaining: " + remainingMoves + ")", validCommands)[0];
-            if (direction == null) {
-                continue;
-            }
-
-            // Stop moving
-            if (direction.equals(COMMAND_STOP)) {
-                mGame.stopMoving();
-                break;
-            }
-
-            // Get tile for direction
-            switch (direction.toLowerCase()) {
-                case COMMAND_LEFT:
-                    moveTile = currentTile.getLeft();
-                    break;
-                case COMMAND_UP:
-                    moveTile = currentTile.getUp();
-                    break;
-                case COMMAND_RIGHT:
-                    moveTile = currentTile.getRight();
-                    break;
-                case COMMAND_DOWN:
-                    moveTile = currentTile.getDown();
-                    break;
-            }
-
-            Location targetLocation = Location.fromTile(moveTile);
-            if (targetLocation.isRoom()) {
-                // Ensure that player is not returning to the room that they started in
-                if (targetLocation == mGame.getTurnInitialPlayerRoom()) {
-                    System.out.println("Can't return to same room");
+                String direction = readCommand("Choose direction (remaining: " + remainingMoves + ")", validCommands)[0];
+                if (direction == null) {
                     continue;
                 }
 
-                mGame.moveTo(targetLocation);
-                break;
-            } else {
-                currentTile = targetLocation.asTile();
-            }
+                // Stop moving
+                if (direction.equals(COMMAND_STOP)) {
+                    mGame.stopMoving();
+                    break;
+                }
 
-            mGame.moveTo(targetLocation);
+                // Get tile for direction
+                switch (direction.toLowerCase()) {
+                    case COMMAND_LEFT:
+                        moveTile = currentTile.getLeft();
+                        break;
+                    case COMMAND_UP:
+                        moveTile = currentTile.getUp();
+                        break;
+                    case COMMAND_RIGHT:
+                        moveTile = currentTile.getRight();
+                        break;
+                    case COMMAND_DOWN:
+                        moveTile = currentTile.getDown();
+                        break;
+                }
+
+                Location targetLocation = Location.fromTile(moveTile);
+                if (targetLocation.isRoom()) {
+                    // Ensure that player is not returning to the room that they started in
+                    if (targetLocation == mGame.getTurnInitialPlayerRoom()) {
+                        System.out.println("Can't return to same room");
+                        continue;
+                    }
+
+                    mGame.moveTo(targetLocation);
+                    break;
+                } else {
+                    currentTile = targetLocation.asTile();
+                }
+
+                mGame.moveTo(targetLocation);
+            }
         }
 
         List<String> bubbleLines = new ArrayList<>();
@@ -653,8 +676,6 @@ public class GameController {
             } else {
                 String roomName = room.getName().toLowerCase();
                 String playerName = player.getCharacter().getName();
-                bubbleLines.add("It's time for some questioning in the " + roomName + "!");
-                bubbleLines.add("The " + roomName + " could give me some important clues, let's ask some questions");
                 switch (roomName) {
                     case "kitchen":
                         if (!playerName.equals("Mrs. White")) {
@@ -705,6 +726,13 @@ public class GameController {
                         }
                         bubbleLines.add("That candlestick seems out of place.. why is it at the edge of the table?!");
                         break;
+                }
+
+                // Add only 1 of the generic lines
+                if (sRandom.nextBoolean()) {
+                    bubbleLines.add("It's time for some questioning in the " + roomName + "!");
+                } else {
+                    bubbleLines.add("The " + roomName + " could give me some important clues, let's ask some questions");
                 }
             }
         }
@@ -801,7 +829,7 @@ public class GameController {
         mHistorySlideOutPanel.reposition();
     }
 
-    private void performAccuse(Player player, String[] args) {
+    private boolean performAccuse(Player player, String[] args) {
         Suggestion suggestion;
         if (args.length == 1) {
             suggestion = createSuggestion(null);
@@ -809,14 +837,14 @@ public class GameController {
             if (args.length != 4) {
                 System.out.println("Invalid number of arguments provided for question command");
                 System.out.println(HELP_COMMANDS.get(COMMAND_ACCUSE));
-                return;
+                return false;
             }
 
             suggestion = createSuggestion(args[1], args[2], args[3], null);
         }
 
         if (suggestion == null) {
-            return;
+            return false;
         }
 
         mPlayersPanel.showBubble(player, "It was... " + suggestion.asHumanReadableString() + "!");
@@ -841,10 +869,13 @@ public class GameController {
             bubbleLines.add("That's embarrassing.. I'll leave this one for somebody else to solve...");
             bubbleLines.add("Oops, that didn't go as planned");
 
+            // Eliminate player
             mPlayersPanel.setPlayerEliminated(player, true);
         }
 
         mPlayersPanel.showBubble(player, bubbleLines.get(sRandom.nextInt(bubbleLines.size())));
+
+        return correct;
     }
 
     private void performLog() {
@@ -1279,6 +1310,30 @@ public class GameController {
         mCardAnimationsPanel.setLocation(sidePanelWidth, 0);
         mCardAnimationsPanel.setSize(boardDimension.width - sidePanelWidth, boardDimension.height);
 
+        // Slide out panels
+        int slideOutPanelHandleSize = Config.screenRelativeSize(40);
+        int slideOutPanelHandleWidth = Config.screenHeightPercentage(0.2f);
+
+        // Player cards slide out panel
+        mPlayerCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
+                "Your cards".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.width,
+                boardDimension.height / 4 - slideOutPanelHandleWidth / 2);
+        mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_PANELS);
+        mPlayerCardsPanel.setVisible(false);
+
+        // Undistributed cards slide out panel
+        mUndistributedCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
+                "Public cards".toUpperCase(),
+                slideOutPanelHandleSize,
+                slideOutPanelHandleWidth,
+                boardDimension.width,
+                boardDimension.height * 3 / 4 - slideOutPanelHandleWidth / 2);
+        mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_PANELS);
+        mUndistributedCardsPanel.setVisible(false);
+
         // Add quit panel
         SlideOutPanel quitPanel = new SlideOutCardsPanel(SlideOutPanel.TOP,
                 "Quit".toUpperCase(),
@@ -1313,29 +1368,8 @@ public class GameController {
 
         // Slide out panels
         int slideOutPanelHandleSize = Config.screenRelativeSize(40);
-        int slideOutPanelHandleWidth = Config.screenHeightPercentage(0.2f);
-
-        // Player cards slide out panel
-        mPlayerCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
-                "Your cards".toUpperCase(),
-                slideOutPanelHandleSize,
-                slideOutPanelHandleWidth,
-                boardDimension.width,
-                boardDimension.height / 4 - slideOutPanelHandleWidth / 2);
-        mBoardLayeredPane.add(mPlayerCardsPanel, BOARD_LAYER_PANELS);
-
-        // Undistributed cards slide out panel
-        mUndistributedCardsPanel = new SlideOutCardsPanel(SlideOutPanel.RIGHT,
-                "Public cards".toUpperCase(),
-                slideOutPanelHandleSize,
-                slideOutPanelHandleWidth,
-                boardDimension.width,
-                boardDimension.height * 3 / 4 - slideOutPanelHandleWidth / 2);
-        mBoardLayeredPane.add(mUndistributedCardsPanel, BOARD_LAYER_PANELS);
-
-        // Wider panels at bottom
         int slideOutPanelAvailableWidth = boardDimension.width - 2 * sidePanelWidth;
-        slideOutPanelHandleWidth = (slideOutPanelAvailableWidth - sidePanelWidth) / 2;
+        int slideOutPanelHandleWidth = (slideOutPanelAvailableWidth - sidePanelWidth) / 2;
 
         // Log panel
         mHistoryPanel = new LogPanel(mPlayers, mGame.getLog());

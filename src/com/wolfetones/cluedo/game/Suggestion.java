@@ -64,7 +64,7 @@ public class Suggestion {
     }
 
     public String asHumanReadableString() {
-        return suspect.getName() + " in the " + room.getName() + " with a " + weapon.getName();
+        return suspect.getName() + " in the " + room.getName() + " with the " + weapon.getName();
     }
 
     /**

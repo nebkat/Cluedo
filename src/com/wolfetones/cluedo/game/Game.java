@@ -566,7 +566,7 @@ public class Game {
         } else {
             // Remove player if accusation is incorrect
             mActivePlayerIterator.remove();
-            mFinished = mActivePlayers.isEmpty();
+            mFinished = mActivePlayers.size() <= 1;
             return false;
         }
     }

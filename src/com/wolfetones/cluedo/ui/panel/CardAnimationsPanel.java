@@ -284,7 +284,7 @@ public class CardAnimationsPanel extends JPanel {
             int round = i / playerCount;
             int player = i % playerCount;
 
-            double targetX = card.getWidth() * 0.1 + round * Config.screenRelativeSize(10);
+            double targetX = card.getWidth() * 0.15 + round * Config.screenRelativeSize(10);
             double targetY = ((double) player + 0.5) * playerPanelItemHeight;
 
             Animator.getInstance().animate(card)
@@ -345,6 +345,8 @@ public class CardAnimationsPanel extends JPanel {
     public void finalAccusation(Suggestion accusation, Suggestion solution) {
         setVisible(true);
 
+        boolean correct = accusation.equals(solution);
+
         int cardWidth = (int) (getWidth() / 5 * CARD_MARGIN);
 
         List<Card> accusationList = accusation.asList();
@@ -386,7 +388,7 @@ public class CardAnimationsPanel extends JPanel {
         setComponentZOrder(secretFolder, 0);
         secretFolder.setLocation(getWidth() / 2 - secretFolder.getWidth() / 2, getHeight());
 
-        // Move secret folder in
+        // Move secret folder in to view
         Animator.getInstance().animate(secretFolder)
                 .translate(secretFolder.getX(), getHeight() - secretFolder.getHeight())
                 .setDuration(1000)
@@ -406,8 +408,8 @@ public class CardAnimationsPanel extends JPanel {
             int targetY = getHeight() / 2;
 
             int cardIndex = i;
-            boolean correct = accusationList.get(cardIndex) == solutionList.get(cardIndex);
-            BufferedImage overlayImage = correct ? Card.getCardCorrectOverlayImage() : Card.getCardIncorrectOverlayImage();
+            boolean cardCorrect = accusationList.get(cardIndex) == solutionList.get(cardIndex);
+            BufferedImage overlayImage = cardCorrect ? Card.getCardCorrectOverlayImage() : Card.getCardIncorrectOverlayImage();
             Animator.getInstance().animate(card)
                     .animate(card::getCenterX, targetX, card::setCenterX)
                     .animate(card::getCenterY, targetY, card::setCenterY)
@@ -431,14 +433,105 @@ public class CardAnimationsPanel extends JPanel {
                 .skipIf(!isVisible())
                 .await();
 
-        // Remove all added components
-        removeAll();
+        if (!correct) {
+            // Move solution cards back into secret folder
+            for (int i = 0; i < solutionCards.size(); i++) {
+                AnimatableCard card = solutionCards.get(i);
 
-        setVisible(false);
+                int targetX = secretFolder.getX() + secretFolder.getWidth() / 2;
+                int targetY = secretFolder.getY() + secretFolder.getHeight() / 2;
+
+                Animator.getInstance().animate(card)
+                        .scale(-1, 1)
+                        .setDuration(800)
+                        .chain()
+                        .animate(card::getCenterX, targetX, card::setCenterX)
+                        .animate(card::getCenterY, targetY, card::setCenterY)
+                        .setDuration(2000)
+                        .setDelay(100)
+                        .after(() -> card.setVisible(false))
+                        .awaitIf(i == solutionCards.size() - 1);
+            }
+
+            // Move secret folder out of view
+            Animator.getInstance().animate(secretFolder)
+                    .translate(secretFolder.getX(), getHeight())
+                    .setDuration(1000)
+                    .setDelay(100)
+                    .start();
+
+            // Move accusation cards out of view
+            for (int i = 0; i < accusationCards.size(); i++) {
+                AnimatableCard card = accusationCards.get(i);
+
+                Animator.getInstance().animate(card)
+                        .animate(card::getCenterY, -card.getHeight() / 2, card::setCenterY)
+                        .setDuration(1000)
+                        .setDelay(100)
+                        .awaitIf(i == accusationCards.size() - 1);
+            }
+
+            AnimatableLabel youLoseLabel = new AnimatableLabel("Incorrect, you lose!", Config.screenRelativeSize(75));
+            add(youLoseLabel);
+            youLoseLabel.setCenterX(getWidth() / 2);
+            youLoseLabel.setCenterY(getHeight() / 2);
+            youLoseLabel.setScale(1);
+            youLoseLabel.setAlpha(0);
+
+            Animator.getInstance().animate(youLoseLabel)
+                    .fadeIn()
+                    .setDuration(1500)
+                    .setInterpolator(Animator::easeInCubic)
+                    .chain()
+                    .fadeOut()
+                    .setDuration(1500)
+                    .setDelay(3000)
+                    .setInterpolator(Animator::easeOutCubic)
+                    .after(() -> {
+                        removeAll();
+
+                        setVisible(false);
+                    })
+                    .start();
+        } else {
+            // Move secret folder out of view
+            Animator.getInstance().animate(secretFolder)
+                    .translate(secretFolder.getX(), getHeight())
+                    .setDuration(1000)
+                    .setDelay(100)
+                    .start();
+
+            // Move solution cards to bottom of screen
+            for (int i = 0; i < solutionCards.size(); i++) {
+                AnimatableCard card = solutionCards.get(i);
+
+                int targetY = getHeight() * 4 / 5;
+
+                Animator.getInstance().animate(card)
+                        .animate(card::getCenterY, targetY, card::setCenterY)
+                        .setDuration(1000)
+                        .setDelay(500)
+                        .awaitIf(i == solutionCards.size() - 1);
+            }
+
+            AnimatableLabel youWinLabel = new AnimatableLabel("Congratulations, you win!", Config.screenRelativeSize(60));
+            add(youWinLabel);
+            youWinLabel.setCenterX(getWidth() / 2);
+            youWinLabel.setCenterY(getHeight() / 2);
+            youWinLabel.setScale(1);
+            youWinLabel.setAlpha(0);
+
+            Animator.getInstance().animate(youWinLabel)
+                    .fadeIn()
+                    .setDuration(1500)
+                    .setInterpolator(Animator::easeInCubic)
+                    .start();
+        }
     }
 
     public void forceFinish() {
         setVisible(false);
+        removeAll();
 
         Animator.getInstance().interruptAllAnimations(this);
         for (Component component : getComponents()) {
@@ -446,22 +539,45 @@ public class CardAnimationsPanel extends JPanel {
         }
     }
 
-    private class AnimatableCard extends JComponent implements Animator.Scalable, Animator.ScalableXY, Animator.Fadable {
+    private class AnimatableLabel extends AnimatableComponent {
+        private String mText;
+
+        public AnimatableLabel(String text, int fontSize) {
+            super();
+
+            mText = text;
+
+            setFont(new Font(Font.SANS_SERIF, Font.BOLD, fontSize));
+
+            FontMetrics metrics = getFontMetrics(getFont());
+            int width = metrics.stringWidth(mText);
+            int height = metrics.getHeight();
+
+            setPreferredSize(new Dimension(width, height));
+            setSize(getPreferredSize());
+        }
+
+        @Override
+        public void paintComponent(Graphics gg) {
+            Graphics2D g = (Graphics2D) gg;
+            Util.setHighQualityRenderingHints(g);
+
+            if (!applyTransform(g)) {
+                return;
+            }
+
+            Util.drawCenteredString(mText, 0, 0, getWidth(), getHeight(), g);
+        }
+    }
+
+    private class AnimatableCard extends AnimatableComponent {
         private BufferedImage mImage;
         private BufferedImage mOverlayImage;
         private BufferedImage mBackImage;
 
         private String mName;
 
-        private int mOffsetX;
         private int mOffsetY;
-
-        private double mScale = 1;
-        private double mScaleX = 1;
-        private double mScaleY = 1;
-        private double mAlpha = 0;
-
-        private Font mFont;
 
         public AnimatableCard(Card card, int imageWidth) {
             super();
@@ -469,18 +585,17 @@ public class CardAnimationsPanel extends JPanel {
             mName = card.getName();
 
             mImage = ImageUtils.getScaledImage(card.getCardImage(), imageWidth);
-            mFont = Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(20));
+            setFont(Config.FONT.deriveFont(Font.PLAIN, Config.screenRelativeSize(20)));
 
             mBackImage = ImageUtils.getScaledImage(Card.getCardBackImage(), imageWidth);
 
             int imageHeight = mImage.getHeight();
-            int defaultHeight = imageHeight + Config.screenRelativeSize(5) + mFont.getSize();
+            int defaultHeight = imageHeight + 2 * (Config.screenRelativeSize(5) + getFont().getSize());
 
-            int maxDimension = (int) Math.hypot(imageWidth, defaultHeight);
-            mOffsetX = (maxDimension - imageWidth) / 2;
-            mOffsetY = (maxDimension - imageHeight) / 2;
+            mOffsetY = (defaultHeight - imageHeight) / 2;
 
-            setSize(new Dimension(maxDimension, maxDimension));
+            setPreferredSize(new Dimension(imageWidth, defaultHeight));
+            setSize(getPreferredSize());
         }
 
         public void setImage(BufferedImage image) {
@@ -493,12 +608,46 @@ public class CardAnimationsPanel extends JPanel {
             repaint();
         }
 
+        @Override
+        public void paintComponent(Graphics gg) {
+            Graphics2D g = (Graphics2D) gg;
+            Util.setHighQualityRenderingHints(g);
+
+            if (!applyTransform(g)) {
+                return;
+            }
+
+            if (mScaleX > 0) {
+                g.drawImage(mImage, 0, mOffsetY, null);
+
+                if (mOverlayImage != null) {
+                    g.drawImage(mOverlayImage, 0, mOffsetY, null);
+                }
+
+                g.setColor(Color.WHITE);
+                Util.drawCenteredString(mName, 0, mOffsetY + mImage.getHeight() + Config.screenRelativeSize(5), mImage.getWidth(), getFont().getSize(), g);
+            } else {
+                g.drawImage(mBackImage, 0, mOffsetY, null);
+            }
+        }
+    }
+
+    private class AnimatableComponent extends JComponent implements Animator.Scalable, Animator.ScalableXY, Animator.Fadable {
+        protected double mScale = 1;
+        protected double mScaleX = 1;
+        protected double mScaleY = 1;
+        protected double mAlpha = 0;
+
+        public AnimatableComponent() {
+            super();
+        }
+
         public double getCenterX() {
             return getX() + getWidth() / 2;
         }
 
         public double getCenterY() {
-            return getY() + getWidth() / 2;
+            return getY() + getHeight() / 2;
         }
 
         public void setCenterX(double x) {
@@ -509,13 +658,9 @@ public class CardAnimationsPanel extends JPanel {
             setLocation(getX(), (int) (y - getHeight() / 2));
         }
 
-        @Override
-        public void paintComponent(Graphics gg) {
-            Graphics2D g = (Graphics2D) gg;
-            Util.setHighQualityRenderingHints(g);
-
+        protected boolean applyTransform(Graphics2D g) {
             if (mAlpha == 0) {
-                return;
+                return false;
             } else if (mAlpha < 1) {
                 g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) mAlpha));
             }
@@ -523,26 +668,15 @@ public class CardAnimationsPanel extends JPanel {
             double scaleX = Math.abs(mScaleX) * mScale;
             double scaleY = mScaleY * mScale;
             if (scaleX == 0 || scaleY == 0) {
-                return;
+                return false;
             } else if (scaleX != 1 || scaleY != 1) {
+                Dimension preferredSize = getPreferredSize();
                 g.translate(getWidth() / 2, getHeight() / 2);
                 g.scale(scaleX, scaleY);
-                g.translate(-getWidth() / 2, -getHeight() / 2);
+                g.translate(-preferredSize.width / 2, -preferredSize.height / 2);
             }
 
-            if (mScaleX > 0) {
-                g.drawImage(mImage, mOffsetX, mOffsetY, null);
-
-                if (mOverlayImage != null) {
-                    g.drawImage(mOverlayImage, mOffsetX, mOffsetY, null);
-                }
-
-                g.setColor(Color.WHITE);
-                g.setFont(mFont);
-                Util.drawCenteredString(mName, mOffsetX, mOffsetY + mImage.getHeight() + Config.screenRelativeSize(5), mImage.getWidth(), mFont.getSize(), g);
-            } else {
-                g.drawImage(mBackImage, mOffsetX, mOffsetY, null);
-            }
+            return true;
         }
 
         @Override
@@ -552,6 +686,17 @@ public class CardAnimationsPanel extends JPanel {
 
         @Override
         public void setScale(double scale) {
+            Dimension preferredSize = getPreferredSize();
+
+            int scaledWidth = (int) (preferredSize.width * scale);
+            int scaledHeight = (int) (preferredSize.height * scale);
+
+            int centerX = (int) getCenterX();
+            int centerY = (int) getCenterY();
+
+            setBounds(centerX - scaledWidth / 2, centerY - scaledHeight / 2,
+                    scaledWidth, scaledHeight);
+
             mScale = scale;
             repaint();
         }
