@@ -268,7 +268,7 @@ public class Game {
         // Should never be able to make accusation as this point
         mTurnCanMakeFinalAccusation = false;
 
-        // Check if player can perform anything (rare case that player is stuck in corridor)
+        // Check if player can perform anything (rare case that player is stuck in corridor or room)
         mTurnFinished = mTurnMovementComplete && !mTurnCanPoseQuestion;
 
         // Reset movement variables

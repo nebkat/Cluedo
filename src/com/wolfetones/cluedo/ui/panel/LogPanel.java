@@ -106,7 +106,7 @@ public class LogPanel extends JPanel {
 
             if (entry.getType() == Game.LogEntry.Type.FinalAccusation) {
                 ImageComponent incorrect = new ImageComponent(ImageUtils.loadImage("icons/accuse.png"), tokenSize);
-                TextBubble.createToolTip(incorrect, TextBubble.ABOVE, "Incorrect accusation");
+                TextBubble.createToolTip(incorrect, TextBubble.ABOVE, entry.isCorrect() ? "Correct accusation" : "Incorrect accusation");
                 c = new GridBagConstraints();
                 c.gridy = i;
                 c.gridx = lastXIndex;
