@@ -110,7 +110,7 @@ public class LogPanel extends JPanel {
                 c = new GridBagConstraints();
                 c.gridy = i;
                 c.gridx = lastXIndex;
-                add(incorrect);
+                add(incorrect, c);
 
                 continue;
             }
