@@ -1010,25 +1010,32 @@ public class GameController {
      * Opens a dialog and allows for players to be registered to the game.
      */
     private void setupPlayers() {
-        // Fill in players if in demo mode
-        if (DEMO_MODE) {
-            List<Suspect> suspects = mGame.getBoard().getSuspects();
-            for (int i = 0; i < 6; i++) {
-                mPlayers.add(new Player(suspects.get(i), suspects.get(i).getName()));
-            }
+        boolean demoMode = DEMO_MODE;
 
-            return;
+        if (!DEMO_MODE) {
+            List<Suspect> remainingSuspects = mGame.getBoard().getSuspectsModifiable();
+            while (remainingSuspects.size() > 0) {
+                Player player = CardPickerDialog.showPlayerPickerDialog(mMainFrame, mBoardLayeredPane, remainingSuspects);
+                if (player == Player.DEMO_MODE) {
+                    demoMode = true;
+                    break;
+                }
+                if (player != null) {
+                    mPlayers.add(player);
+                    remainingSuspects.remove(player.getCharacter());
+                } else if (mPlayers.size() >= 2) {
+                    // Must have at least 2 players to play
+                    break;
+                }
+            }
         }
 
-        List<Suspect> remainingSuspects = mGame.getBoard().getSuspectsModifiable();
-        while (remainingSuspects.size() > 0) {
-            Player player = CardPickerDialog.showPlayerPickerDialog(mMainFrame, mBoardLayeredPane, remainingSuspects);
-            if (player != null) {
-                mPlayers.add(player);
-                remainingSuspects.remove(player.getCharacter());
-            } else if (mPlayers.size() >= 2) {
-                // Must have at least 2 players to play
-                break;
+        // Fill in players if in demo mode
+        if (demoMode) {
+            mPlayers.clear();
+            List<Suspect> suspects = mGame.getBoard().getSuspects();
+            for (Suspect suspect : suspects) {
+                mPlayers.add(new Player(suspect, suspect.getName()));
             }
         }
     }

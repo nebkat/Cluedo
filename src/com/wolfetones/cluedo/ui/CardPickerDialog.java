@@ -14,6 +14,7 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -29,8 +30,10 @@ public class CardPickerDialog extends JDialog {
     private CardPickerPanel<? extends Card> mUserCardPicker;
 
     private JButton mConfirmButton;
+    private JButton mDemoButton;
 
     private boolean mSuccessful;
+    private boolean mDemoMode;
 
     private CardPickerDialog(JFrame frame, JComponent board, String title, boolean showName, List<Suspect> suspects, List<Weapon> weapons, List<Room> rooms, List<? extends Card> cards) {
         super(frame, true);
@@ -65,19 +68,35 @@ public class CardPickerDialog extends JDialog {
             panel.add(titlePanel);
         }
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setOpaque(false);
 
         mConfirmButton = new JButton("Confirm");
         JButton cancelButton = new JButton("Cancel");
+        mDemoButton = new JButton("Demo Mode");
+
+        if (!showName) {
+            mDemoButton.setVisible(false);
+        }
 
         mConfirmButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
         cancelButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
+        mDemoButton.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, Config.screenRelativeSize(16)));
 
-        buttonPanel.add(cancelButton);
-        buttonPanel.add(mConfirmButton);
+        GridBagConstraints c = new GridBagConstraints();
+        buttonPanel.add(mDemoButton, c);
+
+        c = new GridBagConstraints();
+        c.weightx = 1.0;
+        buttonPanel.add(Box.createGlue(), c);
+
+        c = new GridBagConstraints();
+        buttonPanel.add(cancelButton, c);
+        buttonPanel.add(mConfirmButton, c);
+
         mConfirmButton.addActionListener(this::onButtonClicked);
         cancelButton.addActionListener(this::onButtonClicked);
+        mDemoButton.addActionListener(this::onButtonClicked);
 
         if (showName) {
             mNameTextField = new JTextField();
@@ -150,7 +169,8 @@ public class CardPickerDialog extends JDialog {
     }
 
     private void onButtonClicked(ActionEvent actionEvent) {
-        mSuccessful = actionEvent.getSource() == mConfirmButton;
+        mSuccessful = actionEvent.getSource() == mConfirmButton || actionEvent.getSource() == mDemoButton;
+        mDemoMode = actionEvent.getSource() == mDemoButton;
         dispose();
     }
 
@@ -166,6 +186,8 @@ public class CardPickerDialog extends JDialog {
 
     private Player getPlayerResult() {
         if (!mSuccessful) return null;
+
+        if (mDemoMode) return Player.DEMO_MODE;
 
         String name = mNameTextField.getText();
         Suspect suspect = mSuspectCardPicker.getResult();

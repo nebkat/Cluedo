@@ -31,6 +31,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Player {
+    public static final Player DEMO_MODE = new Player(null, null);
+
     private String mName;
 
     private Suspect mCharacter;
