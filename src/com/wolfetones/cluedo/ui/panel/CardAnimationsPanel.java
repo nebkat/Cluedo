@@ -485,14 +485,13 @@ public class CardAnimationsPanel extends JPanel {
                     .chain()
                     .fadeOut()
                     .setDuration(1500)
-                    .setDelay(3000)
+                    .setDelay(1500)
                     .setInterpolator(Animator::easeOutCubic)
-                    .after(() -> {
-                        removeAll();
+                    .await();
 
-                        setVisible(false);
-                    })
-                    .start();
+            removeAll();
+
+            setVisible(false);
         } else {
             // Move secret folder out of view
             Animator.getInstance().animate(secretFolder)
@@ -531,7 +530,6 @@ public class CardAnimationsPanel extends JPanel {
 
     public void forceFinish() {
         setVisible(false);
-        removeAll();
 
         Animator.getInstance().interruptAllAnimations(this);
         for (Component component : getComponents()) {

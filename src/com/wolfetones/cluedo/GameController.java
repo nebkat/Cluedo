@@ -500,9 +500,6 @@ public class GameController {
         mNotesSlideOutPanel.slideOut();
         mHistorySlideOutPanel.slideOut();
 
-        // End all animations
-        mCardAnimationsPanel.forceFinish();
-
         return true;
     }
 
