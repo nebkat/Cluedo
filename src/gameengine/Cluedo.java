@@ -1,7 +1,6 @@
 package gameengine;
 
 import bots.BotAPI;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -203,7 +202,7 @@ public class Cluedo {
                         tokens.get(query.getSuspect()).leaveRoom();
                     }
                     tokens.get(query.getSuspect()).enterRoom(currentToken.getRoom());
-                    weapons.get(query.getWeapon()).setRoom(currentToken.getRoom());
+                    weapons.get(query.getWeapon()).changeRoom(currentToken.getRoom());
                     ui.display();
                     Player playerQueried = players.getPlayerOnTheLeft(currentPlayer);
                     int numberOfQueriesDone = 0;
@@ -277,6 +276,9 @@ public class Cluedo {
             moveOver = false;
             questionOver = false;
             enteredRoom = false;
+            if (!firstTurn) {
+                ui.clearScreen();
+            }
             firstTurn = false;
             do {
                 currentPlayer = players.getCurrentPlayer();

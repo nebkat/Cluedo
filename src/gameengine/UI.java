@@ -32,7 +32,7 @@ class UI {
     /* Display Methods */
 
     void clearScreen() {
-        infoPanel.clearScreen();
+        //   infoPanel.clearScreen();
     }
 
     void display() {
