@@ -19,8 +19,8 @@ public class Map {
             {X,X,X,X,X,C,C,C,C,C,C,C,C,C,C,C,C,D,3,X,X,X,X,X},
             {X,X,X,X,X,X,X,X,C,C,X,X,X,X,X,C,C,C,X,X,X,X,X,X},
             {X,X,X,X,X,X,X,X,C,C,X,X,X,X,X,C,C,C,X,X,X,X,X,X},
-            {X,X,X,X,X,X,X,8,D,C,X,X,X,X,X,C,C,C,X,X,X,X,X,X},
-            {X,X,X,X,X,X,X,X,C,C,X,X,X,X,X,C,C,C,C,C,D,C,C,X},
+            {X,X,X,X,X,X,X,8,D,C,X,X,X,X,X,C,C,C,X,X,X,X,3,X},
+            {X,X,X,X,X,X,X,X,C,C,X,X,X,X,X,C,C,C,C,C,D,C,D,X},
             {X,X,X,X,X,X,X,X,C,C,X,X,X,X,X,C,C,C,X,X,4,X,X,X},
             {X,X,X,X,X,X,8,X,C,C,X,X,X,X,X,C,C,X,X,X,X,X,X,X},
             {X,C,C,C,C,C,D,C,C,C,X,X,9,X,X,C,D,4,X,X,X,X,X,X},
@@ -47,7 +47,7 @@ public class Map {
         rooms[6] = new Room(Names.ROOM_NAMES[6],new Coordinates(10,19),new Coordinates[]{new Coordinates(11,18), new Coordinates(12,18), new Coordinates(14,20)});
         rooms[7] = new Room(Names.ROOM_NAMES[7],new Coordinates(2,22),new Coordinates[]{new Coordinates(6,19)});
         rooms[8] = new Room(Names.ROOM_NAMES[8],new Coordinates(2,10),new Coordinates[]{new Coordinates(6,15),new Coordinates(7,12)});
-        rooms[9] = new Room(Names.ROOM_NAMES[9],new Coordinates(12,14),new Coordinates[]{new Coordinates(12,17)},true);
+        rooms[9] = new Room(Names.ROOM_NAMES[9],new Coordinates(12,14),new Coordinates[]{new Coordinates(12,16)},true);
         rooms[0].addPassage(rooms[5]);
         rooms[5].addPassage(rooms[0]);
         rooms[2].addPassage(rooms[7]);
@@ -88,7 +88,9 @@ public class Map {
     public boolean isValidMove(Coordinates startingPosition, String key) {
         Coordinates newPosition = new Coordinates(startingPosition);
         newPosition.add(keyToCoordinates.get(key));
-        return(isCorridor(newPosition) || isDoor(startingPosition, newPosition));
+        return ((isCorridor(newPosition) && isCorridor(startingPosition))
+                 || isDoor(startingPosition, newPosition)
+                 || isDoor(newPosition, startingPosition));
     }
 
     public Coordinates getNewPosition(Coordinates startingPosition, String key) {
@@ -96,4 +98,5 @@ public class Map {
         newPosition.add(keyToCoordinates.get(key));
         return newPosition;
     }
+
 }

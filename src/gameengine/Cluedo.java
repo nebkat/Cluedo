@@ -135,7 +135,7 @@ public class Cluedo {
                     boolean exitDone = false;
                     do {
                         ui.inputDoor(currentPlayer);
-                        if (ui.getDoor()>= 1 || ui.getDoor()<=currentToken.getRoom().getNumberOfDoors()) {
+                        if (ui.getDoor()>= 1 && ui.getDoor()<=currentToken.getRoom().getNumberOfDoors()) {
                             currentToken.leaveRoom(ui.getDoor()-1);
                             exitDone = true;
                         } else {
