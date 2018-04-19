@@ -83,6 +83,11 @@ public class Cluedo {
             ui.displayName(newPlayer);
             ui.displayToken(newPlayer);
         }
+        for (BotAPI bot : bots) {
+            for (BotAPI botNamed : bots) {
+                bot.notifyPlayerName(botNamed.getName());
+            }
+        }
     }
 
     private void rollToStart() {
@@ -198,6 +203,9 @@ public class Cluedo {
                     ui.inputSuspect(currentPlayer);
                     ui.inputWeapon(currentPlayer);
                     Query query = ui.getQuery(currentToken.getRoom());
+                    for (BotAPI bot : bots) {
+                        bot.notifyQuery(currentPlayer.getName(),query.toString());
+                    }
                     if (tokens.get(query.getSuspect()).isInRoom()) {
                         tokens.get(query.getSuspect()).leaveRoom();
                     }
@@ -213,8 +221,14 @@ public class Cluedo {
                             Card cardViewed = ui.getCard();
                             currentPlayer.addViewedCard(cardViewed);
                             miniLog.addExchange(currentPlayer, playerQueried, query, cardViewed);
+                            for (BotAPI bot : bots) {
+                                bot.notifyReply(playerQueried.getName(), true);
+                            }
                         } else {
                             miniLog.addExchange(currentPlayer, playerQueried, query, false);
+                            for (BotAPI bot : bots) {
+                                bot.notifyReply(playerQueried.getName(), false);
+                            }
                         }
                         log.addExchange(currentPlayer, playerQueried, query, ui.cardFound());
                         ui.clearScreen();
@@ -307,6 +321,9 @@ public class Cluedo {
                     }
                     case "done": {
                         turnOver = true;
+                        for (BotAPI bot : bots) {
+                            bot.notifyTurnOver(currentPlayer.getName(),currentPlayer.getToken().getPosition().toString());
+                        }
                         break;
                     }
                     case "log": {

@@ -39,6 +39,9 @@ public class Query implements Iterable<String>, Iterator<String> {
         return iterator;
     }
 
+    public String toString () {
+        return getSuspect() + "," + getWeapon() + "," + getRoom ();
+    }
 }
 
 

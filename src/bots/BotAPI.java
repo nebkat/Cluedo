@@ -6,6 +6,7 @@ import gameengine.Log;
 public interface BotAPI {
 
     String getName();
+    String getVersion();
     String getCommand();
     String getMove();
     String getSuspect();
@@ -14,5 +15,9 @@ public interface BotAPI {
     String getDoor();
     String getCard(Cards matchingCards);
     void notifyResponse(Log response);
+    void notifyPlayerName(String playerName);
+    void notifyTurnOver(String playerName, String position);
+    void notifyQuery(String playerName, String query);
+    void notifyReply(String playerName, boolean cardShown);
 
 }

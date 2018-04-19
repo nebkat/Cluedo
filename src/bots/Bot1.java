@@ -30,6 +30,10 @@ public class Bot1 implements BotAPI {
         return "Bot1"; // must match the class name
     }
 
+    public String getVersion () {
+        return "0.1";   // change on a new release
+    }
+
     public String getCommand() {
         // Add your code here
         return "done";
@@ -66,6 +70,22 @@ public class Bot1 implements BotAPI {
     }
 
     public void notifyResponse(Log response) {
+        // Add your code here
+    }
+
+    public void notifyPlayerName(String playerName) {
+        // Add your code here
+    }
+
+    public void notifyTurnOver(String playerName, String position) {
+        // Add your code here
+    }
+
+    public void notifyQuery(String playerName, String query) {
+        // Add your code here
+    }
+
+    public void notifyReply(String playerName, boolean cardShown) {
         // Add your code here
     }
 

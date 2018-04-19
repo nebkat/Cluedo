@@ -192,7 +192,7 @@ class UI {
 
     void displayName(Player player) {
         displayString("Enter new player name:");
-        displayString("> " + player.getName());
+        displayString("> " + player.getName() + " " + player.getBot().getVersion());
     }
 
     void displayToken(Player player) {
