@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class WolfeTones implements BotAPI {
 	private static final boolean CAN_QUESTION_IN_NEW_ROOMS = false;
@@ -96,6 +97,7 @@ public class WolfeTones implements BotAPI {
 
 	private KnowledgeMap mKnowledge;
 	private PathFinder mPathFinder = new PathFinder();
+	private Map<String, Set<String>> mShownCards = new HashMap<>();
 
     public WolfeTones(Player player, PlayersInfo playersInfo, gameengine.Map map, Dice dice, Log log, Deck deck) {
     	mName = getClass().getSimpleName();
@@ -479,17 +481,94 @@ public class WolfeTones implements BotAPI {
 
 	@Override
 	public void notifyQuery(String playerName, String query) {
-
+		mQueryPlayer = playerName;
 	}
 
 	@Override
 	public void notifyReply(String playerName, boolean cardShown) {
-
+		if (cardShown) {
+			mQueryPlayer = null;
+		}
 	}
+
+	private String mQueryPlayer = null;
 
 	@Override
 	public String getCard(Cards matchingCards) {
-		return matchingCards.get().toString();
+		List<String> matching = new ArrayList<>();
+		matchingCards.iterator().forEachRemaining((c) -> matching.add(c.toString()));
+
+		String card = chooseResponseCard(matching);
+
+		// Should not happen, but just in case
+		if (card == null) {
+			throw new IllegalStateException("Could not choose response card");
+		}
+
+		// Add to shown cards list
+		showCard(mQueryPlayer, card);
+
+		return card;
+	}
+
+	private void showCard(String player, String card) {
+		if (!mShownCards.containsKey(player)) {
+			mShownCards.put(player, new HashSet<>());
+		}
+		mShownCards.get(player).add(card);
+	}
+
+	private String chooseResponseCard(List<String> matching) {
+		// If only one card available show immediately as there is no choice
+		if (matching.size() == 1) {
+			return matching.get(0);
+		}
+
+		// Cards shown to player previously
+		Set<String> shownCards = mShownCards.getOrDefault(mQueryPlayer, Collections.emptySet());
+
+		// Separate into card types
+		String suspect = matching.stream().filter(SUSPECTS::contains).findAny().orElse(null);
+		String weapon = matching.stream().filter(WEAPONS::contains).findAny().orElse(null);
+		String room = matching.stream().filter(ROOMS::contains).findAny().orElse(null);
+
+		// Show any already shown card
+		if (!Collections.disjoint(shownCards, matching)) {
+			// If multiple cards are available, the room won't be chosen at is it last in the list
+			return matching.stream().filter(shownCards::contains).findFirst().orElseThrow(NoSuchElementException::new);
+		}
+
+		// If own suspect card is available, show to try minimize other players moving us into rooms
+		if (mCharacter.equals(suspect)) {
+			return suspect;
+		}
+
+		// If another player's suspect card is available, don't show to disadvantage them by being continuously moved into rooms
+		if (mOtherPlayerSuspects.contains(suspect)) {
+			// At least two cards matched so the other will be shown
+			suspect = null;
+		}
+
+		// Suspect and weapon available
+		if (suspect != null && weapon != null && mInitialized) {
+			float suspectsShown = shownCards.stream().filter(SUSPECTS::contains).count() / mPlayerSuspectCards.size();
+			float weaponsShown = shownCards.stream().filter(WEAPONS::contains).count() / mPlayerWeaponCards.size();
+
+			return suspectsShown < weaponsShown ? suspect : weapon;
+		}
+
+		// Show weapons before rooms
+		if (weapon != null) {
+			return weapon;
+		}
+
+		// Show suspects before rooms
+		if (suspect != null) {
+			return suspect;
+		}
+
+		// Worst case, reveal a room
+		return room;
 	}
 
     private void parseLog() {
@@ -556,6 +635,14 @@ public class WolfeTones implements BotAPI {
 
 		// We showed a card
 		if (responder.equals(mName)) {
+			List<String> matchingCards = Stream.of(suspect, weapon, room)
+					.filter(mPlayerCards::contains)
+					.collect(Collectors.toList());
+
+			if (matchingCards.size() == 1) {
+				showCard(asker, matchingCards.get(0));
+			}
+
 			return false;
 		}
 
